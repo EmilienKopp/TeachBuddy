@@ -4,7 +4,7 @@
     import Sidebar from '$lib/components/organisms/Sidebar.svelte';
 </script>
 
-<div class="flex h-full flex-col" id="app">
+<div class="flex flex-row" id="app">
     <Sidebar>
         <div>
             <NavButton>
@@ -22,8 +22,8 @@
             </NavButton>
         </div>
     </Sidebar>
-    <div class="flex h-full">
+    <main class="flex flex-col flex-grow items-center justify-center">
+    <h2 class="bg-darkish w-full text-white text-2xl p-5 border-b border-white"> Welcome ! </h2>
         <slot/>
-    </div>
-
+    </main>
 </div>
