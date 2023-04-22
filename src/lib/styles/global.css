@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwing forms;
+
+#app {
+  background-color: #121212;
+  border-color: #202425;
+  position: fixed;
+  width:100%;
+  height:100%;
+  box-sizing: border-box;
+  min-height: 100%;
+  overflow:auto;
+  font-family: circular,"Helvetica Neue",Helvetica,Arial,"sans-serif";
+}
+
+@layer components {
+  .menu-icon {
+    @apply  relative flex  justify-center items-center text-2xl font-bold h-12 w-12 mx-2 shadow-sm
+     bg-green-600 border-darkish hover:bg-green-300 text-white rounded-3xl hover:rounded-xl
+     transition-all duration-300 ease-linear;
+  }
+
+  .menu-icon:hover > i {
+    @apply  text-black transition-all duration-200 ease-linear;
+  }
+
+  .menu-icon-red {
+    @apply  relative flex  justify-center items-center text-2xl font-bold h-12 w-12 mx-2 shadow-sm
+     bg-red-600 border-darkish hover:bg-red-400 text-white rounded-3xl hover:rounded-xl
+     transition-all duration-300 ease-linear;
+  }
+
+  .menu-icon-blue {
+    @apply  relative flex  justify-center items-center text-2xl font-bold h-12 w-12 mx-2 shadow-sm
+     bg-blue-600 border-darkish hover:bg-red-400 text-white rounded-3xl hover:rounded-xl
+     transition-all duration-300 ease-linear;
+  }
+
+  .floating-icon {
+    @apply  fixed bottom-10 right-10 flex  justify-center items-center text-2xl font-bold h-12 w-12 mx-2 shadow-sm
+     bg-green-400 text-white rounded-3xl hover:rounded-xl
+     transition-all duration-300 ease-linear;
+  }
+
+  .modal-btn-left {
+    @apply absolute -top-2 -left-2 bg-orange-300 
+    rounded-full h-6 w-6 items-center text-white
+  }
+
+  .modal-btn-right {
+    @apply absolute -top-2 -right-2 bg-orange-300 
+    rounded-full h-6 w-6 items-center text-white
+  }
+
+  .dragging {
+    @apply border-2 border-slate-700 border-dashed
+  }
+
+  input {
+    @apply rounded-md text-darkish p-1 focus:border-2 focus:border-lime-200
+  }
+
+}
+
+
+
+/* a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+} */
+
+/* 
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+.content {
+  display:flex;
+  justify-content: space-between;
+}
+
+
+.receivers {
+  height: 500px;
+  width: 500px;
+}
+
+.draggables {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+}
+
+.draggable {
+  height: fit-content;
+  background-color: rgba(250, 250, 250, 1);
+  margin: 0.5rem;
+  box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
+  font-size: x-small;
+  padding: 0.5rem;
+}
+
+
+.dragged {
+  border: none;
+}
+
+.controller-action {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  background-color: rgb(245, 161, 130);
+}
+
+.action-title {
+  grid-column: span 2;
+}
+
+.model-prop-textinput {
+    border: solid 0.1rem #ccc;
+}
+
+.status-modal {
+  position: absolute;
+  padding: 1rem;
+  top: 1vh;
+  left: 15vh;
+  border-radius: 10px;
+  z-index: 999;
+  background-color: darkturquoise;
+  cursor: pointer;
+}
+
+.status-modal-toggle-btn {
+  position: absolute;
+  top: 1vh;
+  left: 1vh;
+}
+
+.card {
+  padding: 2em;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+} */
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}

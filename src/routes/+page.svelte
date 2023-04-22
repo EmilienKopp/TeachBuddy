@@ -1,5 +1,5 @@
 <script>
-    import Login from '../components/organisms/Login.svelte';
+    import Login from '$lib/components/organisms/Login.svelte';
 </script>
 
 <Login/>
