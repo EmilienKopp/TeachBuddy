@@ -69,23 +69,27 @@
 
     <form method="POST" use:enhance>
         <label for="grade" class="text-slate-300"> Grade: </label>
-        <select name="grade" bind:value={$form.grade}>
+        <select name="grade" bind:value={$form.grade} class="p-2 rounded-md hover:bg-slate-200">
             {#each data.grades as item }
                 <option value="{item.id}">{item.name}</option>
             {/each}
         </select>
         <label for="type" class="text-slate-300"> Type: </label>
-        <select name="type" bind:value={$form.type}>
+        <select name="type" bind:value={$form.type} class="p-2 rounded-md hover:bg-slate-200">
             {#each data.types as item }
                 <option value="{item.id}">{item.name}</option>
             {/each}
         </select>
 
-        <label class="block text-sm font-medium text-slate-300" for="prompt"> Prompt </label>
-        <input  type="text" name="prompt" bind:value={$form.prompt} 
-                class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
-
-        <button type="submit" class="p-3 rounded-md bg-slate-400 text-black m-3" on:click={handleSubmit}>GIVE ME SOME 長文！！</button>
+        <label class="block text-sm font-medium text-slate-300" for="prompt"> Topic </label>
+        <!-- <input  type="text" name="prompt" bind:value={$form.prompt} 
+                class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/> -->
+        <select name="prompt" bind:value={$form.prompt} class="p-2 rounded-md hover:bg-slate-200">
+            {#each data.topics as item }
+                <option value="{item.name}">{item.name}</option>
+            {/each}
+        </select>
+        <button type="submit" class="p-3 rounded-md bg-slate-400 text-black m-3 hover:bg-lime-200" on:click={handleSubmit}>GIVE ME SOME 長文！！</button>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- TODO: do something about a11y -->
         <div class="passage p-8 w-full h-full" on:click={hideContextMenu}>

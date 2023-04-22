@@ -36,14 +36,30 @@ const grades = [
 const types = [
     { id: 1, name: 'Short Story' },
     { id: 2, name: 'Essay' },
-    { id: 3, name: 'Dialog' },
+    { id: 3, name: 'Conversation between two people' },
 ];
+
+const topics = [
+    { id: 1, name: 'Friendship' },
+    { id: 2, name: 'Family' },
+    { id: 3, name: 'School' },
+    { id: 4, name: 'Hobbies' },
+    { id: 5, name: 'Sports' },
+    { id: 6, name: 'Food' },
+    { id: 7, name: 'Animals' },
+    { id: 8, name: "Tom's summer vacation" },
+    { id: 9, name: 'The best day of my life' },
+    { id: 10, name: 'My favorite place' },
+    { id: 11, name: 'My favorite food' },
+    { id: 12, name: 'Why do we study English?' },
+    { id: 13, name: 'Introducing Japan to my foreign friends' },
+]
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
     
     const form = await superValidate(schema);
-    return { form, types, grades };
+    return { form, types, grades, topics };
 }
 
 export const actions = {
@@ -71,7 +87,7 @@ export const actions = {
         });
         
         const data = completion.data;
-
+        console.log(content);
         console.log(data.choices[0].message);
         form.data.message = data.choices[0].message.content;
 
