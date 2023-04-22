@@ -12,7 +12,7 @@
     let emailError: string;
     let passwordError: string;
     let hasPasswordRequestRoute = false;
-
+    export let endpoint: string = "/login";
 
 </script>
 
@@ -32,7 +32,7 @@
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form class="space-y-6" method="POST" action="/login">
+            <form class="space-y-6" method="POST" action={endpoint}>
                 <!-- メールアドレス -->
                 <EmailInput  name="email" placeholder="Your email" bind:errorMessage={emailError}/>
 

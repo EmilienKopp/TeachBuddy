@@ -5,7 +5,11 @@ export const GET: RequestHandler = async () => {
     throw redirect(302,'/app/dashboard');
 };
 
-export const POST: RequestHandler = async (request) => {
-    console.log('Dummy POST Login Detected', request);
-    throw redirect(302,'/app/dashboard');
+export const POST: RequestHandler = async ({request}) => {
+    const body = await request.formData();
+    if(body.get('email') != 'emilien.kopp@gmail.com' || body.get('password') != '1l0v3r3@d1ng') {
+        console.log('Wrong Credentials');
+        throw redirect(302,'/');
+    }
+    throw redirect(302,'/app/generator');
 };
