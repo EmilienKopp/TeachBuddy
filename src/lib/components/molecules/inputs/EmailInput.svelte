@@ -7,6 +7,7 @@
     export let required: boolean = true;
     export let label: string = FORMS.Inputs.email.label;
     export let placeholder: string = label;
+    export let value: string = '';
 </script>
 
 <div>
