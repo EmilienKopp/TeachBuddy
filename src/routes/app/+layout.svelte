@@ -5,9 +5,10 @@
     import { AppShell, AppRail, AppRailTile } from '@skeletonlabs/skeleton';
     import { Scaffolder } from '/src/config/scaffolder';
     import { page } from '$app/stores';
-    
 
     const storeValue: Writable<number> = writable(0);
+    
+    
 
 </script>
 
@@ -23,32 +24,11 @@
                     <i class="bi {`bi-${tile.icon}`} text-3xl"></i>
                 </AppRailTile>
             {/each}
+            <AppRailTile slot="trail">
+                <img src="/src/lib/images/logo_home.png" alt="Logo" class="w-10 h-10"/>
+            </AppRailTile>
         </AppRail> 
     </svelte:fragment>
     <slot/>
 
 </AppShell>
-
-<!-- <div class="flex flex-row" id="app">
-    <Sidebar>
-        <div>
-            <NavButton>
-                <i class="bi bi-house-door-fill"></i>
-            </NavButton>
-        </div>
-        <div>
-            <NavButton>
-                <i class="bi bi-person-fill"></i>
-            </NavButton>
-        </div>
-        <div>
-            <NavButton>
-                <i class="bi bi-pen-fill"></i>
-            </NavButton>
-        </div>
-    </Sidebar>
-    <main class="flex flex-col flex-grow items-center justify-center">
-    <h2 class="bg-darkish w-full text-white text-2xl p-5 border-b border-white"> Welcome ! </h2>
-        <slot/>
-    </main>
-</div> -->

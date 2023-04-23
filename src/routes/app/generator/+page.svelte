@@ -3,24 +3,32 @@
     import { removePunctuation, splitWords, extractPunctuationAndPad } from "$lib/helpers/Text";
     import { superForm } from 'sveltekit-superforms/client';
     import { ProgressRadial } from '@skeletonlabs/skeleton';
-    import Spinner from '$lib/components/atoms/Spinner.svelte';
-    import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
+    import { SlideToggle } from '@skeletonlabs/skeleton';
     import Select from "$lib/components/atoms/Select.svelte";
-	import TextInput from "$lib/components/molecules/inputs/TextInput.svelte";
     import { searchWeblio } from '$lib/services/weblio';
-    import { boolean } from 'zod';
+    import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
+    import { popup } from '@skeletonlabs/skeleton';
+    import type { PopupSettings } from '@skeletonlabs/skeleton';
 
     export let data: PageData;
     
-    let loading = false;
-    let clickedWord = "";
+    let loading: boolean = false;
+    let testMode: boolean = false;
+    let clickedWord: string = "";
+
+    let popupSettings: PopupSettings = {
+        event: 'click',
+        target: clickedWord + 'Popup',
+        closeQuery: '',
+        state: (e) => console.log(e),
+    }
 
     const { form, enhance, reset, errors, constraints } = superForm(data.form, {
         dataType: 'json',
         applyAction: true,
         resetForm: false,
         invalidateAll: true,
-        onUpdated: ({ form }) => { loading = false; console.log(loading) },
+        onUpdated: ({ form }) => { loading = false; console.log('Loading:',loading) },
     });
 
     let splitPassage: Array<string> = [];
@@ -31,7 +39,6 @@
         const scrollY = window.scrollY || window.pageYOffset;
         clickedWord = removePunctuation(event.target.textContent);
         const menu = document.getElementById("context-menu");
-
         if(!menu) return;
         menu.style.display = "block";
         menu.style.left = `${event.clientX + scrollX}px`;
@@ -71,8 +78,11 @@
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
 <div class="w-full h-full p-16">
-
+    {#if !testMode}
+    <SuperDebug data={$form} />
+    {/if}
     <form method="POST" use:enhance>
+        <SlideToggle name="testMode" bind:checked={testMode}> {testMode ? "Test Mode" : "Dev Mode"} </SlideToggle>
         <Select label="Type" name="type" bind:value={$form.type} data={data.types}/>
         <Select label="Grade" name="type" bind:value={$form.grade} data={data.grades}/>
         <Select label="Topic" name="prompt" bind:value={$form.prompt} data={data.topics}/>
@@ -81,7 +91,7 @@
         
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- TODO: do something about a11y -->
-        <div class="passage p-8 w-full h-full text-black" on:click={hideContextMenu}>
+        <div class="passage p-8 text-black">
         {#if loading}
             <ProgressRadial />
         {:else}
@@ -91,7 +101,7 @@
                 {:else if word == '\t' }
                     &nbsp;&nbsp;&nbsp;&nbsp;
                 {:else}
-                    <span on:click|stopPropagation={handleWordClick} > 
+                    <span on:click={handleWordClick}> 
                         {word}
                     </span>
                     &nbsp;
@@ -103,30 +113,41 @@
 
 </div>
 
-<div id="context-menu" class="context-menu text-black">
-    <h3 class="p-3 bg-slate-300 text-center font-bold">{clickedWord}</h3>
-    <button on:click={() => handleSave()}>Save</button>
-    <button on:click={() => handleTranslate()}>Translate</button>
-    <button on:click={() => searchWeblio(clickedWord) }>Search on Weblio</button>
+
+<div id="context-menu" class="context-menu card variant-filled-secondary p-4">
+    <header class="card-header">
+        <h3 class="text-lime-500">{clickedWord} </h3>
+    </header>
+    <section class="p-4">
+        <button on:click={() => handleSave()}>Save</button>
+        <button on:click={() => handleTranslate()}>Translate</button>
+        <button on:click={() => searchWeblio(clickedWord) }>Search on Weblio</button>
+    </section>
+    <footer class="card-footer">
+        <button on:click={hideContextMenu} class="variant-filled-warning">Close</button>
+    </footer>
 </div>
+
+
 
 <style>
     .passage {
         cursor: pointer;
         background: white;
-        height: 50%;
-        width: 75%;
+        max-height: 50%;
     }
 
-    .passage span {
-        background-color: white;
+    .passage span,
+    .passage button {
+        background-color: transparent;
         display: inline-block;
         border-radius: 10px;
         transition: all 0.5s ease-in-out;
     }
 
-    .passage span:hover {
-        background-color: yellow;
+    .passage span:hover, 
+    .passage button:hover {
+        @apply bg-lime-500;
         transition: all 0.5s ease-in-out;
     }
 
@@ -138,13 +159,21 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .context-menu button {
-        display: block;
-        width: 100%;
-        padding: 8px 16px;
-        background: none;
-        border: none;
-        text-align: left;
+        @apply block w-full mb-2 btn variant-filled;
     }
+
+    .context-menu section button {
+        @apply variant-filled-primary;
+    }
+
+    .context-menu section button:hover {
+        @apply animate-pulse;
+    }
+
+    .context-menu footer button {
+        @apply variant-filled-error;
+    }
+
     .context-menu button:hover {
         background-color: #f1f1f1;
     }
