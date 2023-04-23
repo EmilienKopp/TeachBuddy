@@ -22,6 +22,10 @@
      transition-all duration-300 ease-linear;
   }
 
+  .menu-icon > i {
+    @apply  text-white transition-all duration-200 ease-linear;
+  }
+
   .menu-icon:hover > i {
     @apply  text-black transition-all duration-200 ease-linear;
   }

@@ -1,10 +1,35 @@
-<script>
+<script lang="ts">
     import '$lib/styles/global.css';
+    import { writable, type Writable} from 'svelte/store';
     import NavButton from '$lib/components/atoms/NavButton.svelte';
-    import Sidebar from '$lib/components/organisms/Sidebar.svelte';
+    import { AppShell, AppRail, AppRailTile } from '@skeletonlabs/skeleton';
+    import { Scaffolder } from '/src/config/scaffolder';
+    import { page } from '$app/stores';
+    
+
+    const storeValue: Writable<number> = writable(0);
+
 </script>
 
-<div class="flex flex-row" id="app">
+
+<AppShell>
+
+    <svelte:fragment slot="header">  </svelte:fragment>
+    <svelte:fragment slot="sidebarLeft"> 
+        <AppRail>
+            {#each Scaffolder.AppRail.Tiles as tile, index}
+                <AppRailTile    value={index} tag="a" href={tile.href} label={tile.label} 
+                                class="{tile.href === $page.url.pathname ? '!bg-primary-500' : ''}">
+                    <i class="bi {`bi-${tile.icon}`} text-3xl"></i>
+                </AppRailTile>
+            {/each}
+        </AppRail> 
+    </svelte:fragment>
+    <slot/>
+
+</AppShell>
+
+<!-- <div class="flex flex-row" id="app">
     <Sidebar>
         <div>
             <NavButton>
@@ -17,7 +42,7 @@
             </NavButton>
         </div>
         <div>
-            <NavButton href="/app/generator">
+            <NavButton>
                 <i class="bi bi-pen-fill"></i>
             </NavButton>
         </div>
@@ -26,4 +51,4 @@
     <h2 class="bg-darkish w-full text-white text-2xl p-5 border-b border-white"> Welcome ! </h2>
         <slot/>
     </main>
-</div>
+</div> -->

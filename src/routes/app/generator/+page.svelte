@@ -7,6 +7,7 @@
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
     import Select from "$lib/components/atoms/Select.svelte";
 	import TextInput from "$lib/components/molecules/inputs/TextInput.svelte";
+    import { searchWeblio } from '$lib/services/weblio';
     import { boolean } from 'zod';
 
     export let data: PageData;
@@ -80,7 +81,7 @@
         
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- TODO: do something about a11y -->
-        <div class="passage p-8 w-full h-full" on:click={hideContextMenu}>
+        <div class="passage p-8 w-full h-full text-black" on:click={hideContextMenu}>
         {#if loading}
             <ProgressRadial />
         {:else}
@@ -102,10 +103,11 @@
 
 </div>
 
-<div id="context-menu" class="context-menu">
+<div id="context-menu" class="context-menu text-black">
     <h3 class="p-3 bg-slate-300 text-center font-bold">{clickedWord}</h3>
     <button on:click={() => handleSave()}>Save</button>
     <button on:click={() => handleTranslate()}>Translate</button>
+    <button on:click={() => searchWeblio(clickedWord) }>Search on Weblio</button>
 </div>
 
 <style>
