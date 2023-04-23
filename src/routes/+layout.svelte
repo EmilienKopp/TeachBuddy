@@ -8,5 +8,3 @@
 </script>
 
 <slot />
-
-<slot/>
