@@ -119,12 +119,12 @@
         <h3 class="text-lime-500">{clickedWord} </h3>
     </header>
     <section class="p-4">
-        <button on:click={() => handleSave()}>Save</button>
-        <button on:click={() => handleTranslate()}>Translate</button>
-        <button on:click={() => searchWeblio(clickedWord) }>Search on Weblio</button>
+        <button on:click={() => handleSave()} class="btn variant-filled-primary">Save</button>
+        <button on:click={() => handleTranslate()} class="btn variant-filled-primary">Translate</button>
+        <button on:click={() => searchWeblio(clickedWord) } class="btn variant-filled-primary">Search on Weblio</button>
     </section>
     <footer class="card-footer">
-        <button on:click={hideContextMenu} class="variant-filled-warning">Close</button>
+        <button on:click={hideContextMenu} class="btn variant-filled-error">Close</button>
     </footer>
 </div>
 
@@ -159,22 +159,7 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .context-menu button {
-        @apply block w-full mb-2 btn variant-filled;
+        @apply block w-full mb-2;
     }
 
-    .context-menu section button {
-        @apply variant-filled-primary;
-    }
-
-    .context-menu section button:hover {
-        @apply animate-pulse;
-    }
-
-    .context-menu footer button {
-        @apply variant-filled-error;
-    }
-
-    .context-menu button:hover {
-        background-color: #f1f1f1;
-    }
 </style>
