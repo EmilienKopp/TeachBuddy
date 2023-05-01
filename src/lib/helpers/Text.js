@@ -36,3 +36,20 @@ export function strLimitByWords(str, limit, end = '...') {
     const words = str.split(' ');
     return words.length > limit ? words.slice(0, limit).join(' ') + end : str;
 }
+
+export function XSVto2dArray(content, delimiter = ',', noBlankRows = true) {
+    return content?.split('\r\n')
+            .map((line) => line.split(delimiter))
+            .filter((row) => row.some((cell) => (cell.trim() != '') || !noBlankRows));
+}
+
+export function XSVtoObjectArray(content, delimiter = ',', noBlankRows = true) {
+    const [headers, ...rows] = XSVto2dArray(content, delimiter, noBlankRows);
+    return rows.map((row) => {
+        const obj = {};
+        row.forEach((cell, i) => {
+            obj[headers[i]] = cell;
+        });
+        return obj;
+    });
+}

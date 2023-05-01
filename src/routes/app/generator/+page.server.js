@@ -74,13 +74,14 @@ export const actions = {
             return fail(401, {form});
         }
 
-        const topic = topics[form.data.prompt].option;
+        const topic = topics.find( elem => elem.id = form.data.prompt).option;
+        const contentType = types.find( elem => elem.id = form.data.type).option;
+        const grade = grades.find( elem => elem.id = form.data.grade).option;
         
-        const content = `Write a ${types[form.data.type].option} understandable by a ${grades[form.data.grade].option} grade elementary school student about the theme of: ${topic}.`;
-
+        const content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
+        console.log('PR00MPT:',content);
+        
         if( form.data.testMode ) {
-            console.log('PR00MPT:',content);
-
             const completion = await openAI.createChatCompletion({
                 model: 'gpt-3.5-turbo',
                 messages: [

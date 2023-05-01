@@ -31,7 +31,10 @@ export const FORMS = {
     Textareas: {},
     Checkboxes: {},
     Radios: {},
-    File: {},
+    File: {
+        type: 'file',
+        label: 'File',
+    },
     Links: {
         forgotPassword: {
             label: 'Forgot your password?',

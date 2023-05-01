@@ -78,11 +78,11 @@
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
 <div class="w-full h-full p-16">
-    {#if !testMode}
+    {#if !$form.testMode}
     <SuperDebug data={$form} />
     {/if}
     <form method="POST" use:enhance>
-        <SlideToggle name="testMode" bind:checked={testMode}> {testMode ? "Test Mode" : "Dev Mode"} </SlideToggle>
+        <SlideToggle name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </SlideToggle>
         <Select label="Type" name="type" bind:value={$form.type} data={data.types}/>
         <Select label="Grade" name="type" bind:value={$form.grade} data={data.grades}/>
         <Select label="Topic" name="prompt" bind:value={$form.prompt} data={data.topics}/>

@@ -41,5 +41,15 @@ export const Scaffolder = {
             },
         ],
     },
+    OptionsNav: [
+        {
+            name: 'General',
+            icon: 'gear'
+        },
+        {
+            name: 'Vocab Lists',
+            icon: 'book'
+        }
+    ]
 
 };

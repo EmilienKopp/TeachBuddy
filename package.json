@@ -19,6 +19,7 @@
 		"@tailwindcss/forms": "^0.5.3",
 		"@tailwindcss/typography": "^0.5.9",
 		"autoprefixer": "^10.4.14",
+		"editorjs-table": "^1.4.10",
 		"openai": "^3.2.1",
 		"postcss": "^8.4.23",
 		"svelte": "^3.54.0",
@@ -33,6 +34,9 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@floating-ui/dom": "^1.2.6"
+		"@editorjs/editorjs": "^2.26.5",
+		"@floating-ui/dom": "^1.2.6",
+		"@supabase/supabase-js": "^2.21.0",
+		"handsontable": "^12.3.3"
 	}
 }
