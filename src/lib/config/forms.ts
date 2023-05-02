@@ -26,6 +26,10 @@ export const FORMS = {
             type: 'submit',
             label: 'Login',
         },
+        register: {
+            type: 'submit',
+            label: 'Register',
+        },
     },
     Selects: {},
     Textareas: {},
@@ -36,6 +40,10 @@ export const FORMS = {
         label: 'File',
     },
     Links: {
+        createAccount: {
+            label: 'Create an account',
+            href: '/auth/register',
+        },
         forgotPassword: {
             label: 'Forgot your password?',
             href: '/forgot-password',

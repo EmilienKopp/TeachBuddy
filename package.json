@@ -36,6 +36,7 @@
 	"dependencies": {
 		"@editorjs/editorjs": "^2.26.5",
 		"@floating-ui/dom": "^1.2.6",
+		"@supabase/auth-helpers-sveltekit": "^0.9.4",
 		"@supabase/supabase-js": "^2.21.0",
 		"handsontable": "^12.3.3"
 	}

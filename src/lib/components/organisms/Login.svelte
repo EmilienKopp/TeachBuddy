@@ -46,6 +46,7 @@
                                 class="font-medium text-indigo-600 hover:text-indigo-500"
                                 > {FORMS.Links.forgotPassword.label}</a
                             >
+                            
                         </div>
                 </div>
 
@@ -53,6 +54,11 @@
                     <Button type="submit" class="btn variant-filled">
                         {FORMS.Buttons.login.label}
                     </Button>
+                    <a
+                                href={FORMS.Links.createAccount.href}
+                                class="font-medium text-indigo-600 hover:text-indigo-500"
+                                > {FORMS.Links.createAccount.label}</a
+                            >
                 </div>
             </form>
         </div>

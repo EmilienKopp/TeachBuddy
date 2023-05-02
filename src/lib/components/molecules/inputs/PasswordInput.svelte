@@ -12,6 +12,7 @@
 
 <div>
     <Input  type="password"
+            bind:value={value}
             {label}
             {name}
             {required} 

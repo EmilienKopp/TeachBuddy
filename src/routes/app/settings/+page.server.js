@@ -59,7 +59,7 @@ export const actions = {
 
         console.log(form.data.columnHeaders, listData);
 
-        const {data, error} = await supabase.from('Vocabulary').insert(listData);
+        const {data, error} = await supabase.from('vocabulary').insert(listData);
 
         console.log(data, error);
 

@@ -12,6 +12,7 @@
 
 <div>
     <Input  type="email" 
+            bind:value={value}
             {label}
             {name}
             {required} 
