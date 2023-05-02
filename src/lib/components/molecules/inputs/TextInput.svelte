@@ -2,7 +2,7 @@
     import type { InputConstraint } from "sveltekit-superforms/index";
     import Input from "../../atoms/Input.svelte";
 
-    export let value: string;
+    export let value: string | undefined;
     export let label: string | undefined = undefined;
     export let errors: string[] | undefined = undefined;
     export let constraints: InputConstraint | undefined = undefined;

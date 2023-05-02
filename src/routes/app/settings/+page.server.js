@@ -1,38 +1,16 @@
 // @ts-nocheck
 
-import { XSVto2dArray, XSVtoObjectArray } from '$lib/helpers/Text';
-
 import { createClient } from '@supabase/supabase-js';
 import { fail } from '@sveltejs/kit';
 import { mapHeaders } from '$lib/helpers/Arrays';
 import { superValidate } from 'sveltekit-superforms/server';
-import { z } from 'zod';
+import { vocabSettingsSchema } from '$lib/config/schemas';
 
 const supabase = createClient(import.meta.env.VITE_SUPABASE_ENDPOINT, import.meta.env.VITE_SUPABASE_KEY);
 
-const fileSchema = z.custom(
-    (value) => value instanceof File,
-    { message: 'Please upload a file.' },
-);
-
-const rowSchema = z.object({
-    index: z.number().int(),
-    column: z.string(),
-});
-
-const mappingSchema = z.array(rowSchema);
-
-const schema = z.object({
-    gradeVocabList: fileSchema.optional(),
-    frequencyVocabList: fileSchema.optional(),
-    sentencesList: fileSchema.optional(),
-    columnHeaders: z.string().array(),
-    vocabData: z.string(),
-});
-
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
-    const form = await superValidate(schema);
+    const form = await superValidate(vocabSettingsSchema);
     let { data: Vocabulary, error } = await supabase.from('Vocabulary').select('*');
 
     const vocabColumns = Vocabulary ? Object.keys(Vocabulary[0]) : [];

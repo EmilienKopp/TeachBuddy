@@ -27,7 +27,7 @@
         body: [],
     };
 
-    const { form, enhance, reset, errors, constraints } = superForm(data.form, {
+    const { form, enhance, reset, errors, constraints, validate } = superForm(data.form, {
         dataType: 'json',
         applyAction: true,
         resetForm: false,

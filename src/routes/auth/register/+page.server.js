@@ -1,44 +1,46 @@
 // @ts-nocheck
 
-import { XSVto2dArray, XSVtoObjectArray } from '$lib/helpers/Text';
-
-import { createClient } from '@supabase/supabase-js';
 import { fail } from '@sveltejs/kit';
-import { mapHeaders } from '$lib/helpers/Arrays';
+import { redirect } from '@sveltejs/kit';
+import { registerSchema } from '$lib/config/schemas';
 import { superValidate } from 'sveltekit-superforms/server';
-import { z } from 'zod';
-
-const schema = z.object({
-    username: z.string().min(3).max(20),
-    user_number: z.string().min(3).max(20).optional(),
-    password: z.string().min(4).max(100),
-    password_confirm: z.string().min(4).max(100),
-    email: z.string().email(),
-});
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
-    const form = await superValidate(schema);
+    const form = await superValidate(registerSchema);
     return { form };
 }
 
 export const actions = {
     default: async ({ request, locals: {supabase,getSession} }) => {
         const session = await getSession();
-        console.log(session);
         const formData = await request.formData();
-        const form = await superValidate(formData, schema);
+        const form = await superValidate(formData, registerSchema);
 
         if (!form.valid) {
-            console.log(form);
             return fail(400, { form });
         }
 
-        const { data, error } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
             email: form.data.email,
             password: form.data.password,
+            options: {
+                data: {
+                    username: form.data.username,
+                    user_number: form.data.user_number,
+                },
+                emailRedirectTo: '/app/dashboard'
+            }
         });
-        console.log(data, error);
+
+        console.log(signUpData, signUpError)
+
+        if(signUpError) {
+            return fail(400, { form });
+        } else {
+            throw redirect(300,'/app/account');
+        }
+        
 
         return { form };
     },
