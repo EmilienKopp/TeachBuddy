@@ -28,3 +28,7 @@ export function toSelectOptions(arr, valueKey, labelKey) {
     }
   });
 }
+
+export function random(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
