@@ -15,6 +15,16 @@
   font-family: circular,"Helvetica Neue",Helvetica,Arial,"sans-serif";
 }
 
+@font-face {
+  font-family: 'Raleway';
+  src: url('/fonts/Raleway-VariableFont_wght.ttf');
+}
+
+@font-face {
+  font-family: 'GloriaHallelujah';
+  src: url('/fonts/GloriaHallelujah-Regular.ttf');
+}
+
 @layer components {
   .menu-icon {
     @apply  relative flex  justify-center items-center text-2xl font-bold h-12 w-12 mx-2 shadow-sm

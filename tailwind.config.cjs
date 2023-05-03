@@ -10,6 +10,10 @@ module.exports = {
 			colors: {
 				darkish: '#282828',
 			  },
+			fontFamily: {
+				raleway: ['Raleway', 'sans-serif'],
+				gloria: ['Gloria Hallelujah', 'cursive'],
+			},
 		},
 	},
 	plugins: [
