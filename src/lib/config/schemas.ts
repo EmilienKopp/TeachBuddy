@@ -13,6 +13,14 @@ export const registerSchema = z.object({
 });
 
 /**
+ * Schema for the Login form.
+ */
+export const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(4).max(100),
+});
+
+/**
  * Schema for file upload.
  */
 const fileSchema = z.custom(

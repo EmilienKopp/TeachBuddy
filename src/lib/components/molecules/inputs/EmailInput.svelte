@@ -2,7 +2,7 @@
     import {FORMS} from "$lib/config/forms";
     import Input from "../../atoms/Input.svelte";
 
-    export let errorMessage: string;
+    export let errorMessage: string | undefined;
     export let name: string;
     export let required: boolean = true;
     export let label: string = FORMS.Inputs.email.label;
