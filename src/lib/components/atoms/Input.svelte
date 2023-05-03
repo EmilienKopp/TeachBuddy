@@ -10,7 +10,7 @@
 
 <div class="mt-1">
     {#if label != ''}
-    <label for={name} class="label" >
+    <label for={name} >
         {label}
     </label>
     {/if}

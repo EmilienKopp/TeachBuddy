@@ -9,15 +9,16 @@
     export let value: number | undefined = undefined;
     export let label: string | undefined = undefined;
     export let name: string;
+    export let extraClass: string | string[] | undefined = undefined;
 </script>
 
-<div class="my-2">
+<div class="my-2 flex flex-col max-w-fit">
     {#if label}
     <label for={name}>
         {label}
     </label>
     {/if}
-    <select class="select text-slate-100" {name} bind:value={value} {...$$restProps}>
+    <select class="bg-darkish rounded-3xl text-slate-100 w-[25ch]  {extraClass}" {name} bind:value={value} {...$$restProps}>
         {#if data}
             {#each data as item}
                 {#if !item.value || !item.label}
