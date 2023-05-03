@@ -4,6 +4,7 @@ import { Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai';
 
 import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
+import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -28,38 +29,37 @@ const config = new Configuration({
 
 const openAI = new OpenAIApi(config);
 
-const grades = [
-    { id: 1, option: '1st' },
-    { id: 2, option: '2nd' },
-    { id: 3, option: '3rd' },
-];
-
 const types = [
-    { id: 1, option: 'Short Story' },
-    { id: 2, option: 'Essay' },
-    { id: 3, option: 'Conversation between two people' },
+    { value: 1, label: 'Short Story' },
+    { value: 2, label: 'Essay' },
+    { value: 3, label: 'Conversation between two people' },
 ];
 
 const topics = [
-    { id: 1, option: 'Friendship' },
-    { id: 2, option: 'Family' },
-    { id: 3, option: 'School' },
-    { id: 4, option: 'Hobbies' },
-    { id: 5, option: 'Sports' },
-    { id: 6, option: 'Food' },
-    { id: 7, option: 'Animals' },
-    { id: 8, option: "Tom's summer vacation" },
-    { id: 9, option: 'The best day of my life' },
-    { id: 10, option: 'My favorite place' },
-    { id: 11, option: 'My favorite food' },
-    { id: 12, option: 'Why do we study English?' },
-    { id: 13, option: 'Introducing Japan to my foreign friends' },
+    { value: 1, label: 'Friendship' },
+    { value: 2, label: 'Family' },
+    { value: 3, label: 'School' },
+    { value: 4, label: 'Hobbies' },
+    { value: 5, label: 'Sports' },
+    { value: 6, label: 'Food' },
+    { value: 7, label: 'Animals' },
+    { value: 8, label: "Tom's summer vacation" },
+    { value: 9, label: 'The best day of my life' },
+    { value: 10, label: 'My favorite place' },
+    { value: 11, label: 'My favorite food' },
+    { value: 12, label: 'Why do we study English?' },
+    { value: 13, label: 'Introducing Japan to my foreign friends' },
 ]
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load() {
+export async function load({locals: { supabase, getSession}}) {
     
     const form = await superValidate(schema);
+
+    let { data: grades, error } = await supabase.from('grades').select('*');
+    grades = toSelectOptions(grades, 'id', 'name')
+    console.log(grades);
+
     return { form, types, grades, topics };
 }
 
