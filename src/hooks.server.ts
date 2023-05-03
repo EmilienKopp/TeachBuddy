@@ -7,6 +7,7 @@ import {
 
 import type { Handle } from '@sveltejs/kit';
 import { createSupabaseServerClient } from '@supabase/auth-helpers-sveltekit';
+import { redirect } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
     event.locals.supabase = createSupabaseServerClient({
@@ -26,7 +27,18 @@ export const handle: Handle = async ({ event, resolve }) => {
       } = await event.locals.supabase.auth.getSession();
       return session;
     };
-  
+    
+    // protect requests to all routes that start with /protected-routes
+    if (event.url.pathname.startsWith('/app')) {
+      const session = await event.locals.getSession();
+      if (!session) {
+        // the user is not signed in
+        throw redirect(303, '/auth/login');
+      }
+    }
+
+
+
     return resolve(event, {
       /**
        * There´s an issue with `filterSerializedResponseHeaders` not working when using `sequence`
