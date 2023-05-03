@@ -3,21 +3,15 @@
     import { Button, ButtonGroup, Toggle } from 'flowbite-svelte';
     import { fly, fade } from "svelte/transition";
   
-    let cards: any[] = [
-      {
-        front: "front 1 abcdefghijklmonpasdasdfasgagf",
-        back: "back 1",
-      },
-      {
-        front: "front 2",
-        back: "back 2",
-      },
-      {
-        front: "front 3",
-        back: "back 3",
-      },
-    ];
-  
+    export let cardsData;
+    
+    let cards = cardsData.map((card: any) => {
+      return {
+        front: card.vocabulary.en_word,
+        back: `${card.vocabulary.jp_word ?? ''} \n ${card.custom_translation ?? ''}`,
+      };
+    });
+
     let currentIndex = 0;
     let isFlipped = false;
     let isBackFirst = false;
