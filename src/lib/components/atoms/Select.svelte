@@ -11,7 +11,7 @@
     export let name: string;
 </script>
 
-<div>
+<div class="my-2">
     {#if label}
     <label for={name}>
         {label}
@@ -20,10 +20,10 @@
     <select class="select text-slate-100" {name} bind:value={value} {...$$restProps}>
         {#if data}
             {#each data as item}
-                {#if !item.id || !item.option}
+                {#if !item.value || !item.label}
                     <option value={item}>{item}</option>
                 {:else}
-                    <option value={item.id}>{item.option}</option>
+                    <option value={item.value}>{item.label}</option>
                 {/if}
             {/each}
         {:else}

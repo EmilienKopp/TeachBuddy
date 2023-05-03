@@ -18,3 +18,13 @@ export function mapHeaders(headers,arr) {
     return obj;
   });
 }
+
+export function toSelectOptions(arr, valueKey, labelKey) {
+  console.log('arr', arr);
+  return arr.map(el => {
+    return {
+      value: el[valueKey],
+      label: el[labelKey]
+    }
+  });
+}
