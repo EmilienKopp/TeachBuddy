@@ -20,7 +20,6 @@ export function mapHeaders(headers,arr) {
 }
 
 export function toSelectOptions(arr, valueKey, labelKey) {
-  console.log('arr', arr);
   return arr.map(el => {
     return {
       value: el[valueKey],
