@@ -24,8 +24,9 @@
                     <i class="bi {`bi-${tile.icon}`} text-3xl"></i>
                 </AppRailTile>
             {/each}
-            <AppRailTile slot="trail">
-                <img src="/src/lib/images/logo_home.png" alt="Logo" class="w-10 h-10"/>
+
+            <AppRailTile slot="trail" label="Sign Out" on:click={ () => {$page.data.supabase.auth.signOut()}}>
+                <i class="bi {`bi-box-arrow-left`} text-3xl"></i>
             </AppRailTile>
         </AppRail> 
     </svelte:fragment>
