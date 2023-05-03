@@ -1,9 +1,9 @@
 // @ts-nocheck
 
 import { Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai';
+import { message, superValidate } from 'sveltekit-superforms/server';
 
 import { fail } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms/server';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
@@ -13,6 +13,8 @@ const schema = z.object({
     grade: z.number().int().default(1),
     message: z.string().optional(),
     testMode: z.boolean().default(false),
+    vocabulary_id: z.number().int().optional(),
+    custom_translation: z.string().optional(),
 });
 
 
@@ -64,10 +66,8 @@ export async function load({locals: { supabase, getSession}}) {
 }
 
 export const actions = {
-    default: async ({ request }) => {
+    getPassage: async ({ request }) => {
         const form = await superValidate(request, schema);
-        console.log('POST');
-        console.log(form.data);
 
         // Validation
         if(!form.valid) {
@@ -76,9 +76,7 @@ export const actions = {
 
         const topic = topics.find( elem => elem.id = form.data.prompt).option;
         const contentType = types.find( elem => elem.id = form.data.type).option;
-        
         const content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
-        console.log('PR00MPT:',content);
         
         if( form.data.testMode ) {
             const completion = await openAI.createChatCompletion({
@@ -90,16 +88,13 @@ export const actions = {
                     }
                 ],
             });
-            
+        
             const data = completion.data;
-            console.log(content);
-            console.log(data.choices[0].message);
             form.data.message = data.choices[0].message.content;
-
         
         } else {
             // sleep for 3s
-            await new Promise(r => setTimeout(r, 3000));
+            await new Promise(r => setTimeout(r, 1000));
 
             form.data.message = `        Having friends is really important. Friends are people who are nice to us and make us feel happy. They like to play with us, share things with us, and help us when we need it. 
     
@@ -112,8 +107,40 @@ export const actions = {
             So remember, friends help us when we need it, make life more fun, and can make us feel a lot better when we’re feeling down. It’s important to be a good friend and to cherish the friendships we have.`;
         }
 
-        console.log(form);
+        return message(form,'SUCCESS!')
+    },
+    storeUserVocab: async ({ request, locals: { supabase, getSession } }) => {
+        //TODO: exclude passage from the form input before posting
+        const formData = await request.formData();
 
-        return { form };
-    }
+        const storeUserVocabSchema = z.object({
+            vocabulary_id: z.number().int().optional(),
+            custom_translation: z.string().optional(),
+        });
+            
+        const form = await superValidate(formData, storeUserVocabSchema);
+
+        if(!form.valid) {
+            return fail(401, {form});
+        }
+
+        const { user } = await getSession();
+        console.log(user);
+
+        const { vocabulary_id, custom_translation } = form.data;
+
+        console.log(user.id,vocabulary_id,custom_translation);
+
+        const { data: insertedData, error } = await supabase.from('user_vocabulary').insert([
+            { user_id: user.id, vocabulary_id, custom_translation }
+        ]).select();
+
+        console.log('Inserting:', insertedData, error);
+
+        if(error) {
+            return message(form,'保存できませんでした 😬')
+        }
+        
+        return message(form, '保存しました 🎉');
+    },
 }

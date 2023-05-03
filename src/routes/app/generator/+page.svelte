@@ -1,23 +1,25 @@
 <script lang="ts">
     import type { PageData } from './$types';
-    import { removePunctuation, splitWords, extractPunctuationAndPad } from "$lib/helpers/Text";
+    import { removePunctuation, splitWords } from "$lib/helpers/Text";
     import { superForm } from 'sveltekit-superforms/client';
-    import { Button, Spinner, Toggle, Popover } from 'flowbite-svelte';
+    import { Button, Spinner, Toggle, Popover, Modal, Radio, Toast } from 'flowbite-svelte';
     import Select from "$lib/components/atoms/Select.svelte";
     import { searchWeblio } from '$lib/services/weblio';
-    import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
-    import { slide } from 'svelte/transition';
-    import type { PopupSettings } from '@skeletonlabs/skeleton';
+    import { slide, fade } from 'svelte/transition';
     import { random } from '$lib/helpers/Arrays';
-    import { sleep } from '$lib/helpers/Utils';
+    import TextInput from '$lib/components/molecules/inputs/TextInput.svelte';
 
     export let data: PageData;
     
     let loading: boolean = false;
     let clickedWord: string = "";
+    let dbMatchWord: any;
+    let wordMatchesList: any;
     let randomColor: any = random(["green","blue","red","yellow","purple","pink"]);
+    let translationModal = false;
+    let customizeTranslation = false;
 
-    const { form, enhance, reset, errors, constraints } = superForm(data.form, {
+    const { form, enhance, reset, errors, constraints, message } = superForm(data.form, {
         dataType: 'json',
         applyAction: true,
         resetForm: false,
@@ -28,21 +30,26 @@
     let splitPassage: Array<string> = [];
 
     async function lookupVocab(word: string) {
-        return await data.supabase.from('vocabulary').select('*').textSearch('en_word',word);
+        const {data: exactMatch, error } = await data.supabase.from('vocabulary').select('*').eq('en_word',word).single();
+        wordMatchesList = (await data.supabase.from('vocabulary').select('*').textSearch('en_word',word)).data;
+
+        dbMatchWord = exactMatch;
+        if( !wordMatchesList.find((item: any) => item.id == dbMatchWord?.id) ) {
+            wordMatchesList.push(dbMatchWord);
+        }
+
+        return wordMatchesList;
     }
 
-    function handleSave() {
-        console.log(`Save: ${clickedWord}`);
-
-        // Vocabulary.createUserVocabulary(clickedWord)
-        //           .then(response => console.log(response));
+    async function launchSaveProcess(word: string) {
+        translationModal = true;
+        clickedWord = word;
+        $form.vocabulary_id = dbMatchWord?.id;
     }
 
-    async function handleTranslate() {
-        console.log(`Translate: ${clickedWord}`);
-        // const response = deepL(clickedWord);
-        // console.log(await response);
-
+    async function handleTranslationSubmit() {
+        translationModal = false;
+        $form.custom_translation = '';
     }
 
     function handleSubmit() {
@@ -51,19 +58,25 @@
 
     $: splitPassage = splitWords($form.message);
 
+    $: console.log(data, $message);
+    
 </script>
+
+{#if $message}
+<Toast transition={fade} position="top-right" divClass="w-full max-w-[250px] p-2 mt-12">
+    {$message}
+</Toast>
+{/if}
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
 <div class="w-full h-full md:p-16 px-2 pt-8">
-    <form method="POST" use:enhance>
+    <form method="POST" action="?/getPassage" use:enhance>
         <div class="md:grid md:grid-cols-3 flex flex-col">
             <Select label="Type" name="type" bind:value={$form.type} data={data.types}/>
             <Select label="Grade" name="type" bind:value={$form.grade} data={data.grades}/>
             <Select label="Topic" name="prompt" bind:value={$form.prompt} data={data.topics} extraClass="col-span-3"/>
             <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
         </div>
-        
-        
 
         <Button pill={true} type="submit" color="tealToLime" outline gradient class="m-4" on:click={handleSubmit}> 
             <span class="text-3xl">🖋️</span> GIVE ME SOME 長文！！
@@ -85,13 +98,17 @@
                     <button type="button" id="word-{index}"> 
                         {word}
                     </button>
-                    <Popover trigger="click" triggeredBy="[id^='word-{index}']" placement="top" transition={slide} class="p-2">
-                        <span class="text-xl font-semibold text-white">{removePunctuation(word)}</span>
+                    <Popover trigger="hover" triggeredBy="[id='word-{index}']" placement="top" arrow={false} class="p-2">
+                        <span class="text-xl pb-3 font-semibold text-white">{removePunctuation(word)}</span> 
+
+                        <button type="button" on:click={() => { launchSaveProcess(word) }} class="btn variant-filled-primary">
+                            <span class="text-xl">💾</span>
+                        </button>
                         <ol>
                             {#await lookupVocab(word)}
                                 <Spinner size="5" color={randomColor} />
-                            {:then result}
-                                {#each result.data as item}
+                            {:then lookupData}
+                                {#each lookupData as item}
                                     <li>
                                         {item.en_word} 
                                         {item.jp_word ? `➡ ${item.jp_word}` : ''}
@@ -101,16 +118,11 @@
                                 <li>error: {error.message}</li>
                             {/await}
                         </ol>
-                        <div class="pt-2">
-                            <button type="button" on:click={() => handleSave()} class="btn variant-filled-primary">
-                                <span class="text-3xl">💾</span>
-                            </button>
-                            <button type="button" on:click={() => lookupVocab(word)} class="btn variant-filled-primary">
-                                <span class="text-3xl">🔃</span>
-                            </button>
+                        <div class="pt-2 flex justify-center">
                             <button type="button" on:click={() => searchWeblio(word) } class="btn variant-filled-primary">
                                 <span class="text-3xl">🔍</span>
                             </button>
+
                         </div>
                     </Popover>
                     &nbsp;
@@ -118,9 +130,37 @@
             {/each}
         </div>
         {/if}
+
+
+
+        <Modal bind:open={translationModal} size="xs" autoclose={false} class="w-full">
+            英単語の翻訳を...
+            <Toggle color={randomColor} class="mt-2" name="customizeTranslation" bind:checked={customizeTranslation}> 入力モード {customizeTranslation ? 'ON' : 'OFF'} </Toggle>
+            {#if customizeTranslation}
+            <div class="mt-2 flex items-center">
+                <TextInput label={`${clickedWord}の翻訳`} name="custom_translation" placeholder="翻訳を自分で入力" 
+                            bind:value={$form.custom_translation} disabled={!customizeTranslation}/>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+            </div>
+            {:else}
+            <div class="flex flex-col gap-2">
+
+                {#each wordMatchesList.filter((el) => el.jp_word) as word}
+                    <Radio name="vocabulary_id" bind:group={$form.vocabulary_id} class="w-full p-4" value={parseInt(word.id)}>
+                        {`${word.en_word} ➡ ${word.jp_word}`}
+                    </Radio>
+                {/each}
+            </div>
+            {/if}
+            <Button formaction="?/storeUserVocab" pill={true} type="submit" color="tealToLime" gradient class="m-4 col-span-2" on:click={handleTranslationSubmit}> 
+                {customizeTranslation ? '入力' : '選択'}した翻訳で保存
+            </Button>
+        </Modal>
     </form>
 
 </div>
+
+
 
 <style>
     .passage {
