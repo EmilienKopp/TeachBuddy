@@ -11,8 +11,8 @@
 </script>
 
 <div>
-    <label for={name} class="my-2">{label}</label>
-    <input type="file" bind:value={value} {...$$restProps} {name} on:change={handleChange}/>
+    <label for={name} class="label">{label}</label>
+    <input type="file" class="input" bind:value={value} {...$$restProps} {name} on:change={handleChange}/>
     {#if errors}
         <p class="mt-2 text-sm text-red-600">{errors}</p>
     {/if}

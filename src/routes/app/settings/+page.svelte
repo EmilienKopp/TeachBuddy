@@ -80,23 +80,23 @@
 <div id="settings" class="w-full h-full p-16">
 
     <h1 class="mb-6">Options</h1>
-    <SuperDebug data={$form}  />
+
     <form method="POST" use:enhance>
         <input type="hidden" bind:value={$form.vocabData} name="vocabData"/>
         <div class="grid grid-cols-3">
             <!-- Inputs -->
-            <div>
-                <label for="gradeVocabList">Update Grade Vocab List</label>
-                <input name="gradeVocabList"
+            <div class="mx-2">
+                <label for="gradeVocabList" class="label">Update Grade Vocab List</label>
+                <input name="gradeVocabList" class="input"
                     type="file"
                     accept=".csv,.tsv"
 
                     on:change="{handleFileChange}" />
             </div>
 
-            <div>
-                <label for="frequencyVocabList">Update Frequency Vocab List</label>
-                <input name="frequencyVocabList"
+            <div class="mx-2">
+                <label for="frequencyVocabList" class="label">Update Frequency Vocab List</label>
+                <input name="frequencyVocabList" class="input"
                     type="file"
                     accept=".csv,.tsv"
                     bind:this="{fileInput}"
@@ -104,12 +104,11 @@
                     on:change="{handleFileChange}" />
             </div>
 
-            <div>
-                <label for="sentencesList">Update Sentences</label>
-                <input name="sentencesList"
+            <div class="mx-2">
+                <label for="sentencesList" class="label">Update Sentences</label>
+                <input name="sentencesList" class="input"
                     type="file"
                     accept=".csv,.tsv"
-
                     on:change="{handleFileChange}" />
             </div>
 
