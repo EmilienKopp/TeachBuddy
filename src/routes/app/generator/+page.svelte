@@ -2,26 +2,20 @@
     import type { PageData } from './$types';
     import { removePunctuation, splitWords, extractPunctuationAndPad } from "$lib/helpers/Text";
     import { superForm } from 'sveltekit-superforms/client';
-    import { ProgressRadial } from '@skeletonlabs/skeleton';
-    import { SlideToggle } from '@skeletonlabs/skeleton';
+    import { Button, Spinner, Toggle, Popover } from 'flowbite-svelte';
     import Select from "$lib/components/atoms/Select.svelte";
     import { searchWeblio } from '$lib/services/weblio';
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
-    import { popup } from '@skeletonlabs/skeleton';
+    import { slide } from 'svelte/transition';
     import type { PopupSettings } from '@skeletonlabs/skeleton';
+    import { random } from '$lib/helpers/Arrays';
+    import { sleep } from '$lib/helpers/Utils';
 
     export let data: PageData;
     
     let loading: boolean = false;
-    let testMode: boolean = false;
     let clickedWord: string = "";
-
-    let popupSettings: PopupSettings = {
-        event: 'click',
-        target: clickedWord + 'Popup',
-        closeQuery: '',
-        state: (e) => console.log(e),
-    }
+    let randomColor: any = random(["green","blue","red","yellow","purple","pink"]);
 
     const { form, enhance, reset, errors, constraints } = superForm(data.form, {
         dataType: 'json',
@@ -33,23 +27,8 @@
 
     let splitPassage: Array<string> = [];
 
-    function handleWordClick(event) {
-        hideContextMenu();
-        const scrollX = window.scrollX || window.pageXOffset;
-        const scrollY = window.scrollY || window.pageYOffset;
-        clickedWord = removePunctuation(event.target.textContent);
-        const menu = document.getElementById("context-menu");
-        if(!menu) return;
-        menu.style.display = "block";
-        menu.style.left = `${event.clientX + scrollX}px`;
-        menu.style.top = `${event.clientY + scrollY}px`;
-        event.preventDefault();
-    }
-
-    function hideContextMenu() {
-        const menu = document.getElementById("context-menu");
-        if(!menu) return;
-        menu.style.display = "none";
+    async function lookupVocab(word: string) {
+        return await data.supabase.from('vocabulary').select('*').textSearch('en_word',word);
     }
 
     function handleSave() {
@@ -57,15 +36,13 @@
 
         // Vocabulary.createUserVocabulary(clickedWord)
         //           .then(response => console.log(response));
-
-        hideContextMenu();
     }
 
     async function handleTranslate() {
         console.log(`Translate: ${clickedWord}`);
         // const response = deepL(clickedWord);
         // console.log(await response);
-        hideContextMenu();
+
     }
 
     function handleSubmit() {
@@ -77,58 +54,73 @@
 </script>
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
-<div class="w-full h-full p-16">
-    {#if !$form.testMode}
-    <SuperDebug data={$form} />
-    {/if}
+<div class="w-full h-full md:p-16 px-2 pt-8">
     <form method="POST" use:enhance>
-        <SlideToggle name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </SlideToggle>
-        <Select label="Type" name="type" bind:value={$form.type} data={data.types}/>
-        <Select label="Grade" name="type" bind:value={$form.grade} data={data.grades}/>
-        <Select label="Topic" name="prompt" bind:value={$form.prompt} data={data.topics}/>
+        <div class="md:grid md:grid-cols-3 flex flex-col">
+            <Select label="Type" name="type" bind:value={$form.type} data={data.types}/>
+            <Select label="Grade" name="type" bind:value={$form.grade} data={data.grades}/>
+            <Select label="Topic" name="prompt" bind:value={$form.prompt} data={data.topics} extraClass="col-span-3"/>
+            <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
+        </div>
+        
+        
 
-        <button type="submit" class="btn variant-filled m-2" on:click={handleSubmit}>GIVE ME SOME 長文！！</button>
+        <Button pill={true} type="submit" color="tealToLime" outline gradient class="m-4" on:click={handleSubmit}> 
+            <span class="text-3xl">🖋️</span> GIVE ME SOME 長文！！
+        </Button>
         
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- TODO: do something about a11y -->
-        <div class="passage p-8 text-black">
         {#if loading}
-            <ProgressRadial />
-        {:else}
-            {#each splitPassage as word}
+            <Spinner size="12" color={randomColor} />
+        {/if}
+        {#if splitPassage.length > 0}
+        <div class="passage md:p-8 p-2 text-black">
+            {#each splitPassage as word,index}
                 {#if word == '\n'}
                     <br />
                 {:else if word == '\t' }
                     &nbsp;&nbsp;&nbsp;&nbsp;
                 {:else}
-                    <span on:click={handleWordClick}> 
+                    <button type="button" id="word-{index}"> 
                         {word}
-                    </span>
+                    </button>
+                    <Popover trigger="click" triggeredBy="[id^='word-{index}']" placement="top" transition={slide} class="p-2">
+                        <span class="text-xl font-semibold text-white">{removePunctuation(word)}</span>
+                        <ol>
+                            {#await lookupVocab(word)}
+                                <Spinner size="5" color={randomColor} />
+                            {:then result}
+                                {#each result.data as item}
+                                    <li>
+                                        {item.en_word} 
+                                        {item.jp_word ? `➡ ${item.jp_word}` : ''}
+                                    </li>
+                                {/each}
+                            {:catch error}
+                                <li>error: {error.message}</li>
+                            {/await}
+                        </ol>
+                        <div class="pt-2">
+                            <button type="button" on:click={() => handleSave()} class="btn variant-filled-primary">
+                                <span class="text-3xl">💾</span>
+                            </button>
+                            <button type="button" on:click={() => lookupVocab(word)} class="btn variant-filled-primary">
+                                <span class="text-3xl">🔃</span>
+                            </button>
+                            <button type="button" on:click={() => searchWeblio(word) } class="btn variant-filled-primary">
+                                <span class="text-3xl">🔍</span>
+                            </button>
+                        </div>
+                    </Popover>
                     &nbsp;
                 {/if}
             {/each}
-        {/if}
         </div>
+        {/if}
     </form>
 
 </div>
-
-
-<div id="context-menu" class="context-menu card variant-filled-secondary p-4">
-    <header class="card-header">
-        <h3 class="text-lime-500">{clickedWord} </h3>
-    </header>
-    <section class="p-4">
-        <button on:click={() => handleSave()} class="btn variant-filled-primary">Save</button>
-        <button on:click={() => handleTranslate()} class="btn variant-filled-primary">Translate</button>
-        <button on:click={() => searchWeblio(clickedWord) } class="btn variant-filled-primary">Search on Weblio</button>
-    </section>
-    <footer class="card-footer">
-        <button on:click={hideContextMenu} class="btn variant-filled-error">Close</button>
-    </footer>
-</div>
-
-
 
 <style>
     .passage {
