@@ -16,7 +16,7 @@
             {label}
             {name}
             {required} 
-            {placeholder}/>
+            {placeholder} {...$$restProps}/>
     {#if errorMessage}
         <p class="mt-2 text-sm text-red-600">{errorMessage}</p>
     {/if}
