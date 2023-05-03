@@ -29,8 +29,8 @@
         alt="Logo"
       />
       <span
-        class="self-center whitespace-nowrap text-xl font-semibold dark:text-white"
-        >Reading Pirate</span
+        class="self-center whitespace-nowrap text-xl font-semibold dark:text-white font-raleway"
+        >Page-Turner</span
       >
     </NavBrand>
     <NavHamburger on:click={toggle} />

@@ -4,10 +4,9 @@
     import { XSVto2dArray, XSVtoObjectArray } from "$lib/helpers/Text";
     import Select from "$lib/components/atoms/Select.svelte";
     import { deleteColumn } from "$lib/helpers/Arrays";
-    import { Table, tableMapperValues } from "@skeletonlabs/skeleton";
     import type { TableSource } from "@skeletonlabs/skeleton";
-    import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
-
+    import UnderConstruction from "$lib/components/atoms/UnderConstruction.svelte";
+    import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 
     export let data: PageData;
 
@@ -76,8 +75,9 @@
 
 </script>
 
+<UnderConstruction />
 
-<div id="settings" class="w-full h-full p-16">
+<div id="settings" class="w-full h-full p-16 bg-inherit">
 
     <h1 class="mb-6">Options</h1>
 
