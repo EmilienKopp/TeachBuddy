@@ -1,35 +1,51 @@
 <script lang="ts">
-    import '$lib/styles/global.css';
-    import { writable, type Writable} from 'svelte/store';
-    import NavButton from '$lib/components/atoms/NavButton.svelte';
-    import { AppShell, AppRail, AppRailTile } from '@skeletonlabs/skeleton';
-    import { Scaffolder } from '/src/config/scaffolder';
-    import { page } from '$app/stores';
-
-    const storeValue: Writable<number> = writable(0);
-    
-    
-
+  import "$lib/styles/global.css";
+  import { writable, type Writable } from "svelte/store";
+  import { Scaffolder } from "/src/config/scaffolder";
+  import { page } from "$app/stores";
+  import {
+    Navbar,
+    NavBrand,
+    NavLi,
+    NavUl,
+    NavHamburger,
+    ImagePlaceholder,
+    Skeleton,
+    TextPlaceholder,
+  } from "flowbite-svelte";
+  const storeValue: Writable<number> = writable(0);
 </script>
 
-
-<AppShell>
-
-    <svelte:fragment slot="header">  </svelte:fragment>
-    <svelte:fragment slot="sidebarLeft"> 
-        <AppRail>
-            {#each Scaffolder.AppRail.Tiles as tile, index}
-                <AppRailTile    value={index} tag="a" href={tile.href} label={tile.label} 
-                                class="{tile.href === $page.url.pathname ? '!bg-primary-500' : ''}">
-                    <i class="bi {`bi-${tile.icon}`} text-3xl"></i>
-                </AppRailTile>
-            {/each}
-
-            <AppRailTile slot="trail" label="Sign Out" on:click={ () => {$page.data.supabase.auth.signOut()}}>
-                <i class="bi {`bi-box-arrow-left`} text-3xl"></i>
-            </AppRailTile>
-        </AppRail> 
-    </svelte:fragment>
+<div class="relative px-8">
+  <Navbar
+    navClass="px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
+    let:hidden
+    let:toggle
+  >
+    <NavBrand href="/">
+      <img
+        src="/logo_home.png"
+        class="mr-3 h-8 sm:h-16"
+        alt="Logo"
+      />
+      <span
+        class="self-center whitespace-nowrap text-xl font-semibold dark:text-white"
+        >Reading Pirate</span
+      >
+    </NavBrand>
+    <NavHamburger on:click={toggle} />
+    <NavUl {hidden} on:click={toggle}>
+      {#each Scaffolder.AppRail.Tiles as tile, index}
+        <NavLi href={tile.href} class="text-center" >
+            <i class="bi {`bi-${tile.icon}`} md:text-3xl"></i>
+            <p>
+                {tile.label}
+            </p>
+        </NavLi>
+    {/each}
+    </NavUl>
+  </Navbar>
+</div>
+<main class="md:pt-24 pt-6 bg-inherit">
     <slot/>
-
-</AppShell>
+</main>
