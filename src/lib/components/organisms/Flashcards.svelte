@@ -5,7 +5,7 @@
   
     export let cardsData;
     
-    let cards = cardsData.map((card: any) => {
+    let cards = cardsData?.map((card: any) => {
       return {
         front: card.vocabulary.en_word,
         back: `${card.vocabulary.jp_word ?? ''} \n ${card.custom_translation ?? ''}`,
@@ -54,8 +54,8 @@
 
   </script>
   
-  <div class="container p-4 m-4 flex flex-col items-center justify-center md:h-1/2 md:w-3/4 h-3/4 w-5/6">
-
+  <div class="container p-4 mt-8 flex flex-col items-center justify-center md:h-1/2 md:w-3/4 h-3/4 w-5/6">
+      {#if cards}
       <div class="card m-4 p-4 min-h-[250px] max-h-full md:w-[600px] min-w-[220px] rounded-md border-slate-300 border">
         {#if isBackFirst}
           <div class="grid grid-rows-2 h-full min-w-full justify-stretch items-stretch"> 
@@ -98,7 +98,11 @@
       {/if}
       
     </div>
-    
+    {:else}
+      <p>
+        単語は未だ登録していないみたいです。。。
+      </p>
+    {/if}
   </div>
 
   
