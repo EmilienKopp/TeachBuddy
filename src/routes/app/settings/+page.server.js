@@ -31,17 +31,11 @@ export const actions = {
         if (!form.valid) return fail(400, { form });
 
         let listData = JSON.parse(form.data.vocabData);
-
-        console.log('LIST SIZE:',listData.length);
-
         listData.splice(0, 1);
-        
         
         // transform listData into an array of objects that have the column headers as keys
         listData = mapHeaders(form.data.columnHeaders,listData);
         listData = listData.filter((el) => /^[a-zA-Z0-9]*$/.test(el.en_word) );
-
-        console.log(form.data.columnHeaders, listData);
 
         const {data, error} = await supabase.from('vocabulary').insert(listData);
 

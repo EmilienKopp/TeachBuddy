@@ -11,7 +11,5 @@ export async function load({locals: { supabase, getSession}}) {
                                                .select('vocabulary_id, vocabulary(*), custom_translation')
                                                .eq('user_id', user.id)
 
-    console.log(vocabData);
-
     return { vocabData };
 }

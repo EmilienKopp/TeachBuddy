@@ -32,8 +32,6 @@
         onUpdated: ({ form }) => { loading = false; console.log('Loading:',loading) },
     });
 
-    console.log('Vocab Columns', data.vocabColumns);
-
     const handleFileChange = (event: Event) => {
         const file: File = event?.target?.files[0];
         fileName = file.name;
@@ -44,11 +42,9 @@
                 delimiter = file.name.endsWith('.tsv') ? '\t' : ',';
 
                 fileData = XSVto2dArray(content, delimiter);
-                console.log('File Data', fileData);
                 $form.vocabData = JSON.stringify(fileData);
 
                 columnHeaders = fileData[0].filter((header: string) => header.trim() != '');
-                console.log('Column Headers', columnHeaders);
             };
             reader.readAsText(file);
         }
@@ -70,7 +66,6 @@
 
     $: {
         $form.vocabData = JSON.stringify(fileData);
-        console.log('Vocab Data', $form.vocabData);
     }
 
 </script>
@@ -90,7 +85,6 @@
                 <input name="gradeVocabList" class="input"
                     type="file"
                     accept=".csv,.tsv"
-
                     on:change="{handleFileChange}" />
             </div>
 

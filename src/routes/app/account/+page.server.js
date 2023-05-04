@@ -18,7 +18,6 @@ export async function load() {
     const form = await superValidate(vocabSettingsSchema);
  
     const {data: grades,error} = await supabase.from('grades').select('*');
-    console.log(grades);
     return { form, grades };
 }
 

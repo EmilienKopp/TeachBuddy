@@ -28,7 +28,7 @@ export const FORMS = {
         },
         register: {
             type: 'submit',
-            label: 'Register',
+            label: 'Sign-in',
         },
     },
     Selects: {},

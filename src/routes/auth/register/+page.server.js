@@ -33,8 +33,6 @@ export const actions = {
             }
         });
 
-        console.log(signUpData, signUpError)
-
         if(signUpError) {
             return fail(400, { form });
         } else {

@@ -4,10 +4,6 @@
     export let mini = false;
     export let color: string | undefined = 'darkish';
     export let backColor = 'red';
-    
-
-
-    $: console.log('flipcard', color, backColor);
 
 </script>
 

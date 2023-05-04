@@ -10,8 +10,6 @@
     const supabase = data.supabase;
     let userData = data.session?.user;
     let grades = data.grades;
-
-    console.log(userData);
 </script>
 
 <UnderConstruction />

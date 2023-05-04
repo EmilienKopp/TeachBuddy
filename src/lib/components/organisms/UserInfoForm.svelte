@@ -10,7 +10,6 @@
     export let grades: any;
 
     grades = toSelectOptions(grades, 'id', 'name');
-    console.log(grades);
 </script>
 
 

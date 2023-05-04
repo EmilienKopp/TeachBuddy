@@ -12,7 +12,6 @@ export function splitWords(input) {
 export function extractPunctuationAndPad(input) {
     const regex = /^(\S*?)([,.:;!?]+)(.*)/;
     const match = input.match(regex);
-    console.log(input, match);
     if (!match) {
         return {word: input, punctuation: ''};
     } else {
