@@ -1,5 +1,6 @@
 <script lang='ts'>
 	import { invalidate } from '$app/navigation';
+	import '$lib/styles/global.css';
 	import { onMount } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -9,7 +10,7 @@
 
 	onMount(() => {
 		const {
-		data: { subscription },
+			data: { subscription },
 		} = supabase.auth.onAuthStateChange((event, _session) => {
 		if (_session?.expires_at !== session?.expires_at) {
 			invalidate('supabase:auth');
@@ -21,6 +22,6 @@
 
 </script>
 
-<div class="bg-gray-800 text-slate-100 h-full">
+<div class="bg-gray-800 h-full w-full text-white font-raleway">
 	<slot />
 </div>
