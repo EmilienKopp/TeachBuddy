@@ -39,7 +39,7 @@ export function strLimitByWords(str, limit, end = '...') {
 
 export function XSVto2dArray(content, delimiter = ',', noBlankRows = true) {
     return content?.split('\r\n')
-            .map((line) => line.split(delimiter))
+            .map((line) => line.split(delimiter).filter((cell) => cell.trim() != '') )
             .filter((row) => row.some((cell) => (cell.trim() != '') || !noBlankRows));
 }
 
