@@ -116,6 +116,9 @@ export const actions = {
         const formData = await request.formData();
 
         const storeUserVocabSchema = z.object({
+            prompt: z.number().default(1),
+            type: z.number().int().default(1),
+            grade: z.number().int().default(1),
             vocabulary_id: z.number().int().optional(),
             custom_translation: z.string().optional(),
             POS: z.string().optional(),

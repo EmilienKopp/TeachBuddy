@@ -6,6 +6,8 @@
     import { searchWeblio } from '$lib/services/weblio';
     import { slide, fade } from 'svelte/transition';
     import { random, uniquify, Policies } from '$lib/helpers/Arrays';
+    import { isOnLeftHalf } from '$lib/helpers/Utils';
+    import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
     export let data: PageData;
     
@@ -16,6 +18,7 @@
     let randomColor: any = random(["green","blue","red","yellow","purple","pink"]);
     let translationModal = false;
     let customizeTranslation = false;
+    let innerWidth: number;
 
     const { form, enhance, reset, errors, constraints, message } = superForm(data.form, {
         dataType: 'json',
@@ -36,20 +39,32 @@
         console.log(`${word.toLowerCase()} has exact matches:`,exactMatches);
         if(exactMatches && exactMatches?.length == 1) {
             dbMatchWord = exactMatches[0];
-            return exactMatches;
+            wordMatchesList = exactMatches;
+            return wordMatchesList;
         }
         
         wordMatchesList = (await data.supabase.from('vocabulary').select('*').textSearch('inflections',word.toLowerCase())).data;
 
-        wordMatchesList = wordMatchesList.concat(exactMatches);
-        //TODO: Remove duplicates on POS is null and en_word are the same
+        wordMatchesList = wordMatchesList
+                .concat(exactMatches)
+                .reduce((acc: any, current: any) => {
+                    const found = acc.find((item: any) => item.id === current.id);
+                    return (!found) ? acc.concat([current]) : acc;
+                }, []);
+
         console.log(`${word.toLowerCase()} has fuzzy matches:`,wordMatchesList);
         return wordMatchesList;
     }
 
-    async function launchSaveProcess(word: string) {
+    async function launchSaveProcess(item: string | any) {
         translationModal = true;
-        clickedWord = removePunctuation(word);
+        const isWord = typeof item === 'string';
+        clickedWord = removePunctuation( isWord ? item : item.en_word );
+
+        if(!isWord) {
+            $form.POS = item.POS;
+        }
+
         $form.vocabulary_id = dbMatchWord?.id;
     }
 
@@ -64,20 +79,21 @@
 
     $: splitPassage = splitWords($form.message);
 
-    $: console.log(data, $message, $form);
+    $: console.log(data, $message, $form, innerWidth);
 
     $: customizeTranslation = wordMatchesList?.filter( (el: any) => el.jp_word).length === 0 || customizeTranslation;
     
 </script>
+<svelte:window bind:innerWidth={innerWidth} />
 
 {#if $message}
-<Toast transition={fade} position="top-right" divClass="w-full max-w-[250px] p-2 mt-12">
+<Toast transition={fade} position="top-right" divClass="w-full max-w-[250px] p-2 md:mt-24 mt-12">
     {$message}
 </Toast>
 {/if}
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
-<div class="w-full h-full md:p-16 px-2 pt-8 mt-8">
+<div class="w-full h-full sm:p-16 px-2 pt-8 mt-8">
     <form method="POST" action="?/getPassage" use:enhance>
         <div class="md:grid md:grid-cols-3 flex flex-col">
             <Select label="Type" name="type" bind:value={$form.type} items={data.types} class="my-2"/>
@@ -87,14 +103,17 @@
         </div>
 
         <Button pill={true} type="submit" color="tealToLime" outline gradient class="m-4" on:click={handleSubmit}> 
-            <span class="text-3xl">🖋️</span> GIVE ME SOME 長文！！
+            <span class="text-3xl mr-2">
+                {#if loading}
+                    <Spinner size="10" color={randomColor} />
+                {:else}
+                    🖋️
+                {/if}
+            </span>GIVE ME SOME 長文！！
         </Button>
         
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- TODO: do something about a11y -->
-        {#if loading}
-            <Spinner size="12" color={randomColor} />
-        {/if}
         {#if splitPassage.length > 0}
         <div class="passage md:p-8 p-2 text-black">
             {#each splitPassage as word,index}
@@ -106,21 +125,29 @@
                     <button type="button" id="word-{index}"> 
                         {word}
                     </button>
-                    <Popover trigger="hover" triggeredBy="[id='word-{index}']" placement="top" arrow={false} class="p-2">
+                    <Popover trigger="click" triggeredBy="[id='word-{index}']" placement="top" arrow={false} yOnly={ innerWidth <= 425}
+                             class="p-0">
                         <span class="text-xl pb-3 font-semibold text-white">{removePunctuation(word)}</span> 
 
+                        {#if wordMatchesList?.length == 0}
                         <button type="button" on:click={() => { launchSaveProcess(word) }} class="btn variant-filled-primary">
                             <span class="text-xl">💾</span>
                         </button>
+                        {/if}
                         <ol>
                             {#await lookupVocab(word)}
                                 <Spinner size="5" color={randomColor} />
                             {:then lookupData}
                                 {#each lookupData as item}
                                     <li>
-                                        {item.en_word} 
+                                        {item.POS ? `【${ data?.POS?.find( (el) => el.value == item.POS)?.name }】` : ''}
+                                        {item.en_word}
                                         {item.jp_word ? `➡ ${item.jp_word}` : ''}
+                                        <button type="button" on:click={() => { launchSaveProcess(item) }} class="btn variant-filled-primary">
+                                            <span class="text-md">💾</span>
+                                        </button>
                                     </li>
+                                    
                                 {/each}
                             {:catch error}
                                 <li>error: {error.message}</li>
@@ -178,6 +205,7 @@
                 {/each}
             </div>
             {/if}
+            
             <Button formaction="?/storeUserVocab" pill={true} type="submit" color="tealToLime" gradient class="m-4" on:click={handleTranslationSubmit}> 
                 {customizeTranslation ? '入力' : '選択'}した翻訳で保存
             </Button>
