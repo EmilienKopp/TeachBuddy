@@ -13,6 +13,10 @@ module.exports = {
 			fontFamily: {
 				raleway: ['Raleway', 'sans-serif'],
 				gloria: ['Gloria Hallelujah', 'cursive'],
+				butterfly: ['Butterfly', 'cursive'],
+				yippy: ['Yippy Skippy', 'sans-serif'],
+				semicasual: ['Semicasual', 'sans-serif'],
+				informal: ['InFormal', 'sans-serif'],
 			},
 		},
 	},

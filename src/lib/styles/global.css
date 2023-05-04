@@ -25,6 +25,26 @@
   src: url('/fonts/GloriaHallelujah-Regular.ttf');
 }
 
+@font-face {
+  font-family: 'Butterfly';
+  src: url('/fonts/AButterflyOnaDaffodil.ttf');
+}
+
+@font-face {
+  font-family: 'YippySkippy';
+  src: url('/fonts/Yippy Skippy.ttf');
+}
+
+@font-face {
+  font-family: 'SemiCasual';
+  src: url('/fonts/SemiCasual.ttf');
+}
+
+@font-face {
+  font-family: 'InFormal';
+  src: url('/fonts/InFormal_Style_Regular.otf');
+}
+
 @layer components {
   .menu-icon {
     @apply  relative flex  justify-center items-center text-2xl font-bold h-12 w-12 mx-2 shadow-sm
