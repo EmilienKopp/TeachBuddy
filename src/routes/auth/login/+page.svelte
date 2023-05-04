@@ -38,7 +38,7 @@
             <form class="space-y-4" method="POST" action="?/signin" use:enhance >
                 <Label>
                     Email
-                    <Input id="email" type="email" name="email" placeholder="Gimme your password!" bind:errorMessage={$errors.email}  bind:value={$form.email}/>
+                    <Input id="email" type="email" name="email" placeholder="Gimme your email!" bind:errorMessage={$errors.email}  bind:value={$form.email}/>
                 </Label>
                 <Label>
                     Password
