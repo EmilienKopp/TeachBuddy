@@ -10,8 +10,6 @@
 
     export let data: PageData;
 
-    console.log('Vocab Columns', data.vocabColumns);
-
     let loading: boolean = false;
 
     let fileInput: any;
@@ -34,6 +32,8 @@
         onUpdated: ({ form }) => { loading = false; console.log('Loading:',loading) },
     });
 
+    console.log('Vocab Columns', data.vocabColumns);
+
     const handleFileChange = (event: Event) => {
         const file: File = event?.target?.files[0];
         fileName = file.name;
@@ -55,7 +55,6 @@
     };
 
     const columnDeletionHandler = (index: number) => {
-
         fileData = deleteColumn(fileData,index);
         columnHeaders.splice(index,1); 
         columnHeaders = [...columnHeaders]
@@ -71,13 +70,14 @@
 
     $: {
         $form.vocabData = JSON.stringify(fileData);
+        console.log('Vocab Data', $form.vocabData);
     }
 
 </script>
 
 <UnderConstruction />
 
-<div id="settings" class="w-full h-full p-16 bg-inherit">
+
 
     <h1 class="mb-6">Options</h1>
 
@@ -153,4 +153,3 @@
         </div>
     </form>
 
-</div>

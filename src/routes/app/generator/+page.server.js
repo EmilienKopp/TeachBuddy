@@ -15,6 +15,7 @@ const schema = z.object({
     testMode: z.boolean().default(false),
     vocabulary_id: z.number().int().optional(),
     custom_translation: z.string().optional(),
+    POS: z.string().optional(),
 });
 
 
@@ -32,25 +33,25 @@ const config = new Configuration({
 const openAI = new OpenAIApi(config);
 
 const types = [
-    { value: 1, label: 'Short Story' },
-    { value: 2, label: 'Essay' },
-    { value: 3, label: 'Conversation between two people' },
+    { value: 1, name: 'Short Story' },
+    { value: 2, name: 'Essay' },
+    { value: 3, name: 'Conversation between two people' },
 ];
 
 const topics = [
-    { value: 1, label: 'Friendship' },
-    { value: 2, label: 'Family' },
-    { value: 3, label: 'School' },
-    { value: 4, label: 'Hobbies' },
-    { value: 5, label: 'Sports' },
-    { value: 6, label: 'Food' },
-    { value: 7, label: 'Animals' },
-    { value: 8, label: "Tom's summer vacation" },
-    { value: 9, label: 'The best day of my life' },
-    { value: 10, label: 'My favorite place' },
-    { value: 11, label: 'My favorite food' },
-    { value: 12, label: 'Why do we study English?' },
-    { value: 13, label: 'Introducing Japan to my foreign friends' },
+    { value: 1, name: 'Friendship' },
+    { value: 2, name: 'Family' },
+    { value: 3, name: 'School' },
+    { value: 4, name: 'Hobbies' },
+    { value: 5, name: 'Sports' },
+    { value: 6, name: 'Food' },
+    { value: 7, name: 'Animals' },
+    { value: 8, name: "Tom's summer vacation" },
+    { value: 9, name: 'The best day of my life' },
+    { value: 10, name: 'My favorite place' },
+    { value: 11, name: 'My favorite food' },
+    { value: 12, name: 'Why do we study English?' },
+    { value: 13, name: 'Introducing Japan to my foreign friends' },
 ]
 
 /** @type {import('./$types').PageServerLoad} */
@@ -58,11 +59,12 @@ export async function load({locals: { supabase, getSession}}) {
     
     const form = await superValidate(schema);
 
-    let { data: grades, error } = await supabase.from('grades').select('*');
-    grades = toSelectOptions(grades, 'id', 'name')
-    console.log(grades);
+    let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
+    let { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
+    grades = toSelectOptions(grades, 'id', 'name');
+    POS = toSelectOptions(POS, 'id', 'jp_name');
 
-    return { form, types, grades, topics };
+    return { form, types, grades, topics, POS };
 }
 
 export const actions = {
@@ -74,8 +76,8 @@ export const actions = {
             return fail(401, {form});
         }
 
-        const topic = topics.find( elem => elem.id = form.data.prompt).option;
-        const contentType = types.find( elem => elem.id = form.data.type).option;
+        const topic = topics.find( elem => elem.value = form.data.prompt).name;
+        const contentType = types.find( elem => elem.value= form.data.type).name;
         const content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
         
         if( form.data.testMode ) {
@@ -116,6 +118,7 @@ export const actions = {
         const storeUserVocabSchema = z.object({
             vocabulary_id: z.number().int().optional(),
             custom_translation: z.string().optional(),
+            POS: z.string().optional(),
         });
             
         const form = await superValidate(formData, storeUserVocabSchema);
@@ -125,7 +128,6 @@ export const actions = {
         }
 
         const { user } = await getSession();
-        console.log(user);
 
         const { vocabulary_id, custom_translation } = form.data;
 

@@ -2,12 +2,10 @@
     import type { PageData } from './$types';
     import { removePunctuation, splitWords } from "$lib/helpers/Text";
     import { superForm } from 'sveltekit-superforms/client';
-    import { Button, Spinner, Toggle, Popover, Modal, Radio, Toast } from 'flowbite-svelte';
-    import Select from "$lib/components/atoms/Select.svelte";
+    import { Button, Spinner, Toggle, Popover, Modal, Radio, Toast, Select, Label, Input } from 'flowbite-svelte';
     import { searchWeblio } from '$lib/services/weblio';
     import { slide, fade } from 'svelte/transition';
-    import { random } from '$lib/helpers/Arrays';
-    import TextInput from '$lib/components/molecules/inputs/TextInput.svelte';
+    import { random, uniquify, Policies } from '$lib/helpers/Arrays';
 
     export let data: PageData;
     
@@ -30,20 +28,28 @@
     let splitPassage: Array<string> = [];
 
     async function lookupVocab(word: string) {
-        const {data: exactMatch, error } = await data.supabase.from('vocabulary').select('*').eq('en_word',word).single();
-        wordMatchesList = (await data.supabase.from('vocabulary').select('*').textSearch('en_word',word)).data;
+        // Reset wordMatchesList    
+        wordMatchesList = [];
 
-        dbMatchWord = exactMatch;
-        if( !wordMatchesList.find((item: any) => item.id == dbMatchWord?.id) ) {
-            wordMatchesList.push(dbMatchWord);
+        const {data: exactMatches, error } = await data.supabase.from('vocabulary').select('*').eq('en_word',word.toLowerCase());
+
+        console.log(`${word.toLowerCase()} has exact matches:`,exactMatches);
+        if(exactMatches && exactMatches?.length == 1) {
+            dbMatchWord = exactMatches[0];
+            return exactMatches;
         }
+        
+        wordMatchesList = (await data.supabase.from('vocabulary').select('*').textSearch('inflections',word.toLowerCase())).data;
 
+        wordMatchesList = wordMatchesList.concat(exactMatches);
+        //TODO: Remove duplicates on POS is null and en_word are the same
+        console.log(`${word.toLowerCase()} has fuzzy matches:`,wordMatchesList);
         return wordMatchesList;
     }
 
     async function launchSaveProcess(word: string) {
         translationModal = true;
-        clickedWord = word;
+        clickedWord = removePunctuation(word);
         $form.vocabulary_id = dbMatchWord?.id;
     }
 
@@ -58,7 +64,9 @@
 
     $: splitPassage = splitWords($form.message);
 
-    $: console.log(data, $message);
+    $: console.log(data, $message, $form);
+
+    $: customizeTranslation = wordMatchesList?.filter( (el: any) => el.jp_word).length === 0 || customizeTranslation;
     
 </script>
 
@@ -69,12 +77,12 @@
 {/if}
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
-<div class="w-full h-full md:p-16 px-2 pt-8">
+<div class="w-full h-full md:p-16 px-2 pt-8 mt-8">
     <form method="POST" action="?/getPassage" use:enhance>
         <div class="md:grid md:grid-cols-3 flex flex-col">
-            <Select label="Type" name="type" bind:value={$form.type} data={data.types}/>
-            <Select label="Grade" name="type" bind:value={$form.grade} data={data.grades}/>
-            <Select label="Topic" name="prompt" bind:value={$form.prompt} data={data.topics} extraClass="col-span-3"/>
+            <Select label="Type" name="type" bind:value={$form.type} items={data.types} class="my-2"/>
+            <Select label="Grade" name="type" bind:value={$form.grade} items={data.grades} class="my-2"/>
+            <Select label="Topic" name="prompt" bind:value={$form.prompt} items={data.topics} class="my-2 md:col-span-3"/>
             <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
         </div>
 
@@ -134,27 +142,46 @@
 
 
         <Modal bind:open={translationModal} size="xs" autoclose={false} class="w-full">
-            英単語の翻訳を...
-            <Toggle color={randomColor} class="mt-2" name="customizeTranslation" bind:checked={customizeTranslation}> 入力モード {customizeTranslation ? 'ON' : 'OFF'} </Toggle>
+        <div class="flex flex-col justify-center items-stretch gap-1">
+            <h2 class="text-center text-lime-500 font-semibold">{clickedWord}</h2>
+            {#if wordMatchesList.filter((el) => el.jp_word).length != 0}
+                <Toggle color="blue" class="mt-2" name="customizeTranslation" bind:checked={customizeTranslation}> 入力モード {customizeTranslation ? 'ON' : 'OFF'} </Toggle>
+            {:else}
+                <p class="mt-2">この単語の日本語はまだ登録されていません。</p>
+                <Button gradient color="lime" on:click={() => searchWeblio(clickedWord) }>
+                    <span class="text-3xl">🔍</span>　外部辞書で検索
+                </Button>
+            {/if}
+
             {#if customizeTranslation}
-            <div class="mt-2 flex items-center">
-                <TextInput label={`${clickedWord}の翻訳`} name="custom_translation" placeholder="翻訳を自分で入力" 
-                            bind:value={$form.custom_translation} disabled={!customizeTranslation}/>
+            <div class="mt-2 flex flex-col">
+                <Label for="part_of_speech" class="mt-2 self-start">品詞</Label>
+                <Select name="POS" bind:value={$form.POS} items={data.POS} class="mt-1"/>
+                <Label for="custom_translation" class="mt-2 self-start">
+                    翻訳
+                    <Input type="text" placeholder="翻訳を自分で入力" name="custom_translation" bind:value={$form.custom_translation} />
+                </Label>
+                <!-- <TextInput name="custom_translation" placeholder="翻訳を自分で入力"
+                            bind:value={$form.custom_translation} disabled={!customizeTranslation}/> -->
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
+                
+
             </div>
             {:else}
             <div class="flex flex-col gap-2">
 
-                {#each wordMatchesList.filter((el) => el.jp_word) as word}
+                {#each wordMatchesList.filter((w) => w.jp_word) as word}
                     <Radio name="vocabulary_id" bind:group={$form.vocabulary_id} class="w-full p-4" value={parseInt(word.id)}>
+                        【{data.POS?.find((el) => el.value == word.POS)?.name}】
                         {`${word.en_word} ➡ ${word.jp_word}`}
                     </Radio>
                 {/each}
             </div>
             {/if}
-            <Button formaction="?/storeUserVocab" pill={true} type="submit" color="tealToLime" gradient class="m-4 col-span-2" on:click={handleTranslationSubmit}> 
+            <Button formaction="?/storeUserVocab" pill={true} type="submit" color="tealToLime" gradient class="m-4" on:click={handleTranslationSubmit}> 
                 {customizeTranslation ? '入力' : '選択'}した翻訳で保存
             </Button>
+        </div>
         </Modal>
     </form>
 

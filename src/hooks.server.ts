@@ -27,9 +27,13 @@ export const handle: Handle = async ({ event, resolve }) => {
       } = await event.locals.supabase.auth.getSession();
       return session;
     };
+
+    if(event.url.pathname == '/') {
+      throw redirect(303, '/app/dashboard');
+    }
     
     // protect requests to all routes that start with /protected-routes
-    if (event.url.pathname.startsWith('/app')) {
+    if (event.url.pathname.startsWith('/app') ) {
       const session = await event.locals.getSession();
       if (!session) {
         // the user is not signed in

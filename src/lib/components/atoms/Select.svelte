@@ -6,7 +6,7 @@
     };
 
     export let data: SelectData[] | any[] | undefined = undefined;
-    export let value: number | undefined = undefined;
+    export let value: number | string | undefined = undefined;
     export let label: string | undefined = undefined;
     export let name: string;
     export let extraClass: string | string[] | undefined = undefined;
