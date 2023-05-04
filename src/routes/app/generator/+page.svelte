@@ -6,7 +6,6 @@
     import { searchWeblio } from '$lib/services/weblio';
     import { slide, fade } from 'svelte/transition';
     import { random, uniquify, Policies } from '$lib/helpers/Arrays';
-    import { isOnLeftHalf } from '$lib/helpers/Utils';
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
     export let data: PageData;
