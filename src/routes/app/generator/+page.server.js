@@ -16,6 +16,7 @@ const schema = z.object({
     vocabulary_id: z.number().int().optional(),
     custom_translation: z.string().optional(),
     POS: z.string().optional(),
+    language: z.string().optional(),
 });
 
 
@@ -31,6 +32,12 @@ const config = new Configuration({
 });
 
 const openAI = new OpenAIApi(config);
+
+const languages = [
+    { value: 'en', name: 'English' },
+    { value: 'fr', name: 'French' },
+    { value: 'ja', name: 'Japanese' },
+];
 
 const types = [
     { value: 1, name: 'Short Story' },
@@ -64,7 +71,7 @@ export async function load({locals: { supabase, getSession}}) {
     grades = toSelectOptions(grades, 'id', 'name');
     POS = toSelectOptions(POS, 'id', 'jp_name');
 
-    return { form, types, grades, topics, POS };
+    return { form, types, grades, topics, POS, languages };
 }
 
 export const actions = {
@@ -78,8 +85,13 @@ export const actions = {
 
         const topic = topics.find( elem => elem.value = form.data.prompt).name;
         const contentType = types.find( elem => elem.value= form.data.type).name;
-        const content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
-        
+
+        if(form.data.language != 'fr') {
+            const content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
+        } else {
+            const content = `Ecris une histoire EN FRANCAIS très courte à propos de deux amis qui visitent Paris. L'histoire doit être compréhensible par un étudiant de niveau A1 inférieur. Utilise uniquement le présent de l'indicatif.`;
+        }
+
         if( form.data.testMode ) {
             const completion = await openAI.createChatCompletion({
                 model: 'gpt-3.5-turbo',
@@ -98,6 +110,7 @@ export const actions = {
             // sleep for 3s
             await new Promise(r => setTimeout(r, 1000));
 
+            // DUMMY for dev mode
             form.data.message = `        Having friends is really important. Friends are people who are nice to us and make us feel happy. They like to play with us, share things with us, and help us when we need it. 
     
             Having friends can be really helpful. Sometimes we feel sad or scared, and having a friend to talk to can make us feel better. And if we have trouble with something we’re doing, a friend can help us figure it out.
