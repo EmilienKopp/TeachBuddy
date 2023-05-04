@@ -5,7 +5,7 @@
     import { Button, Spinner, Toggle, Popover, Modal, Radio, Toast, Select, Label, Input } from 'flowbite-svelte';
     import { searchWeblio } from '$lib/services/weblio';
     import { slide, fade } from 'svelte/transition';
-    import { random, uniquify, Policies } from '$lib/helpers/Arrays';
+    import { random, uniquify, Policies, toSelectOptions } from '$lib/helpers/Arrays';
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
     export let data: PageData;
@@ -32,6 +32,7 @@
     async function lookupVocab(word: string) {
         // Reset wordMatchesList    
         wordMatchesList = [];
+        word = removePunctuation(word);
 
         const {data: exactMatches, error } = await data.supabase.from('vocabulary').select('*').eq('en_word',word.toLowerCase());
 
@@ -44,8 +45,7 @@
         
         wordMatchesList = (await data.supabase.from('vocabulary').select('*').textSearch('inflections',word.toLowerCase())).data;
 
-        wordMatchesList = wordMatchesList
-                .concat(exactMatches)
+        wordMatchesList = wordMatchesList?.concat(exactMatches)
                 .reduce((acc: any, current: any) => {
                     const found = acc.find((item: any) => item.id === current.id);
                     return (!found) ? acc.concat([current]) : acc;
@@ -98,6 +98,7 @@
             <Select label="Type" name="type" bind:value={$form.type} items={data.types} class="my-2"/>
             <Select label="Grade" name="type" bind:value={$form.grade} items={data.grades} class="my-2"/>
             <Select label="Topic" name="prompt" bind:value={$form.prompt} items={data.topics} class="my-2 md:col-span-3"/>
+            <Select label="Language" name="language" bind:value={$form.language} items={ data.languages } class="my-2"/>
             <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
         </div>
 
