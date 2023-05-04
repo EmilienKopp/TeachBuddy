@@ -42,7 +42,7 @@
                 </Label>
                 <Label>
                     Password
-                    <Input id="password" type="password" name="password" placeholder="Gimme your password!" bind:errorMessage={$errors.email}  bind:value={$form.email}/>
+                    <Input id="password" type="password" name="password" placeholder="Gimme your password!" bind:errorMessage={$errors.password}  bind:value={$form.password}/>
                 </Label>
 
                 <div class="flex items-center justify-between">
