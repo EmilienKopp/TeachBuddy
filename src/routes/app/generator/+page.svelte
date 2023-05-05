@@ -9,15 +9,21 @@
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
     export let data: PageData;
-    
+    const supabase = data.supabase;
     let loading: boolean = false;
     let clickedWord: string = "";
     let dbMatchWord: any;
     let wordMatchesList: any;
     let randomColor: any = random(["green","blue","red","yellow","purple","pink"]);
     let translationModal = false;
-    let customizeTranslation = false;
+    let isCustomizedTranslation = false;
+    let noTranslationFound = false;
     let innerWidth: number;
+    let custom_translation: string = "";
+    let selectedVocab: any = {};
+    let selectedPOS: string = "";
+
+    
 
     const { form, enhance, reset, errors, constraints, message } = superForm(data.form, {
         dataType: 'json',
@@ -34,40 +40,70 @@
         wordMatchesList = [];
         word = removePunctuation(word);
 
-        const {data: exactMatches, error } = await data.supabase.from('vocabulary').select('*').eq('en_word',word.toLowerCase());
+        // Lookup exact word
+        const {data: exactMatches, error } = await supabase.from('vocabulary').select('*').eq('en_word',word.toLowerCase());
 
-        console.log(`${word.toLowerCase()} has exact matches:`,exactMatches);
+        
         if(exactMatches && exactMatches?.length == 1) {
-            dbMatchWord = exactMatches[0];
+            console.log(`${word.toLowerCase()} has a single exact match:`,exactMatches);
+            selectedVocab = exactMatches[0];
             wordMatchesList = exactMatches;
             return wordMatchesList;
         }
         
-        wordMatchesList = (await data.supabase.from('vocabulary').select('*').textSearch('inflections',word.toLowerCase())).data;
+        // Lookup fuzzy matches on 'inflections' AND 'en_word'
+        const fuzzyInflectionSearch = supabase.from('vocabulary').select('*').textSearch('inflections',word.toLowerCase());
+        const fuzzyEnWordSearch = supabase.from('vocabulary').select('*').textSearch('en_word',word.toLowerCase());
 
-        wordMatchesList = wordMatchesList?.concat(exactMatches)
-                .reduce((acc: any, current: any) => {
+        const [ {data: inflectionData, error: inflectionError }, 
+                {data: enWordData, error: enWordError } ] = await Promise.all([fuzzyInflectionSearch,fuzzyEnWordSearch]);
+        
+        if(enWordError || inflectionError) {
+            console.log('Error looking up word:',enWordError,inflectionError);
+            return [];
+        }
+
+        // Lookup customized translations existing on 'user_vocabulary'
+        const {data: userVocabData, error: userVocabError } = await supabase.from('user_vocabulary').select('custom_translation').eq('en_word',word.toLowerCase());
+        console.log('userVocabData:',userVocabData);
+        custom_translation = userVocabData?.[0]?.custom_translation ?? '';
+
+        // concatenate results if not null
+        wordMatchesList = wordMatchesList?.concat(inflectionData ?? [], enWordData ?? []);
+
+        // Remove duplicates between 'inflections' and 'en_word' results
+        wordMatchesList = wordMatchesList.reduce((acc: any, current: any) => {
                     const found = acc.find((item: any) => item.id === current.id);
                     return (!found) ? acc.concat([current]) : acc;
                 }, []);
 
-        console.log(`${word.toLowerCase()} has fuzzy matches:`,wordMatchesList);
         return wordMatchesList;
     }
 
     async function launchSaveProcess(item: string | any) {
         translationModal = true;
         const isWord = typeof item === 'string';
+        isCustomizedTranslation = noTranslationFound ? true : isCustomizedTranslation;
         clickedWord = removePunctuation( isWord ? item : item.en_word );
 
         if(!isWord) {
-            $form.POS = item.POS;
+            selectedPOS = item.POS;
+            selectedVocab = item;
         }
 
-        $form.vocabulary_id = dbMatchWord?.id;
+        // if word not in 'vocabulary', add it with a isPublic flag at false
+        if(wordMatchesList?.length === 0) {
+            console.log('No matches found, adding word to vocabulary');
+            const {data: insertData, error } = await supabase.from('vocabulary').insert({en_word: clickedWord, isPublic: false});
+            console.log('insertData:',insertData);
+            if(error) console.log('Error inserting word:',error);
+        }
     }
 
-    async function handleTranslationSubmit() {
+    async function handleTranslationSubmit(vocabulary: any) {
+
+        const {data: insertData, error } = await supabase.from('user_vocabulary').insert({custom_translation, })
+
         translationModal = false;
         $form.custom_translation = '';
     }
@@ -78,9 +114,9 @@
 
     $: splitPassage = splitWords($form.message);
 
-    $: console.log(data, $message, $form, innerWidth);
+    $: console.log($form, selectedVocab);
 
-    $: customizeTranslation = wordMatchesList?.filter( (el: any) => el.jp_word).length === 0 || customizeTranslation;
+    $: noTranslationFound = wordMatchesList?.filter((el: any) => el.jp_word).length === 0;
     
 </script>
 <svelte:window bind:innerWidth={innerWidth} />
@@ -127,7 +163,10 @@
                     </button>
                     <Popover trigger="click" triggeredBy="[id='word-{index}']" placement="top" arrow={false} yOnly={ innerWidth <= 425}
                              class="p-0">
-                        <span class="text-xl pb-3 font-semibold text-white">{removePunctuation(word)}</span> 
+                        {#if custom_translation} ✅ {/if}
+                        <span class="text-xl pb-3 font-semibold text-white">
+                            {removePunctuation(word)}
+                        </span> 
 
                         {#if wordMatchesList?.length == 0}
                         <button type="button" on:click={() => { launchSaveProcess(word) }} class="btn variant-filled-primary">
@@ -139,11 +178,13 @@
                                 <Spinner size="5" color={randomColor} />
                             {:then lookupData}
                                 {#each lookupData as item}
-                                    <li>
+                                    <li class="border-b border-slate-500 text-sm mb-1 flex flew-row justify-between">
+                                        <div class="mr-2 max-w-[38ch] overflow-hidden text-ellipsis md:max-w-fit">
                                         {item.POS ? `【${ data?.POS?.find( (el) => el.value == item.POS)?.name }】` : ''}
                                         {item.en_word}
                                         {item.jp_word ? `➡ ${item.jp_word}` : ''}
-                                        <button type="button" on:click={() => { launchSaveProcess(item) }} class="btn variant-filled-primary">
+                                        </div>
+                                        <button type="button" on:click={() => { launchSaveProcess(item) }} class="self-end">
                                             <span class="text-md">💾</span>
                                         </button>
                                     </li>
@@ -157,7 +198,6 @@
                             <button type="button" on:click={() => searchWeblio(word) } class="btn variant-filled-primary">
                                 <span class="text-3xl">🔍</span>
                             </button>
-
                         </div>
                     </Popover>
                     &nbsp;
@@ -170,35 +210,37 @@
 
         <Modal bind:open={translationModal} size="xs" autoclose={false} class="w-full">
         <div class="flex flex-col justify-center items-stretch gap-1">
-            <h2 class="text-center text-lime-500 font-semibold">{clickedWord}</h2>
-            {#if wordMatchesList.filter((el) => el.jp_word).length != 0}
-                <Toggle color="blue" class="mt-2" name="customizeTranslation" bind:checked={customizeTranslation}> 入力モード {customizeTranslation ? 'ON' : 'OFF'} </Toggle>
-            {:else}
+            <h2 class="text-center text-lime-500 font-semibold">
+                {clickedWord} 
+                <button type="button" on:click={() => searchWeblio(clickedWord) }>
+                    <span class="text-xl">🔍</span>
+                </button>
+            </h2>
+            {#if noTranslationFound}
                 <p class="mt-2 text-xs">翻訳がまだありません！</p>
-                <Button gradient color="lime" on:click={() => searchWeblio(clickedWord) }>
-                    <span class="text-md">🔍</span>　外部辞書で検索
-                </Button>
+            {:else}
+                <Toggle color="blue" class="mt-2" name="isCustomizedTranslation" bind:checked={isCustomizedTranslation}> 入力モード {isCustomizedTranslation ? 'ON' : 'OFF'} </Toggle>
             {/if}
 
-            {#if customizeTranslation}
+            
+            
+            {#if isCustomizedTranslation}
             <div class="mt-2 flex flex-col">
                 <Label for="POS" class="mt-2 self-start">品詞</Label>
-                <Select name="POS" underline size="sm" bind:value={$form.POS} items={data.POS} class="mt-1"/>
+                <Select name="POS" size="sm" bind:value={selectedPOS} items={data.POS} class="mt-1"/>
                 <Label for="custom_translation" class="mt-2 self-start">
                     翻訳
-                    <Input type="text" placeholder="翻訳を自分で入力" name="custom_translation" bind:value={$form.custom_translation} />
+                    <Input type="text" placeholder="翻訳を自分で入力" name="custom_translation" bind:value={custom_translation} />
                 </Label>
                 <!-- <TextInput name="custom_translation" placeholder="翻訳を自分で入力"
-                            bind:value={$form.custom_translation} disabled={!customizeTranslation}/> -->
+                            bind:value={$form.custom_translation} disabled={!isCustomizedTranslation}/> -->
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                
-
             </div>
             {:else}
             <div class="flex flex-col gap-2">
 
                 {#each wordMatchesList.filter((w) => w.jp_word) as word}
-                    <Radio name="vocabulary_id" bind:group={$form.vocabulary_id} class="w-full p-4" value={parseInt(word.id)}>
+                    <Radio name="vocabulary_id" bind:group={$form.vocabulary_id} class="w-full p-2" value={parseInt(word.id)}>
                         【{data.POS?.find((el) => el.value == word.POS)?.name}】
                         {`${word.en_word} ➡ ${word.jp_word}`}
                     </Radio>
@@ -206,8 +248,8 @@
             </div>
             {/if}
             
-            <Button formaction="?/storeUserVocab" pill={true} type="submit" color="tealToLime" gradient class="m-4" > 
-                {customizeTranslation ? '入力' : '選択'}した翻訳で保存
+            <Button  pill={true} type="button" color="tealToLime" gradient class="m-4" on:click={()=>{ handleTranslationSubmit(selectedVocab) }}> 
+                {isCustomizedTranslation ? '入力' : '選択'}した翻訳で保存
             </Button>
         </div>
         </Modal>

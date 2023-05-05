@@ -85,11 +85,11 @@ export const actions = {
 
         const topic = topics.find( elem => elem.value = form.data.prompt).name;
         const contentType = types.find( elem => elem.value= form.data.type).name;
-
+        let content;
         if(form.data.language != 'fr') {
-            const content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
+            content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
         } else {
-            const content = `Ecris une histoire EN FRANCAIS très courte à propos de deux amis qui visitent Paris. L'histoire doit être compréhensible par un étudiant de niveau A1 inférieur. Utilise uniquement le présent de l'indicatif.`;
+            content = `Ecris une histoire EN FRANCAIS très courte à propos de deux amis qui visitent Paris. L'histoire doit être compréhensible par un étudiant de niveau A1 inférieur. Utilise uniquement le présent de l'indicatif.`;
         }
 
         if( form.data.testMode ) {
