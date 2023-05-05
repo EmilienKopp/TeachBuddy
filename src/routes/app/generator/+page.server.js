@@ -3,6 +3,9 @@
 import { Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai';
 import { message, superValidate } from 'sveltekit-superforms/server';
 
+import {
+    OPENAI_API_KEY
+} from '$env/static/public';
 import { fail } from '@sveltejs/kit';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
