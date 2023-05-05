@@ -174,16 +174,16 @@
             {#if wordMatchesList.filter((el) => el.jp_word).length != 0}
                 <Toggle color="blue" class="mt-2" name="customizeTranslation" bind:checked={customizeTranslation}> 入力モード {customizeTranslation ? 'ON' : 'OFF'} </Toggle>
             {:else}
-                <p class="mt-2">この単語の日本語はまだ登録されていません。</p>
+                <p class="mt-2 text-xs">翻訳がまだありません！</p>
                 <Button gradient color="lime" on:click={() => searchWeblio(clickedWord) }>
-                    <span class="text-3xl">🔍</span>　外部辞書で検索
+                    <span class="text-md">🔍</span>　外部辞書で検索
                 </Button>
             {/if}
 
             {#if customizeTranslation}
             <div class="mt-2 flex flex-col">
-                <Label for="part_of_speech" class="mt-2 self-start">品詞</Label>
-                <Select name="POS" bind:value={$form.POS} items={data.POS} class="mt-1"/>
+                <Label for="POS" class="mt-2 self-start">品詞</Label>
+                <Select name="POS" underline size="sm" bind:value={$form.POS} items={data.POS} class="mt-1"/>
                 <Label for="custom_translation" class="mt-2 self-start">
                     翻訳
                     <Input type="text" placeholder="翻訳を自分で入力" name="custom_translation" bind:value={$form.custom_translation} />
@@ -206,7 +206,7 @@
             </div>
             {/if}
             
-            <Button formaction="?/storeUserVocab" pill={true} type="submit" color="tealToLime" gradient class="m-4" on:click={handleTranslationSubmit}> 
+            <Button formaction="?/storeUserVocab" pill={true} type="submit" color="tealToLime" gradient class="m-4" > 
                 {customizeTranslation ? '入力' : '選択'}した翻訳で保存
             </Button>
         </div>
