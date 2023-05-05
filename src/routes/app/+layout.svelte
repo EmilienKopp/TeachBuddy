@@ -9,35 +9,35 @@
     NavLi,
     NavUl,
     NavHamburger,
-    ImagePlaceholder,
-    Skeleton,
-    TextPlaceholder,
+    Badge
   } from "flowbite-svelte";
+  
   const storeValue: Writable<number> = writable(0);
+
+  const user = $page.data.session?.user;
+
 </script>
 
 <div class="relative px-8">
   <Navbar
     navClass="px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
     let:hidden
-    let:toggle
-  >
+    let:toggle>
+
     <NavBrand href="/">
-      <img
-        src="/logo_home.png"
-        class="mr-3 h-8 sm:h-16"
-        alt="Logo"
-      />
-      <span
-        class="self-center whitespace-nowrap text-xl font-semibold dark:text-white font-raleway"
-        >Page-Turner</span
-      >
+      <img src="/logo_home.png" class="mr-3 h-8 sm:h-12" alt="Logo"/>
+      <!-- <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white font-raleway">
+        Page-Turner
+      </span> -->
+      <svg data-testid="geist-icon" fill="none" height="32" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 24 24" width="32" style="color: var(--accents-2);"><path d="M16.88 3.549L7.12 20.451"></path></svg>
+      <p class="mr-2">{user?.user_metadata.username ?? user?.email}</p>
+      <Badge rounded border color="dark">User</Badge>
     </NavBrand>
     <NavHamburger on:click={toggle} />
-    <NavUl {hidden} on:click={toggle}>
+    <NavUl {hidden} on:click={toggle} class="py-0.5">
       {#each Scaffolder.AppRail.Tiles as tile, index}
         <NavLi href={tile.href} class="text-center" >
-            <i class="bi {`bi-${tile.icon}`} md:text-3xl"></i>
+            <i class="bi {`bi-${tile.icon}`} md:text-xl"></i>
             <p>
                 {tile.label}
             </p>
