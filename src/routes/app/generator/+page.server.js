@@ -10,8 +10,6 @@ import { fail } from '@sveltejs/kit';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
-console.debug('OPENAI_API_KEY', OPENAI_API_KEY);
-
 const schema = z.object({
     prompt: z.number().default(1),
     type: z.number().int().default(1),
@@ -73,8 +71,6 @@ export async function load({locals: { supabase, getSession}}) {
     let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
     let { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
 
-    console.log(grades,POS);
-
     grades = toSelectOptions(grades, 'id', 'name');
     POS = toSelectOptions(POS, 'id', 'jp_name');
 
@@ -84,8 +80,7 @@ export async function load({locals: { supabase, getSession}}) {
 export const actions = {
     getPassage: async ({ request }) => {
         const form = await superValidate(request, schema);
-        console.log(form);
-        console.log(config.apiKey);
+
         // Validation
         if(!form.valid) {
             return fail(401, {form});
@@ -140,7 +135,7 @@ export const actions = {
             prompt: z.number().default(1),
             type: z.number().int().default(1),
             grade: z.number().int().default(1),
-            vocabulary_id: z.number().int().optional(),
+            vocabulary_id: z.number().int(),
             custom_translation: z.string().optional(),
             POS: z.string().optional(),
         });
@@ -155,7 +150,7 @@ export const actions = {
 
         const { vocabulary_id, custom_translation } = form.data;
 
-        console.log(user.id,vocabulary_id,custom_translation);
+        console.log('WILL INSERT:',user.id,vocabulary_id,custom_translation);
 
         const { data: insertedData, error } = await supabase.from('user_vocabulary').insert([
             { user_id: user.id, vocabulary_id, custom_translation }

@@ -101,9 +101,28 @@
     }
 
     async function handleTranslationSubmit(vocabulary: any) {
+        console.log('handleTranslationSubmit', data);
 
-        const {data: insertData, error } = await supabase.from('user_vocabulary').insert({custom_translation, })
+        // Handle vocabulary not existing in DB
+        if(!vocabulary.id) {
+            console.log('Vocabulary not existing in DB, adding it');
+            const {data: insertData, error } = await supabase.from('vocabulary').insert({en_word: clickedWord, isPublic: false});
+            if(error) {
+                console.log('Error inserting word:',error);
+                return;
+            }
+            vocabulary = insertData?.[0];
+        }
 
+        const {data: insertData, error } = await supabase.from('user_vocabulary').insert({
+            custom_translation, 
+            user_id: data?.session?.user.id,
+            vocabulary_id: vocabulary.id,
+        });
+        if(error) {
+            console.log('Error inserting word:',error);
+            return;
+        }
         translationModal = false;
         $form.custom_translation = '';
     }
