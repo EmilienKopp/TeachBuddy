@@ -25,7 +25,7 @@
     let:toggle>
 
     <NavBrand href="/">
-      <img src="/logo_home.png" class="mr-3 h-8 sm:h-12" alt="Logo"/>
+      <img src="/PageTurner-bg-black-reading-plus.png" class="mr-3 h-10 sm:h-12" alt="Logo"/>
       <!-- <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white font-raleway">
         Page-Turner
       </span> -->

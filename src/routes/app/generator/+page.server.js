@@ -14,7 +14,6 @@ const schema = z.object({
     prompt: z.number().default(1),
     type: z.number().int().default(1),
     grade: z.number().int().default(1),
-    message: z.string().optional(),
     testMode: z.boolean().default(false),
     vocabulary_id: z.number().int().optional(),
     custom_translation: z.string().optional(),
@@ -25,7 +24,7 @@ const schema = z.object({
 
 
 const config = new Configuration({
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+    apiKey: OPENAI_API_KEY || import.meta.env.VITE_OPENAI_API_KEY,
     baseOptions: {
         headers: {
             'Content-Type': 'application/json',
@@ -71,6 +70,9 @@ export async function load({locals: { supabase, getSession}}) {
 
     let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
     let { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
+
+    console.log(grades,POS);
+
     grades = toSelectOptions(grades, 'id', 'name');
     POS = toSelectOptions(POS, 'id', 'jp_name');
 
@@ -80,7 +82,8 @@ export async function load({locals: { supabase, getSession}}) {
 export const actions = {
     getPassage: async ({ request }) => {
         const form = await superValidate(request, schema);
-
+        console.log(form);
+        console.log(config.apiKey);
         // Validation
         if(!form.valid) {
             return fail(401, {form});

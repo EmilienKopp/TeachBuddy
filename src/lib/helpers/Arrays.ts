@@ -25,7 +25,7 @@ export function mapHeaders(headers,arr) {
 }
 
 export function toSelectOptions(arr, valueKey, labelKey) {
-  return arr.map(el => {
+  return arr?.map(el => {
     return {
       value: el[valueKey],
       name: el[labelKey]
