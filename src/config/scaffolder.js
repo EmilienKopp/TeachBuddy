@@ -34,11 +34,17 @@ export const Scaffolder = {
                 label: '辞書',
             },
             {
+                name: 'Library',
+                icon: 'bookshelf',
+                href: '/app/library',
+                label: '図書室'
+            },
+            {
                 name: 'Settings',
                 icon: 'gear',
                 href: '/app/settings',
                 label: '設定'
-            },
+            }
         ],
     },
     OptionsNav: [
