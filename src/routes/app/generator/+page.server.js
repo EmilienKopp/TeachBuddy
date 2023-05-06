@@ -11,7 +11,7 @@ import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
 const schema = z.object({
-    prompt: z.number().default(1),
+    prompt: z.string().or(z.number().default(1)),
     type: z.number().int().default(1),
     grade: z.number().int().default(1),
     testMode: z.boolean().default(false),
@@ -19,6 +19,8 @@ const schema = z.object({
     custom_translation: z.string().optional(),
     POS: z.string().optional(),
     language: z.string().optional(),
+    freeInput: z.boolean().default(false),
+    customPrompt: z.string().optional(),
 });
 
 
@@ -83,37 +85,35 @@ export async function load({locals: { supabase, getSession}}) {
 export const actions = {
     getPassage: async ({ request, locals: { supabase, getSession } }) => {
         const form = await superValidate(request, schema);
-
+        
+        console.log(form)
         // Validation
         if(!form.valid) {
             return fail(401, {form});
         }
 
-        const topic = topics.find( elem => elem.value == form.data.prompt).name;
+        let topic;
+        if(form.data.freeInput) {
+            topic = form.data.customPrompt;
+        } else {
+            topic = topics.find( elem => elem.value == form.data.prompt).name;
+        }
+        
         const contentType = types.find( elem => elem.value == form.data.type).name;
         const { user } = await getSession();
 
         let content;
         if(form.data.language != 'fr') {
-            content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
+            content = form.data.freeInput ?
+                `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary. Keep the grammar simple. 
+                The theme is provided in Japanese, but the passage has to be in English. The theme is: "${topic}".`
+                : `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
+            content += ` The passage won't be longer than 500 words.`;
         } else {
             content = `Ecris une histoire EN FRANCAIS très courte à propos de deux amis qui visitent Paris. L'histoire doit être compréhensible par un étudiant de niveau A1 inférieur. Utilise uniquement le présent de l'indicatif.`;
         }
-
+        console.log(content);
         if( form.data.testMode ) {
-            // console.log('POSTING TO OPENAI', content);
-            // const completion = await openAI.createChatCompletion({
-            //     model: 'gpt-3.5-turbo',
-            //     messages: [
-            //         {
-            //             role: "user", 
-            //             content: content
-            //         }
-            //     ],
-            // });
-        
-            // const data = completion.data;
-            // form.data.message = data.choices[0].message.content;
             console.log('POSTING TO OPENAI', content);
             const response = fetch('https://3cqrx07xfh.execute-api.ap-northeast-1.amazonaws.com/dev/',{
                 method: 'POST',
@@ -123,6 +123,7 @@ export const actions = {
                 body: JSON.stringify({
                     content: content,
                     owner_id: user.id,
+                    customPrompt: form.data.customPrompt,
                 }),
             });
         } else {

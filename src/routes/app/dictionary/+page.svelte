@@ -56,11 +56,11 @@
                     <Input size="xs" class="text-xs" bind:value={item.custom_translation} on:change={() => updateUserVocab(item.id, item.custom_translation)}/>
                 </TableBodyCell>
             </TableBodyRow>
-            <!-- <Popover trigger="click" triggeredBy={`#vocab-${item.id}`} arrow={false} class="pt-3">
+            <Popover trigger="click" triggeredBy={`#vocab-${item.id}`} arrow={false} class="pt-3">
                 <FloatingLabelInput type="text" label="my翻訳" bind:value={item.custom_translation} size="xs"/>
                 <Button class="mt-3" type="button" pill size="xs" fill color="red" on:click={() => deleteUserVocab(item.id)}>🗑️ 削除</Button>
                 <Button class="mt-3" type="button" pill size="xs" fill color="green" on:click={() => updateUserVocab(item.id, item.custom_translation) }>💾 保存</Button>
-            </Popover> -->
+            </Popover>
 
         {/each}
         <TableBodyRow>
