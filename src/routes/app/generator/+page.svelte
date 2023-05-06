@@ -2,7 +2,7 @@
     import type { PageData } from './$types';
     import { removePunctuation, splitWords } from "$lib/helpers/Text";
     import { superForm } from 'sveltekit-superforms/client';
-    import { Button, Spinner, Toggle, Popover, Modal, Radio, Toast, Select, Label, Input } from 'flowbite-svelte';
+    import { Badge, Button, Spinner, Toggle, Popover, Modal, Radio, Toast, Select, Label, Input } from 'flowbite-svelte';
     import { searchWeblio } from '$lib/services/weblio';
     import { slide, fade } from 'svelte/transition';
     import { random, uniquify, Policies, toSelectOptions } from '$lib/helpers/Arrays';
@@ -22,6 +22,17 @@
     let custom_translation: string = "";
     let selectedVocab: any = {};
     let selectedPOS: string = "";
+    let passage: string = "";
+
+    
+    supabase.channel('any')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'passages' }, payload => {
+                console.log('Change received!', payload);
+                loading = false;
+                passage = payload.new.content;
+                splitPassage = splitWords(passage);
+            })
+            .subscribe()
 
     
 
@@ -30,7 +41,7 @@
         applyAction: true,
         resetForm: false,
         invalidateAll: true,
-        onUpdated: ({ form }) => { loading = false; console.log('Loading:',loading) },
+        onUpdated: ({ form }) => { console.log('Loading:',loading) },
     });
 
     let splitPassage: Array<string> = [];
@@ -131,9 +142,9 @@
         loading = true;
     }
 
-    $: splitPassage = splitWords($form.message);
+    // $: if(passage) { console.log(passage); splitPassage = splitWords(passage); }
 
-    $: console.log($form, selectedVocab);
+    $: console.log(Math.round(data.averageDuration / 1000), $form, selectedVocab);
 
     $: noTranslationFound = wordMatchesList?.filter((el: any) => el.jp_word).length === 0;
     
@@ -156,6 +167,9 @@
             <Select label="Language" name="language" bind:value={$form.language} items={ data.languages } class="my-2"/>
             <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
         </div>
+        <Badge class="mt-2">
+            <span class="text-xl mr-2">⏱️</span> 平均生成時間: {data.averageDuration ? Math.round(data.averageDuration / 1000) : 0} seconds 
+        </Badge>
 
         <Button pill={true} type="submit" color="tealToLime" outline gradient class="m-4" on:click={handleSubmit}> 
             <span class="text-3xl mr-2">

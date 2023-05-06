@@ -70,15 +70,18 @@ export async function load({locals: { supabase, getSession}}) {
 
     let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
     let { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
+    let { data: passagesData, error: avgError} = await supabase.from('passages').select('*');
+
+    const averageDuration = passagesData.map( el => el.generation_duration).reduce((a,b) => a+b, 0) / passagesData.length;
 
     grades = toSelectOptions(grades, 'id', 'name');
     POS = toSelectOptions(POS, 'id', 'jp_name');
 
-    return { form, types, grades, topics, POS, languages };
+    return { form, types, grades, topics, POS, languages, averageDuration };
 }
 
 export const actions = {
-    getPassage: async ({ request }) => {
+    getPassage: async ({ request, locals: { supabase, getSession } }) => {
         const form = await superValidate(request, schema);
 
         // Validation
@@ -86,8 +89,10 @@ export const actions = {
             return fail(401, {form});
         }
 
-        const topic = topics.find( elem => elem.value = form.data.prompt).name;
-        const contentType = types.find( elem => elem.value= form.data.type).name;
+        const topic = topics.find( elem => elem.value == form.data.prompt).name;
+        const contentType = types.find( elem => elem.value == form.data.type).name;
+        const { user } = await getSession();
+
         let content;
         if(form.data.language != 'fr') {
             content = `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
@@ -96,20 +101,30 @@ export const actions = {
         }
 
         if( form.data.testMode ) {
+            // console.log('POSTING TO OPENAI', content);
+            // const completion = await openAI.createChatCompletion({
+            //     model: 'gpt-3.5-turbo',
+            //     messages: [
+            //         {
+            //             role: "user", 
+            //             content: content
+            //         }
+            //     ],
+            // });
+        
+            // const data = completion.data;
+            // form.data.message = data.choices[0].message.content;
             console.log('POSTING TO OPENAI', content);
-            const completion = await openAI.createChatCompletion({
-                model: 'gpt-3.5-turbo',
-                messages: [
-                    {
-                        role: "user", 
-                        content: content
-                    }
-                ],
+            const response = fetch('https://3cqrx07xfh.execute-api.ap-northeast-1.amazonaws.com/dev/',{
+                method: 'POST',
+                header: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: content,
+                    owner_id: user.id,
+                }),
             });
-        
-            const data = completion.data;
-            form.data.message = data.choices[0].message.content;
-        
         } else {
             // sleep for 3s
             await new Promise(r => setTimeout(r, 1000));
@@ -124,9 +139,9 @@ export const actions = {
             It’s important to be a good friend too. We should be kind, reliable, and treat our friends how we would want to be treated. Respect their feelings and beliefs, and appreciate the things they do for us.
             
             So remember, friends help us when we need it, make life more fun, and can make us feel a lot better when we’re feeling down. It’s important to be a good friend and to cherish the friendships we have.`;
+    
         }
-
-        return message(form,'SUCCESS!')
+        return message(form,'SUCCESS!');     
     },
     storeUserVocab: async ({ request, locals: { supabase, getSession } }) => {
         //TODO: exclude passage from the form input before posting
