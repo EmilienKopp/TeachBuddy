@@ -1,5 +1,6 @@
 <script lang="ts">
     import UnderConstruction from '$lib/components/atoms/UnderConstruction.svelte';
+    import InfoBubble from '$lib/components/atoms/InfoBubble.svelte';
     import type { PageData } from './$types';
     import { Button, FloatingLabelInput, Input, Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, TableSearch } from 'flowbite-svelte';
 
@@ -40,8 +41,8 @@
     </Input>
 </div>
 
-
-<Table striped={true} hoverable={true} divClass="relative overflow-x-auto shadow-md sm:rounded-lg pt-20" >
+<InfoBubble message="テーブルにクリック・タップして編集・削除できます。"/>
+<Table hoverable={true} divClass="relative overflow-x-auto shadow-md sm:rounded-lg pt-2" >
     <TableHead>
         <TableHeadCell>English</TableHeadCell>
         <TableHeadCell><span class="text-xs">日本語</span></TableHeadCell>
@@ -49,14 +50,14 @@
     </TableHead>
     <TableBody>
         {#each filteredItems as item, key}
-            <TableBodyRow id={`vocab-${item.id}`}>
-                <TableBodyCell class="text-xs px-2">{item?.vocabulary?.en_word}</TableBodyCell>
-                <TableBodyCell class="text-xs px-2">{item?.vocabulary?.jp_word ?? '-'}</TableBodyCell>
-                <TableBodyCell class="text-xs px-2">
+            <TableBodyRow>
+                <TableBodyCell class="text-xs px-2 {`vocab-${item.id}`}">{item?.vocabulary?.en_word}</TableBodyCell>
+                <TableBodyCell class="text-xs px-2 {`vocab-${item.id}`}">{item?.vocabulary?.jp_word ?? '-'}</TableBodyCell>
+                <TableBodyCell class="text-xs px-2 {`vocab-${item.id}`}">
                     <Input size="xs" class="text-xs" bind:value={item.custom_translation} on:change={() => updateUserVocab(item.id, item.custom_translation)}/>
                 </TableBodyCell>
             </TableBodyRow>
-            <Popover trigger="click" triggeredBy={`#vocab-${item.id}`} arrow={false} class="pt-3">
+            <Popover trigger="click" triggeredBy={`.vocab-${item.id}`} arrow={false} class="pt-3" placement="{key === 0 ? 'bottom' : 'top'}">
                 <FloatingLabelInput type="text" label="my翻訳" bind:value={item.custom_translation} size="xs"/>
                 <Button class="mt-3" type="button" pill size="xs" fill color="red" on:click={() => deleteUserVocab(item.id)}>🗑️ 削除</Button>
                 <Button class="mt-3" type="button" pill size="xs" fill color="green" on:click={() => updateUserVocab(item.id, item.custom_translation) }>💾 保存</Button>
