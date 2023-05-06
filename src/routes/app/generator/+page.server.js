@@ -5,10 +5,12 @@ import { message, superValidate } from 'sveltekit-superforms/server';
 
 import {
     OPENAI_API_KEY
-} from '$env/static/public';
+} from '$env/static/private';
 import { fail } from '@sveltejs/kit';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
+
+console.debug('OPENAI_API_KEY', OPENAI_API_KEY);
 
 const schema = z.object({
     prompt: z.number().default(1),
