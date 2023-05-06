@@ -111,8 +111,8 @@ export const actions = {
             form.data.message = data.choices[0].message.content;
         
         } else {
-            // sleep
-            await new Promise(r => setTimeout(r, 11000));
+            // sleep for 3s
+            await new Promise(r => setTimeout(r, 1000));
 
             // DUMMY for dev mode
             form.data.message = `        Having friends is really important. Friends are people who are nice to us and make us feel happy. They like to play with us, share things with us, and help us when we need it. 
