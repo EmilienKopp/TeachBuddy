@@ -168,7 +168,7 @@
             <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
         </div>
         <Badge class="mt-2">
-            <span class="text-xl mr-2">⏱️</span> 平均生成時間: {data.averageDuration ? Math.round(data.averageDuration / 1000) : 0} seconds 
+            <span class="text-xl mr-2">⏱️</span> 平均生成時間: { 1.1 * data.averageDuration ? Math.round(data.averageDuration / 1000) : 0} seconds 
         </Badge>
 
         <Button pill={true} type="submit" color="tealToLime" outline gradient class="m-4" on:click={handleSubmit}> 
