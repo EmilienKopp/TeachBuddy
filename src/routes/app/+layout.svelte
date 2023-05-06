@@ -3,6 +3,7 @@
   import { writable, type Writable } from "svelte/store";
   import { Scaffolder } from "/src/config/scaffolder";
   import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
   import {
     Navbar,
     NavBrand,
@@ -15,6 +16,14 @@
   const storeValue: Writable<number> = writable(0);
 
   const user = $page.data.session?.user;
+
+  const logout = async () => {
+    const { error } = await $page.data.supabase.auth.signOut();
+    if(error) {
+      console.error(error);
+    }
+    await goto("/auth/login");
+  };
 
 </script>
 
@@ -42,7 +51,13 @@
                 {tile.label}
             </p>
         </NavLi>
-    {/each}
+      {/each}
+      <NavLi class="text-center" on:click={logout}>
+        <i class="bi bi-box-arrow-right md:text-xl"></i>
+        <p>
+          Logout
+        </p>
+      </NavLi>
     </NavUl>
   </Navbar>
 </div>
