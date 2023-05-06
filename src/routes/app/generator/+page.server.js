@@ -96,6 +96,7 @@ export const actions = {
         }
 
         if( form.data.testMode ) {
+            console.log('POSTING TO OPENAI', content);
             const completion = await openAI.createChatCompletion({
                 model: 'gpt-3.5-turbo',
                 messages: [
