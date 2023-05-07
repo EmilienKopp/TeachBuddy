@@ -8,7 +8,7 @@
     let cards = cardsData?.map((card: any) => {
       return {
         front: card.vocabulary.en_word,
-        back: `${card.vocabulary.jp_word ?? ''} \n ${card.custom_translation ?? ''}`,
+        back: `${card.vocabulary.ja_word ?? ''} \n ${card.custom_translation ?? ''}`,
       };
     });
 
