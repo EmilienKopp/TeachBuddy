@@ -110,7 +110,8 @@ export const actions = {
                 : `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
             content += ` The passage won't be longer than 500 words.`;
         } else {
-            content = `Ecris une histoire EN FRANCAIS très courte à propos de deux amis qui visitent Paris. L'histoire doit être compréhensible par un étudiant de niveau A1 inférieur. Utilise uniquement le présent de l'indicatif.`;
+            content = `Ecris une histoire EN FRANCAIS très courte à propos de deux amis qui visitent Paris. 
+            L'histoire doit être compréhensible par un étudiant de niveau A1 inférieur. N'utilise que les 300 mots les plus courants de la langue française. Utilise uniquement le présent de l'indicatif.`;
         }
         console.log(content);
         if( form.data.testMode ) {
