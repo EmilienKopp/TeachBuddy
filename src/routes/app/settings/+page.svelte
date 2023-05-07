@@ -1,149 +1,75 @@
 <script lang="ts">
-    import type { PageData } from "./$types";
-    import { superForm } from "sveltekit-superforms/client";
-    import { XSVto2dArray, XSVtoObjectArray } from "$lib/helpers/Text";
-    import Select from "$lib/components/atoms/Select.svelte";
-    import { deleteColumn } from "$lib/helpers/Arrays";
-    import type { TableSource } from "@skeletonlabs/skeleton";
-    import UnderConstruction from "$lib/components/atoms/UnderConstruction.svelte";
-    import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+    import { Button, Checkbox, Chevron, Dropdown, Label, Select } from 'flowbite-svelte';
+    import type { SelectOptionType } from '$lib/helpers/Arrays';
+    import type { PageData } from './$types';
 
     export let data: PageData;
 
-    let loading: boolean = false;
+    let languages: SelectOptionType[] | any[] = data.languages as SelectOptionType[] | any[];
+    let selectableLanguages: SelectOptionType[] | any[];
+    let selectedLanguages: string[] = [];
+    let nativeLanguage: string = '';
 
-    let fileInput: any;
-    let fileName: string;
-    let fileData: any;
-    let filePreview: Array<any> = [];
-    let columnHeaders: Array<string> = [];
-    let delimiter = ','; // default delimiter
-    let sourceData;
-    let tableSimple: TableSource = {
-        head: [],
-        body: [],
-    };
-
-    const { form, enhance, reset, errors, constraints, validate } = superForm(data.form, {
-        dataType: 'json',
-        applyAction: true,
-        resetForm: false,
-        invalidateAll: true,
-        onUpdated: ({ form }) => { loading = false; console.log('Loading:',loading) },
-    });
-
-    const handleFileChange = (event: Event) => {
-        const file: File = event?.target?.files[0];
-        fileName = file.name;
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e?.target?.result;
-                delimiter = file.name.endsWith('.tsv') ? '\t' : ',';
-
-                fileData = XSVto2dArray(content, delimiter);
-                $form.vocabData = JSON.stringify(fileData);
-
-                columnHeaders = fileData[0].filter((header: string) => header.trim() != '');
-            };
-            reader.readAsText(file);
+    async function saveNativeLanguage() {
+        if(nativeLanguage) {
+            console.log('Saving native language:', nativeLanguage, data.session?.user.id);
+            const { data: profileData, error: profileError } = await data.supabase.from('profiles')
+                                                    .upsert({ id: data.session?.user.id, native_language: nativeLanguage })
+                                                    .eq('id', data.session?.user.id).select();
+            if(profileError) console.log('Error updating profile:', profileError);
+            else console.log('Profile updated:', profileData);
         }
-    };
-
-    const columnDeletionHandler = (index: number) => {
-        fileData = deleteColumn(fileData,index);
-        columnHeaders.splice(index,1); 
-        columnHeaders = [...columnHeaders]
-        $form.columnHeaders.splice(index,1);
-        $form.columnHeaders = [...$form.columnHeaders];
     }
 
-    const resetFileInput = () => {
-        fileInput.value = null;
-        fileName = '';
-        filePreview = columnHeaders = [] ;
+    async function saveStudyingLanguages() {
+        if(selectedLanguages.length > 0) {
+            const studyingLanguagesRows = selectedLanguages.map(lang => ({ user_id: data.session?.user.id, lang_code: lang }));
+            const { data: studyingData, error: studyingError } = await data.supabase.from('studying_languages')
+                                                        .upsert(studyingLanguagesRows)
+                                                        .eq('user_id', data.session?.user.id);
+            // Delete where not in selectedLanguages
+            const { data: studyingDeleteData, error: studyingDeleteError } = await data.supabase.from('studying_languages')
+                                                        .delete()
+                                                        .eq('user_id', data.session?.user.id)
+                                                        .not('lang_code', 'in', selectedLanguages);
+            if(studyingError || studyingDeleteError) console.log('Error updating studying languages:', studyingError, studyingDeleteError);
+            else console.log('Studying languages updated:', studyingData, studyingDeleteData);
+        }
     }
+    
 
-    $: {
-        $form.vocabData = JSON.stringify(fileData);
-    }
-
+    $: selectableLanguages = languages.filter(lang => lang.value !== nativeLanguage);
+    $: console.log(selectedLanguages, nativeLanguage)
 </script>
 
-<UnderConstruction />
+<div class="mt-12 p-2 md:p-8">
+    <h1 class="text-2xl text-teal-400 font-bold mb-5">設定・Settings</h1>
 
+    <section class="flex flex-col gap-5 mt-1">
+        <h2 class="font-semibold italic ">言葉・Language</h2>
+        <Label>
+            <span class="italic">母国語は...・My native language is ...</span>
+            <Select class="mt-2" items={languages} bind:value={nativeLanguage} on:change={saveNativeLanguage}/>
+        </Label>
+        <Label>
+            <p class="font-semibold italic"></p>
+            <Button><Chevron>勉強中・I'm studying...</Chevron></Button>
+            <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
+                {#each selectableLanguages as lang, key}
+                <li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+                    <Checkbox class="p-3" bind:group={selectedLanguages} value={lang.value} on:change={saveStudyingLanguages}>{lang.name}</Checkbox>
+                </li>
+                {/each}
+            </Dropdown>
+        </Label>
+        {#if nativeLanguage && selectedLanguages.length > 0}
+        <p>
+            🤖🗯️ Hello, I see you speak <span class="text-cyan-500 font-semibold">{languages.find(el => el.value === nativeLanguage).name}</span> and are studying 
+            <span class="text-orange-400 font-semibold">{languages.filter(el => selectedLanguages.includes(el.value)).map(el => el.name) }</span>.
+        </p>
+        {/if}
 
+    </section>
 
-    <h1 class="mb-6">Options</h1>
-
-    <form method="POST" use:enhance>
-        <input type="hidden" bind:value={$form.vocabData} name="vocabData"/>
-        <div class="grid grid-cols-3">
-            <!-- Inputs -->
-            <div class="mx-2">
-                <label for="gradeVocabList" class="label">Update Grade Vocab List</label>
-                <input name="gradeVocabList" class="input"
-                    type="file"
-                    accept=".csv,.tsv"
-                    on:change="{handleFileChange}" />
-            </div>
-
-            <div class="mx-2">
-                <label for="frequencyVocabList" class="label">Update Frequency Vocab List</label>
-                <input name="frequencyVocabList" class="input"
-                    type="file"
-                    accept=".csv,.tsv"
-                    bind:this="{fileInput}"
-                    bind:value="{fileInput.files[0]}"
-                    on:change="{handleFileChange}" />
-            </div>
-
-            <div class="mx-2">
-                <label for="sentencesList" class="label">Update Sentences</label>
-                <input name="sentencesList" class="input"
-                    type="file"
-                    accept=".csv,.tsv"
-                    on:change="{handleFileChange}" />
-            </div>
-
-            {#if fileName}
-            <h3> {fileName} </h3>
-            <button type="button" on:click={resetFileInput}>Reset</button>
-            <button type="submit">Register</button>
-            {/if}
-
-            <!-- Preview -->
-            <div class="table-container w-full mt-4 col-span-3">
-                {#if fileData}
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            {#each columnHeaders as header, index}
-                            <th>
-                                <label for="columnNames[{header}]">{header.length > 0 ? header : 'N/A'}</label>
-                                <Select name="columnHeaders[{index}]" data={data.vocabColumns} bind:value={ $form.columnHeaders[index] }/>
-                                <button type="button" on:click={() => { columnDeletionHandler(index) } }>X</button>
-                            </th>
-                            {/each}
-                        </tr>
-                    <tbody>
-                    {#each fileData.slice(0,15) as row, rowIndex}
-                        {#if rowIndex}
-                        <tr>
-                            {#each row as cell, cellIndex}
-                                <td>{cell}</td>
-                            {/each}
-                        </tr>
-                        {/if}
-                        
-                    {/each}
-                    <tr>
-                        <td colspan="999" align="center" class="text-3xl">...</td>
-                    </tr>
-                    </tbody>
-                </table>
-                {/if}
-            </div>
-        </div>
-    </form>
+</div>
 

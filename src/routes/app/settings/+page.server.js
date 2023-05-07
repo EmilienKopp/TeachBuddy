@@ -1,47 +1,45 @@
 // @ts-nocheck
 
-import {
-    PUBLIC_SUPABASE_ANON_KEY,
-    PUBLIC_SUPABASE_URL
-} from '$env/static/public';
+import { message, superValidate } from 'sveltekit-superforms/server';
 
-import { createClient } from '@supabase/supabase-js';
 import { fail } from '@sveltejs/kit';
-import { mapHeaders } from '$lib/helpers/Arrays';
-import { superValidate } from 'sveltekit-superforms/server';
-import { vocabSettingsSchema } from '$lib/config/schemas';
+import { toSelectOptions } from '$lib/helpers/Arrays';
+import { z } from 'zod';
 
-const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
+const schema = z.object({
+    prompt: z.number().default(1),
+    type: z.number().int().default(1),
+    grade: z.number().int().default(1),
+    testMode: z.boolean().default(false),
+    vocabulary_id: z.number().int().optional(),
+    custom_translation: z.string().optional(),
+    POS: z.string().optional(),
+    language: z.string().default('en'),
+    freeInput: z.boolean().default(false),
+    customPrompt: z.string().optional(),
+});
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load() {
-    const form = await superValidate(vocabSettingsSchema);
-    let { data: vocabularyData, error } = await supabase.from('vocabulary').select('*');
+export async function load({locals: { supabase, getSession}}) {
+    
+    const form = await superValidate(schema);
 
-    const vocabColumns = vocabularyData ? Object.keys(vocabularyData[0]) : [];
+    let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
+    let { data: languages, error: langError} = await supabase.from('languages').select('lang_code, name_native').neq('name_native',null);
 
-    return { form, vocabColumns, vocabularyData};
+    grades = toSelectOptions(grades, 'id', 'name');
+    languages = toSelectOptions(languages, 'lang_code', 'name_native');
+
+    if (gradesError || langError) {
+        fail('Failed to load data');
+    }
+
+    return { form, grades, languages };
 }
 
 export const actions = {
-    default: async ({ request }) => {
-        const formData = await request.formData();
-        const form = await superValidate(formData, vocabSettingsSchema);
-        let list, delimiter, fileData,  columnHeaders;
-        if (!form.valid) return fail(400, { form });
-
-        let listData = JSON.parse(form.data.vocabData);
-        listData.splice(0, 1);
+    getPassage: async ({ request, locals: { supabase, getSession } }) => {
         
-        // transform listData into an array of objects that have the column headers as keys
-        listData = mapHeaders(form.data.columnHeaders,listData);
-        listData = listData.filter((el) => /^[a-zA-Z0-9]*$/.test(el.en_word) );
-
-        const {data, error} = await supabase.from('vocabulary').insert(listData);
-
-        return { form };
-    },
+        return message(form,'SUCCESS!');     
+    }
 }
-
-
-
