@@ -50,7 +50,7 @@
 
 </script>
 
-<div class="mt-10 md:mt-2 px-2 md:px-8">
+<div class="mt-10 md:mt-2 px-2 md:px-12 md:mx-auto md:w-3/5">
 
     <Tabs>
         <TabItem title="基本・Basic" open>

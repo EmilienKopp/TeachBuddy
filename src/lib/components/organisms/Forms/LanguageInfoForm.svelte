@@ -1,14 +1,13 @@
 <script lang="ts">
     import { Button, Checkbox, Chevron, Dropdown, Label, Select } from 'flowbite-svelte';
     import type { SelectOptionType } from '$lib/helpers/Arrays';
-    import { onMount } from 'svelte';
+    import SaveButton from '$lib/components/atoms/SaveButton.svelte';
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
     import { superForm } from 'sveltekit-superforms/client';
 
     export let data: any;
-    export let form: any;
 
-    const { form: langForm, enhance: langFormEnhance } = superForm(data.langForm, {
+    const { form: langForm, enhance: langFormEnhance, tainted } = superForm(data.langForm, {
         id: 'langForm',
         dataType: 'json',
         applyAction: true,
@@ -78,10 +77,9 @@
         <span class="text-orange-400 font-semibold">{languages.filter(el => $langForm.studying_languages.includes(el.value)).map(el => el.name) }</span>.
         <br/>
         <br/>
-        Don't forget to save your changes! 👇
-    </p>
+        { $tainted ? "Don't forget to save your changes!" : '' }
     {/if}
-    <Button type="submit" gradient color="cyanToBlue" shadow="teal" class="fixed bottom-6 right-6">保存・Save</Button>
+    <SaveButton type="submit" tainted={$tainted} />
 </form>
 </section>
 
