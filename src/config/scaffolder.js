@@ -28,10 +28,10 @@ export const Scaffolder = {
                 label: '長文生成'
             },
             {
-                name: 'Dictionary',
+                name: 'Wordbook',
                 icon: 'book',
-                href: '/app/dictionary',
-                label: '辞書',
+                href: '/app/wordbook',
+                label: '単語帳',
             },
             {
                 name: 'Library',
