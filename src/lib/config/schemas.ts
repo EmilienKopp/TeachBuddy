@@ -13,6 +13,34 @@ export const registerSchema = z.object({
 });
 
 /**
+ * Schema for the User Basic Info form.
+ */
+export const userBasicInfoSchema = z.object({
+    username: z.string().min(3).max(20).optional(),
+    first_name: z.string().min(3).max(20).optional(),
+    last_name: z.string().min(3).max(20).optional(),
+    email: z.string().email().optional(),
+    user_number: z.string().min(3).max(20).optional().or(z.number().optional()),
+});
+
+/**
+ * Schema for languages settings form.
+ */
+export const languagesSettingsSchema = z.object({
+    native_language: z.string().optional(),
+    studying_languages: z.string().optional().array(),
+});
+
+export const storeUserVocabSchema = z.object({
+    prompt: z.number().default(1),
+    type: z.number().int().default(1),
+    grade: z.number().int().default(1),
+    vocabulary_id: z.number().int().array(),
+    custom_translation: z.string().optional(),
+    POS: z.string().optional(),
+});
+
+/**
  * Schema for the Login form.
  */
 export const loginSchema = z.object({

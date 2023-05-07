@@ -1,4 +1,9 @@
 // @ts-nocheck
+export type SelectOptionType = {
+	name: string | number;
+	value: string | number;
+};
+
 
 export function random(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -24,14 +29,21 @@ export function mapHeaders(headers,arr) {
   });
 }
 
-export function toSelectOptions(arr, valueKey, labelKey) {
+export function toSelectOptions(arr, valueKey, labelKey): SelectOptionType[] | any[] {
   return arr?.map(el => {
     return {
       value: el[valueKey],
       name: el[labelKey]
-    }
+    };
   });
 }
+
+export function vertical(arr, key) {
+  return arr.map(el => {
+    return el[key]
+  })
+}
+
 
 type DuplicateCheckOptions = {
   key?: string,
