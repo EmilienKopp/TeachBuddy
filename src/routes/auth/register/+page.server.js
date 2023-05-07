@@ -36,6 +36,14 @@ export const actions = {
         if(signUpError) {
             return fail(400, { form });
         } else {
+            // Create Profile
+            const { data: profileData, error: profileError } = await supabase.from('profiles')
+                                                                             .insert({ id: signUpData.user.id, 
+                                                                                username: form.data?.username, 
+                                                                                user_number: form.data.user_number,
+                                                                                native_language: form.data.lang_code,
+                                                                                created_at: Date.now(),
+                                                                             }).select();
             throw redirect(300,'/app/account');
         }
         
