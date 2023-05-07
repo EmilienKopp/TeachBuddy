@@ -4,6 +4,7 @@
     import type { PageData } from './$types';
     import { invalidateAll } from '$app/navigation';
     import InfoBubble from '$lib/components/atoms/InfoBubble.svelte';
+    import { superForm } from 'sveltekit-superforms/client';
 
     export let data: PageData;
     const supabase = data.supabase;
@@ -15,6 +16,13 @@
     let selectedKey: number;
     let modalOpen: boolean = false;
     let passageOpen: boolean = false;
+
+    const { form, enhance, reset, errors, constraints, message } = superForm(data.form, {
+        dataType: 'json',
+        applyAction: true,
+        resetForm: false,
+        invalidateAll: true,
+    });
 
     async function deletePassage() {
         if(!confirm('完全に削除されます😨 \n本当にやってしまいますか？')) return;
@@ -113,7 +121,9 @@
         文章を閉じる
     </Button>
     <div class="mt-4 px-2 pb-16 md:px-16">
-        <Reader passage={selectedItem} themeColor="blue" pageData={data}/>
+        <form method="POST" action="?/getPassage" use:enhance>
+            <Reader passage={selectedItem} themeColor="blue" pageData={data}/>
+        </form>
     </div>
 {/if}
 </div>
