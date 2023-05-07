@@ -25,8 +25,31 @@ export const handle: Handle = async ({ event, resolve }) => {
       const {
         data: { session }
       } = await event.locals.supabase.auth.getSession();
+      if(session) {
+        const { data: profileData, error } = await event.locals.supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        const { data: studyingLanguages, error: studyingLangError} = await event.locals.supabase.from('studying_languages').select('lang_code').eq('user_id', session.user.id);
+        
+        if(!studyingLangError) profileData.studying_languages = studyingLanguages?.map(el => el.lang_code);
+        
+        if(!error) session.user.profile = profileData;
+      }
       return session;
     };
+
+    event.locals.refreshSession = async () => {
+      const {
+        data: { session }
+      } = await event.locals.supabase.auth.refreshSession();
+      if(session) {
+        const { data: profileData, error } = await event.locals.supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        const { data: studyingLanguages, error: studyingLangError} = await event.locals.supabase.from('studying_languages').select('lang_code').eq('user_id', session.user.id);
+        
+        if(!studyingLangError) profileData.studying_languages = studyingLanguages?.map(el => el.lang_code);
+        
+        if(!error) session.user.profile = profileData;
+      }
+      return session;
+    }
 
     if(event.url.pathname == '/') {
       throw redirect(303, '/app/dashboard');
@@ -40,8 +63,6 @@ export const handle: Handle = async ({ event, resolve }) => {
         throw redirect(303, '/auth/login');
       }
     }
-
-
 
     return resolve(event, {
       /**
