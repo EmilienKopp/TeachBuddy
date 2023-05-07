@@ -2,7 +2,7 @@
     import type { PageData } from './$types';
     
     import { superForm } from 'sveltekit-superforms/client';
-    import { Badge, Button, FloatingLabelInput, Spinner, Toggle, Toast, Select } from 'flowbite-svelte';
+    import { Badge, Button, FloatingLabelInput, Helper, Input, Label, Select, TextPlaceholder, Spinner, Toggle, Toast } from 'flowbite-svelte';
     import { slide, fade } from 'svelte/transition';
     import { random, uniquify, Policies, toSelectOptions } from '$lib/helpers/Arrays';
     import Reader from '$lib/components/organisms/Reader.svelte';
@@ -73,22 +73,38 @@
 {/if}
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
-<div class="w-full h-full sm:p-16 px-2 pt-8 mt-8">
-
+<div class="w-full h-full sm:px-16 px-2 mt-10">
+    <Badge class="mb-4">長文生成・Generator</Badge>
     <form method="POST" action="?/getPassage" use:enhance>
-        <div class="md:grid md:grid-cols-3 flex flex-col">
-            <Select label="Type" name="type" bind:value={$form.type} items={data.types} class="my-2"/>
-            <Select label="Grade" name="type" bind:value={$form.grade} items={data.grades} class="my-2"/>
+        <div class="md:grid md:grid-cols-2 flex flex-col gap-2">
+            <Label for="type">
+                <span class="italic">種類・Type</span>
+                <Select label="Type" name="type" bind:value={$form.type} items={data.types}/>
+            </Label>
+
+            <Label>
+                <span class="italic">言語・Language</span>
+                <Select label="Language" name="language" bind:value={$form.language} items={ data.languages }/>
+            </Label>
             {#if $form.freeInput}
-            <FloatingLabelInput type="text" name="prompt" label="テーマ" bind:value={$form.customPrompt} class="my-3"/>
+                <Label for="prompt">
+                    <span class="italic">自分で入力・Custom Prompt</span>
+                    <Input type="text" name="prompt" label="テーマ" placeholder="ここで入力・Type here..." bind:value={$form.customPrompt}/>
+                    <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint</Helper>
+                </Label>
             {:else}
-            <Select label="Topic" name="prompt" bind:value={$form.prompt} items={data.topics} class="my-2 md:col-span-3"/>
+                <Label for="prompt">
+                    <span class="italic">テーマ・Prompt</span>
+                    <Select label="Topic" name="prompt" bind:value={$form.prompt} items={data.topics}/>
+                    <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint </Helper>
+                </Label>
             {/if}
-            <Toggle color={randomColor} name="freeInput" bind:checked={$form.freeInput}> 自分で入力 </Toggle>
-            <Select label="Language" name="language" bind:value={$form.language} items={ data.languages } class="my-2"/>
+
+
+            <Toggle color={randomColor} name="freeInput" bind:checked={$form.freeInput}> 自分で入力・Free Input </Toggle>
             <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
         </div>
-        <Badge class="mt-2">
+        <Badge class="mt-2" color="green">
             <span class="text-xl mr-2">⏱️</span> 平均生成時間: { 1.1 * data.averageDuration ? Math.round(data.averageDuration / 1000) : 0} seconds 
         </Badge>
 
@@ -104,9 +120,15 @@
         </Button>
     </form>
 
+    
+
     {#if passage}
         <div class="pb-16">
             <Reader {passage} themeColor={randomColor} pageData={data}/>
         </div>
+    {:else}
+        {#if loading}
+            <TextPlaceholder size="xxl" class="mx-2 p-2 "/>
+        {/if}
     {/if}
 </div>

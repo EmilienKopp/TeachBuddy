@@ -7,13 +7,14 @@ import {
     OPENAI_API_KEY
 } from '$env/static/private';
 import { fail } from '@sveltejs/kit';
+import { storeUserVocabSchema } from '$lib/config/schemas';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
 const schema = z.object({
     prompt: z.number().default(1),
     type: z.number().int().default(1),
-    grade: z.number().int().default(1),
+    grade: z.number().int().optional(),
     testMode: z.boolean().default(false),
     vocabulary_id: z.number().int().optional(),
     custom_translation: z.string().optional(),
@@ -36,12 +37,6 @@ const config = new Configuration({
 });
 
 const openAI = new OpenAIApi(config);
-
-const languages = [
-    { value: 'en', name: 'English' },
-    { value: 'fr', name: 'French' },
-    { value: 'ja', name: 'Japanese' },
-];
 
 const types = [
     { value: 1, name: 'Short Story' },
@@ -73,11 +68,14 @@ export async function load({locals: { supabase, getSession}}) {
     let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
     let { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
     let { data: passagesData, error: avgError} = await supabase.from('passages').select('*');
+    let { data: languages, error: langError} = await supabase.from('languages').select('lang_code, name_native').neq('name_native',null);
+
+    console.log(languages);
 
     const averageDuration = passagesData.map( el => el.generation_duration).reduce((a,b) => a+b, 0) / passagesData.length;
 
     grades = toSelectOptions(grades, 'id', 'name');
-    POS = toSelectOptions(POS, 'id', 'jp_name');
+    languages = toSelectOptions(languages, 'lang_code', 'name_native');
 
     return { form, types, grades, topics, POS, languages, averageDuration };
 }
@@ -134,14 +132,7 @@ export const actions = {
         //TODO: exclude passage from the form input before posting
         const formData = await request.formData();
 
-        const storeUserVocabSchema = z.object({
-            prompt: z.number().default(1),
-            type: z.number().int().default(1),
-            grade: z.number().int().default(1),
-            vocabulary_id: z.number().int(),
-            custom_translation: z.string().optional(),
-            POS: z.string().optional(),
-        });
+        
             
         const form = await superValidate(formData, storeUserVocabSchema);
 
@@ -151,15 +142,20 @@ export const actions = {
 
         const { user } = await getSession();
 
-        const { vocabulary_id, custom_translation } = form.data;
-
-        console.log('WILL INSERT:',user.id,vocabulary_id,custom_translation);
-
-        const { data: insertedData, error } = await supabase.from('user_vocabulary').insert([
-            { user_id: user.id, vocabulary_id, custom_translation }
-        ]).select();
-
-        console.log('Inserting:', insertedData, error);
+        // Custom Translation
+        if(form.data.custom_translation) {
+            const { vocabulary_id, custom_translation } = form.data;
+            const { data: insertedData, error } = await supabase.from('user_vocabulary').insert([
+                { user_id: user.id, vocabulary_id, custom_translation }
+            ]).select();
+        } else {
+            const vocabularyArray = form.data.vocabulary_id;
+            vocabularyArray.map((vocab) => {
+               return  { user_id: user.id, vocabulary_id: vocab.id }
+            });
+            const { data: insertedData, error } = await supabase.from('user_vocabulary').insert(vocabularyArray).select();
+            console.log(insertedData);
+        }
 
         if(error) {
             return message(form,'保存できませんでした 😬')
