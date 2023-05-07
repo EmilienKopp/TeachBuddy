@@ -19,7 +19,7 @@ export const Scaffolder = {
                 name: 'Account',
                 icon: 'person-fill',
                 href: '/app/account',
-                label: '自分'
+                label: 'アカウント'
             },
             {
                 name: 'Generator',
@@ -43,7 +43,8 @@ export const Scaffolder = {
                 name: 'Settings',
                 icon: 'gear',
                 href: '/app/settings',
-                label: '設定'
+                label: '設定',
+                disabled: true,
             }
         ],
     },

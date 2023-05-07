@@ -45,12 +45,14 @@
     <NavHamburger on:click={toggle} />
     <NavUl {hidden} on:click={toggle} class="py-0.5">
       {#each Scaffolder.AppRail.Tiles as tile, index}
-        <NavLi href={tile.href} class="text-center" >
-            <i class="bi {`bi-${tile.icon}`} md:text-xl"></i>
-            <p>
-                {tile.label}
-            </p>
-        </NavLi>
+        {#if !tile.disabled}
+          <NavLi href={tile.href} class="text-center" >
+              <i class="bi {`bi-${tile.icon}`} md:text-xl"></i>
+              <p>
+                  {tile.label}
+              </p>
+          </NavLi>
+        {/if}
       {/each}
       <NavLi class="text-center" on:click={logout}>
         <i class="bi bi-box-arrow-right md:text-xl"></i>
