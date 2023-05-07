@@ -2,7 +2,7 @@
     import UnderConstruction from '$lib/components/atoms/UnderConstruction.svelte';
     import InfoBubble from '$lib/components/atoms/InfoBubble.svelte';
     import type { PageData } from './$types';
-    import { Button, FloatingLabelInput, Input, Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, TableSearch } from 'flowbite-svelte';
+    import { Badge, Button, FloatingLabelInput, Input, Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, TableSearch } from 'flowbite-svelte';
 
     export let data: PageData;
     let searchTerm: string | undefined;
@@ -25,14 +25,16 @@
         (item) => {
             if(!searchTerm) return true;
             return (item?.vocabulary?.en_word?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item?.vocabulary?.jp_word?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item?.vocabulary?.ja_word?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item?.custom_translation?.toLowerCase().includes(searchTerm.toLowerCase()) )
         });
+
 </script>
 
-<div class="mt-12">
+<div class="mt-10 px-2">
+<Badge class="mb-4">単語帳・Wordbook</Badge>
 {#if !data.vocabData}
-    <p>データがありません。</p>
+    <p class="p-4">データがありません。</p>
 {:else}
 
 <div class="px-5">
@@ -44,17 +46,19 @@
 <InfoBubble message="テーブルにクリック・タップして編集・削除できます。"/>
 <Table hoverable={true} divClass="relative overflow-x-auto shadow-md sm:rounded-lg pt-2" >
     <TableHead>
-        <TableHeadCell>English</TableHeadCell>
+        <TableHeadCell><span class="text-xs">English</span></TableHeadCell>
+        <TableHeadCell><span class="text-xs">品詞</span></TableHeadCell>
         <TableHeadCell><span class="text-xs">日本語</span></TableHeadCell>
         <TableHeadCell> <span class="text-xs">my翻訳</span></TableHeadCell>
     </TableHead>
     <TableBody>
         {#each filteredItems as item, key}
             <TableBodyRow>
-                <TableBodyCell class="text-xs px-2 {`vocab-${item.id}`}">{item?.vocabulary?.en_word}</TableBodyCell>
-                <TableBodyCell class="text-xs px-2 {`vocab-${item.id}`}">{item?.vocabulary?.jp_word ?? '-'}</TableBodyCell>
-                <TableBodyCell class="text-xs px-2 {`vocab-${item.id}`}">
-                    <Input size="xs" class="text-xs" bind:value={item.custom_translation} on:change={() => updateUserVocab(item.id, item.custom_translation)}/>
+                <TableBodyCell class="text-xs px-1 {`vocab-${item.id}`}">{item?.vocabulary?.word}</TableBodyCell>
+                <TableBodyCell class="text-[0.7rem] px-1 {`vocab-${item.id}`}">{data.POS.find( pos => pos.id == item?.vocabulary?.POS).ja_name }</TableBodyCell>
+                <TableBodyCell class="text-xs px-1 {`vocab-${item.id}`}">{item?.vocabulary?.ja_word ?? '-'}</TableBodyCell>
+                <TableBodyCell class="text-xs px-1 {`vocab-${item.id}`}">
+                    {item.custom_translation ?? '-'}
                 </TableBodyCell>
             </TableBodyRow>
             <Popover trigger="click" triggeredBy={`.vocab-${item.id}`} arrow={false} class="pt-3" placement="{key === 0 ? 'bottom' : 'top'}">
