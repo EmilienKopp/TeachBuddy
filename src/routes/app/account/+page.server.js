@@ -11,21 +11,27 @@ import { z } from 'zod';
 export async function load({request, locals: { supabase, getSession}}) {
     const { user } = await getSession();
 
+    let infoForm, langForm;
+    let userBasicInfo, userLanguages;
+
     const { data: studyingLanguages, error: studyingLanguagesError } = await supabase.from('studying_languages')
                                                                                      .select('lang_code').eq('user_id', user.id);
     const { data: nativeLanguage, error: nativeLanguageError } = await supabase.from('profiles')
                                                                                .select('native_language')
                                                                                .eq('id', user.id).single();
-    const userLanguages = { native_language: nativeLanguage.native_language, studying_languages: vertical(studyingLanguages,'lang_code') };
+
+    userLanguages = { native_language: nativeLanguage?.native_language, studying_languages: vertical(studyingLanguages,'lang_code') };
 
     const { data: profileData, error: profileError } = await supabase.from('profiles')
                                                                      .select('username, first_name, last_name, user_number')
                                                                      .eq('id', user.id).single(); 
-    const { username, first_name, last_name, user_number } = profileData;
-    const userBasicInfo = { username, first_name, last_name, user_number, email: user.email };
+    if(profileData) {
+        const { username, first_name, last_name, user_number } = profileData;
+        userBasicInfo = { username, first_name, last_name, user_number, email: user.email };
+    }
 
-    const langForm = await superValidate(userLanguages, languagesSettingsSchema, { id: 'langForm' } );
-    const infoForm = await superValidate( userBasicInfo,userBasicInfoSchema, { id: 'infoForm' });
+    langForm = await superValidate(userLanguages, languagesSettingsSchema, { id: 'langForm' } );
+    infoForm = await superValidate( userBasicInfo,userBasicInfoSchema, { id: 'infoForm' });
 
     const session = await getSession();
 

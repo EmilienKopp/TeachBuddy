@@ -5,6 +5,7 @@
     import type { SelectOptionType } from '$lib/helpers/Arrays';
     import type { PageData } from './$types';
     import { superForm } from 'sveltekit-superforms/client';
+    import UnderConstruction from "$lib/components/atoms/UnderConstruction.svelte";
 
     export let data: PageData;
 
@@ -49,6 +50,8 @@
     $: selectableLanguages = languages.filter(lang => lang.value !== nativeLanguage);
 
 </script>
+
+<UnderConstruction />
 
 <div class="mt-10 md:mt-2 px-2 md:px-12 md:mx-auto md:w-3/5">
 
