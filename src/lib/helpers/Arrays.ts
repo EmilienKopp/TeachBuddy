@@ -30,7 +30,9 @@ export function mapHeaders(headers,arr) {
 }
 
 export function toSelectOptions(arr, valueKey, labelKey): SelectOptionType[] | any[] {
-  return arr?.map(el => {
+  if(!arr) return [];
+
+  return arr.map(el => {
     return {
       value: el[valueKey],
       name: el[labelKey]
@@ -39,6 +41,8 @@ export function toSelectOptions(arr, valueKey, labelKey): SelectOptionType[] | a
 }
 
 export function vertical(arr, key) {
+  if(!arr) return [];
+  
   return arr.map(el => {
     return el[key]
   })

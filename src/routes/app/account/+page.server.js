@@ -20,18 +20,27 @@ export async function load({request, locals: { supabase, getSession}}) {
                                                                                .select('native_language')
                                                                                .eq('id', user.id).single();
 
-    userLanguages = { native_language: nativeLanguage?.native_language, studying_languages: vertical(studyingLanguages,'lang_code') };
+    if(!(studyingLanguagesError && nativeLanguageError)) {
+        userLanguages = { native_language: nativeLanguage?.native_language, studying_languages: vertical(studyingLanguages,'lang_code') };
+        langForm = await superValidate( userLanguages, languagesSettingsSchema, { id: 'langForm' } );
+    } else {
+        langForm = await superValidate( languagesSettingsSchema, { id: 'langForm' } );
+    }
 
     const { data: profileData, error: profileError } = await supabase.from('profiles')
                                                                      .select('username, first_name, last_name, user_number')
                                                                      .eq('id', user.id).single(); 
+    console.log('ProfileData:',profileData);
     if(profileData) {
+        console.log('PROFILE DATA FOUND')
         const { username, first_name, last_name, user_number } = profileData;
         userBasicInfo = { username, first_name, last_name, user_number, email: user.email };
+        infoForm = await superValidate( userBasicInfo,userBasicInfoSchema, { id: 'infoForm' });
+    } else {
+        console.log('PROFILE DATA NOT FOUND');
+        infoForm = await superValidate( userBasicInfoSchema, { id: 'infoForm' });
     }
-
-    langForm = await superValidate(userLanguages, languagesSettingsSchema, { id: 'langForm' } );
-    infoForm = await superValidate( userBasicInfo,userBasicInfoSchema, { id: 'infoForm' });
+    console.log('InfoForm:', infoForm);
 
     const session = await getSession();
 
@@ -40,8 +49,6 @@ export async function load({request, locals: { supabase, getSession}}) {
 
     grades = toSelectOptions(grades, 'id', 'name');
     languages = toSelectOptions(languages, 'lang_code', 'name_native');
-
-    console.log(langForm, infoForm);
 
     return { langForm, infoForm, grades, languages, session };
 }

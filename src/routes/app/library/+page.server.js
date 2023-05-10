@@ -52,7 +52,6 @@ export const actions = {
                return  { user_id: user.id, vocabulary_id: vocab.id }
             });
             const { data: insertedData, error } = await supabase.from('user_vocabulary').insert(vocabularyArray).select();
-            console.log(insertedData);
         }
 
         if(error) {

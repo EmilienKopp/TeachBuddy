@@ -70,8 +70,6 @@ export async function load({locals: { supabase, getSession}}) {
     let { data: passagesData, error: avgError} = await supabase.from('passages').select('*');
     let { data: languages, error: langError} = await supabase.from('languages').select('lang_code, name_native').neq('name_native',null);
 
-    console.log(languages);
-
     const averageDuration = passagesData.map( el => el.generation_duration).reduce((a,b) => a+b, 0) / passagesData.length;
 
     grades = toSelectOptions(grades, 'id', 'name');
@@ -84,7 +82,6 @@ export const actions = {
     getPassage: async ({ request, locals: { supabase, getSession } }) => {
         const form = await superValidate(request, schema);
         
-        console.log(form)
         // Validation
         if(!form.valid) {
             return fail(401, {form});
@@ -111,7 +108,7 @@ export const actions = {
             content = `Ecris une histoire EN FRANCAIS très courte à propos de deux amis qui visitent Paris. 
             L'histoire doit être compréhensible par un étudiant de niveau A1 inférieur. N'utilise que les 300 mots les plus courants de la langue française. Utilise uniquement le présent de l'indicatif.`;
         }
-        console.log(content);
+
         if( form.data.testMode ) {
             console.log('POSTING TO OPENAI', content);
             const response = fetch('https://3cqrx07xfh.execute-api.ap-northeast-1.amazonaws.com/dev/',{
@@ -154,7 +151,6 @@ export const actions = {
                return  { user_id: user.id, vocabulary_id: vocab.id }
             });
             const { data: insertedData, error } = await supabase.from('user_vocabulary').insert(vocabularyArray).select();
-            console.log(insertedData);
         }
 
         if(error) {

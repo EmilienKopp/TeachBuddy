@@ -2,7 +2,6 @@
     import { Button, Checkbox, Chevron, Dropdown, Label, Select } from 'flowbite-svelte';
     import type { SelectOptionType } from '$lib/helpers/Arrays';
     import SaveButton from '$lib/components/atoms/SaveButton.svelte';
-    import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
     import { superForm } from 'sveltekit-superforms/client';
 
     export let data: any;
@@ -19,40 +18,13 @@
     let selectableLanguages: SelectOptionType[] | any[];
     let selectedLanguages: string[] = [];
     let FORM: HTMLFormElement;
-
-    // async function saveNativeLanguage() {
-    //     if(data.session.user.profile.native_language) {
-    //         const { data: profileData, error: profileError } = await data.supabase.from('profiles')
-    //                                                 .upsert({ id: data.session?.user.id, native_language: data.session.user.profile.native_language })
-    //                                                 .eq('id', data.session?.user.id).select();
-    //         if(profileError) console.log('Error updating profile:', profileError);
-    //         else console.log('Profile updated:', profileData);
-            
-    //     }
-    // }
-
-    async function saveStudyingLanguages() {
-        if(selectedLanguages.length > 0) {
-            const studyingLanguagesRows = selectedLanguages.map(lang => ({ user_id: data.session?.user.id, lang_code: lang }));
-            const { data: studyingData, error: studyingError } = await data.supabase.from('studying_languages')
-                                                        .upsert(studyingLanguagesRows)
-                                                        .eq('user_id', data.session?.user.id);
-            // Delete where not in selectedLanguages
-            const { data: studyingDeleteData, error: studyingDeleteError } = await data.supabase.from('studying_languages')
-                                                        .delete()
-                                                        .eq('user_id', data.session?.user.id)
-                                                        .not('lang_code', 'in', selectedLanguages);
-            if(studyingError || studyingDeleteError) console.log('Error updating studying languages:', studyingError, studyingDeleteError);
-            else console.log('Studying languages updated:', studyingData, studyingDeleteData);
-        }
-    }
     
-    $: selectableLanguages = languages.filter(lang => lang.value !== data.session.user.profile.native_language);
-
+    $: selectableLanguages = languages.filter(lang => lang.value !== $langForm.native_language);
+    $: console.log('Form:', $langForm)
 </script>
 
 <section class="mt-1">
-<form bind:this={FORM} class="flex flex-col gap-5" method="POST" use:langFormEnhance action="?/saveLanguageInfo">
+<form bind:this={FORM} class="flex flex-col gap-5 pb-12" method="POST" use:langFormEnhance action="?/saveLanguageInfo">
     <Label>
         <span class="italic">母国語は...・My native language is ...</span>
         <Select class="mt-2" name="native_language" items={languages} bind:value={$langForm.native_language} change={() => FORM.submit()}/>
@@ -79,7 +51,10 @@
         <br/>
         { $tainted ? "Don't forget to save your changes!" : '' }
     {/if}
-    <SaveButton type="submit" tainted={$tainted} />
+
+    {#if Object.values($langForm).some(value => !!value)}
+        <SaveButton type="submit" tainted={$tainted} />
+    {/if}
 </form>
 </section>
 

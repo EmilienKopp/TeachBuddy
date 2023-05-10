@@ -15,7 +15,6 @@
     }); 
 
     grades = toSelectOptions(grades, 'id', 'name');
-
 </script>
 
 
@@ -35,7 +34,10 @@
         </Label>
     </section>
 
-    <SaveButton type="submit" tainted={$tainted} />
+    {#if Object.values($infoForm).some(value => !!value)}
+        <SaveButton type="submit" tainted={$tainted} />
+    {/if}
+
 </form>
 
 
