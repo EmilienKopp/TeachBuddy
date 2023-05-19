@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { InputConstraint } from "sveltekit-superforms/index";
-    import Input from "../../atoms/Input.svelte";
+    import Input from "../../atoms/TextInput.svelte";
 
     export let value: string | undefined;
     export let label: string | undefined = undefined;

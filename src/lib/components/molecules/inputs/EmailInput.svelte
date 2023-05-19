@@ -1,6 +1,6 @@
 <script lang="ts">
     import {FORMS} from "$lib/config/forms";
-    import Input from "../../atoms/Input.svelte";
+    import Input from "../../atoms/TextInput.svelte";
 
     export let errorMessage: string | undefined;
     export let name: string;
