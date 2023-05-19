@@ -1,5 +1,6 @@
 <script lang="ts">
     import UnderConstruction from '$lib/components/atoms/UnderConstruction.svelte';
+    import { searchWeblio } from '$lib/services/weblio';
     import InfoBubble from '$lib/components/atoms/InfoBubble.svelte';
     import type { PageData } from './$types';
     import { Badge, Button, FloatingLabelInput, Input, Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, TableSearch } from 'flowbite-svelte';
@@ -65,6 +66,9 @@
                 <FloatingLabelInput type="text" label="my翻訳" bind:value={item.custom_translation} size="xs"/>
                 <Button class="mt-3" type="button" pill size="xs" fill color="red" on:click={() => deleteUserVocab(item.id)}>🗑️ 削除</Button>
                 <Button class="mt-3" type="button" pill size="xs" fill color="green" on:click={() => updateUserVocab(item.id, item.custom_translation) }>💾 保存</Button>
+                <button type="button" on:click={() => searchWeblio(word) } class="btn variant-filled-primary">
+                    <span class="text-3xl">🔍</span>
+                </button>
             </Popover>
 
         {/each}
