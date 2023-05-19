@@ -6,9 +6,9 @@ import { z } from "zod";
  */
 export const registerSchema = z.object({
     username: z.string().min(3).max(20),
-    user_number: z.optional(z.string().min(3).max(20)),
-    password: z.string().min(4).max(100),
-    password_confirm: z.string().min(4).max(100),
+    user_number: z.string().optional(),
+    password: z.string().min(8).max(64),
+    native_language: z.string().optional(),
     email: z.string().email(),
 });
 
