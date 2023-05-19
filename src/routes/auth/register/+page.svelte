@@ -1,7 +1,7 @@
 <script lang="ts">
     import { superForm } from "sveltekit-superforms/client";
     import type { PageData } from "./$types";
-    import { Button, ButtonGroup, InputAddon, Input, Label } from "flowbite-svelte";
+    import { Button, ButtonGroup, Helper, InputAddon, Input, Label, Select, Spinner} from "flowbite-svelte";
     import {FORMS} from "$lib/config/forms";
     import { registerSchema } from "$lib/config/schemas";
     import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
@@ -29,7 +29,6 @@
     });
 
 </script>
-
 <div class="bg-inherit min-h-screen flex flex-col items-center justify-center py-4 px-4 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
         <img
@@ -52,6 +51,7 @@
                     <Input type="text" name="username" placeholder="Your username" bind:value={$form.username} {...$constraints.username} size="sm">
                         <span slot="left">👋</span>
                     </Input>
+                    {#if $errors.username}<Helper class="mt-2" color="red">{$errors.username}</Helper>{/if}
                     </Label>
 
                     <Label>
@@ -59,6 +59,7 @@
                         <Input type="text" name="user_number" placeholder="学生番号（任意）" bind:value={$form.user_number} {...$constraints.user_number}>
                             <span slot="left">#️⃣</span>
                         </Input>
+                        {#if $errors.user_number}<Helper class="mt-2" color="red">{$errors.user_number}</Helper>{/if}
                     </Label>
                     
 
@@ -68,6 +69,7 @@
                         <Input type="email" name="email" placeholder="Your email" bind:value={$form.email} bind:errorMessage={emailError} {...$constraints.email}>
                             <span slot="left">📨</span>
                         </Input>
+                        {#if $errors.email}<Helper class="mt-2" color="red">{$errors.email}</Helper>{/if}
                     </Label>
 
                     <!-- パスワード -->
@@ -82,21 +84,24 @@
                             {/if}
                         </button>
                         </InputAddon>
-                        <Input id="show-password1" type={showPassword ? 'text' : 'password'} placeholder="Your password here" />
+                        <Input id="show-password1" bind:value={$form.password} type={showPassword ? 'text' : 'password'} name="password" placeholder="Your password here" {...$constraints.password}/>
                     </ButtonGroup>
+                        {#if $errors.password}<Helper class="mt-2" color="red">{$errors.password}</Helper>{/if}
                     </Label>
 
+                    <Label>
+                        <span class="italic">母国語は...・My native language is ...</span>
+                        <Select class="mt-2" name="native_language" items={data.languages} bind:value={$form.native_language}/>
+                    </Label>
 
                     <div class="mt-4 text-center">
-                        <Button type="submit" gradient color="teal">
+                        <Button type="submit" gradient color="teal" on:click={ () => { loading = true }}>
                             {FORMS.Buttons.register.label}
+                            {#if loading}
+                            <Spinner class="ml-2" size="3" color="white"/>
+                            {/if}
                         </Button>
-                        {#if $delayed && !$timeout}
-                        <ProgressRadial/>
-                        {/if}
-                        {#if $timeout}
-                        <p class="mt-2 text-sm text-red-600">Timeout. Try again.</p>
-                        {/if}
+                        
                     </div>
             </form>
         </div>
