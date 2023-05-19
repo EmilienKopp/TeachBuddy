@@ -8,7 +8,7 @@
   export let data: PageData;
 </script>
 
-<h1 class="text-4xl text-teal-600">Nothing to see here yet...</h1>
+<h1 class="text-4xl text-teal-600 mt-20 md:mt-8">Nothing to see here yet...</h1>
 <div class="flex flex-col justify-start mx-auto w-3/4">
   <p>Go to:</p>
   <ul class="self-start">

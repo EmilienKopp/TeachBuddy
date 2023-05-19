@@ -34,13 +34,12 @@
     let:toggle>
 
     <NavBrand href="/app/dashboard">
-      <img src="/PageTurner-bg-black-reading-plus.png" class="mr-3 h-10 sm:h-12" alt="Logo"/>
+      <img src="/PageTurner-bg-black-reading-plus.png" class="h-10 hidden sm:h-12 xs:block" alt="Logo"/>
       <!-- <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white font-raleway">
         Page-Turner
       </span> -->
-      <svg data-testid="geist-icon" fill="none" height="32" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 24 24" width="32" style="color: var(--accents-2);"><path d="M16.88 3.549L7.12 20.451"></path></svg>
-      <p class="mr-2">{user?.user_metadata.username ?? user?.email}</p>
-      <Badge rounded border color="dark">User</Badge>
+      <svg data-testid="geist-icon" fill="none" height="16" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 24 24" width="32" style="color: var(--accents-2);"><path d="M16.88 3.549L7.12 20.451"></path></svg>
+      <p class="mr-2 text-xs md:text-md">{user?.user_metadata.username ?? user?.email}</p>
     </NavBrand>
     <NavHamburger on:click={toggle} />
     <NavUl {hidden} on:click={toggle} class="py-0.5">
