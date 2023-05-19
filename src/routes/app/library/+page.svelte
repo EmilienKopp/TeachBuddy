@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { Button, FloatingLabelInput, Input, Popover, Modal, SpeedDial, SpeedDialButton, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, TableSearch } from 'flowbite-svelte';
-    import Reader from '$lib/components/organisms/Reader.svelte';
+    import { Button, FloatingLabelInput, Input, Modal, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, TableSearch } from 'flowbite-svelte';
     import type { PageData } from './$types';
     import { invalidateAll } from '$app/navigation';
     import InfoBubble from '$lib/components/atoms/InfoBubble.svelte';
     import { superForm } from 'sveltekit-superforms/client';
+    import { goto } from '$app/navigation';
 
     export let data: PageData;
     const supabase = data.supabase;
@@ -15,14 +15,8 @@
     let selectedItem: any;
     let selectedKey: number;
     let modalOpen: boolean = false;
-    let passageOpen: boolean = false;
 
-    const { form, enhance, reset, errors, constraints, message } = superForm(data.form, {
-        dataType: 'json',
-        applyAction: true,
-        resetForm: false,
-        invalidateAll: true,
-    });
+    
 
     async function deletePassage() {
         if(!confirm('完全に削除されます😨 \n本当にやってしまいますか？')) return;
@@ -77,7 +71,6 @@
 
 <InfoBubble message="テーブルにクリック・タップして展開・編集・削除できます。"/>
 
-{#if !passageOpen}
 <Table hoverable={true} divClass="relative md:w-5/6 w-full md:mx-auto overflow-x-clip shadow-md sm:rounded-lg pt-4" >
     <TableHead>
         <TableHeadCell>日付</TableHeadCell>
@@ -113,17 +106,7 @@
         {/if}
         <Button class="mt-3" type="button" pill size="sm" fill color="red" on:click={deletePassage}>🗑️ 削除</Button>
         <Button class="mt-3" type="button" pill size="sm" fill color="green" on:click={updatePassage}>💾 保存</Button>
-        <Button class="mt-3" type="button" pill size="sm" fill color="blue" on:click={openPassage}>開く</Button>
+        <Button class="mt-3" type="button" pill size="sm" fill color="blue" on:click={()=> { goto('/app/library/' + selectedItem.id) }}>開く</Button>
     </div>
 </Modal>
-{:else}
-    <Button class="fixed bottom-6 right-6" type="button" pill gradient color="pinkToOrange" on:click={() => { passageOpen = false }}>
-        文章を閉じる
-    </Button>
-    <div class="mt-4 px-2 pb-16 md:px-16">
-        <form method="POST" action="?/getPassage" use:enhance>
-            <Reader passage={selectedItem} themeColor="blue" pageData={data}/>
-        </form>
-    </div>
-{/if}
 </div>

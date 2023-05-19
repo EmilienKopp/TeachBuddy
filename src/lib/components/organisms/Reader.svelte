@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button, Checkbox, FloatingLabelInput, Input, Label, Modal, TextPlaceholder, Popover, Radio, Select, Spinner, Toggle} from 'flowbite-svelte';
+    import { Badge, Button, Checkbox, FloatingLabelInput, Input, Label, Modal, TextPlaceholder, Popover, Radio, Rating, Select, Spinner, Toggle} from 'flowbite-svelte';
     import { removePunctuation, splitWords } from "$lib/helpers/Text";
     import { vertical, toSelectOptions} from '$lib/helpers/Arrays';
     import { searchWeblio } from '$lib/services/weblio';
@@ -9,6 +9,8 @@
     export let themeColor: any;
     export let form: any = null;
 
+    const supabase = pageData.supabase;
+
     const userLanguage = pageData?.session?.user?.user_metadata?.language ?? 'ja';
 
     let clickedWord: string = "";
@@ -16,15 +18,17 @@
     let selectedPOS: string = "";
     let newTitle: string = "";
     let splitPassage: Array<string> = splitWords(passage?.content);
-    
+    let innerWidth: number;
     let translationModal = false;
     let isCustomizedTranslation = false;
     let noTranslationFound = false;
-    
+
+    let averageRating: number = 0;
+
     let wordMatchesList: any;
     let selectedVocab: any = {};
 
-    const supabase = pageData.supabase;
+    
 
     const PosSelectOptions = toSelectOptions(pageData.POS,'id',userLanguage + '_name');
     console.log('PosSelectOptions:',PosSelectOptions, typeof PosSelectOptions);
@@ -149,15 +153,15 @@ $: if(passage) {
     splitPassage = splitWords(form?.message);
 }
 
-$: console.log(pageData, custom_translation);
+$: console.log(passage);
 
 </script>
 
+<svelte:window bind:innerWidth={innerWidth} />
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- TODO: do something about a11y -->
 
 {#if splitPassage.length > 0}
-
 <div class="my-4 flex flex-row justify-around md:justify-normal gap-4">
     {#if passage?.title}
         <h2 class="text-lg md:text-3xl text-lime-500">{passage?.title ?? 'タイトルなし'}</h2>
@@ -166,9 +170,13 @@ $: console.log(pageData, custom_translation);
     {/if}
     
 </div>
+{#if passage.rating}
+<Badge>User Ratings: {passage.rating}  / 5</Badge> <Badge color="red"> {passage.nb_ratings} ratings </Badge>
+<Rating total={5} rating={passage.rating} />
+{/if}
 <!-- <div class="italic text-md mb-3">{passage.prompt ?? ''}</div> -->
 
-<div class="passage md:p-8 p-2 text-black bg-slate-50">
+<div class="passage md:p-8 p-2 text-black bg-slate-50 mt-4">
     {#each splitPassage as word,index}
         {#if word == '\n'}
             <br />
@@ -217,6 +225,9 @@ $: console.log(pageData, custom_translation);
     {/each}
     
 </div>
+
+
+
 {/if}
 
 
