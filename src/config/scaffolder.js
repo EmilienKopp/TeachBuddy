@@ -40,6 +40,25 @@ export const Scaffolder = {
                 label: '図書室'
             },
             {
+                name: 'Bugs',
+                icon: 'bug-fill',
+                href: '/app/bugs',
+                label: 'バグ報告',
+                disabled: true,
+            },
+            {
+                name: 'Friends',
+                icon: 'people-fill',
+                href: '/app/friends',
+                label: '友達',
+            },
+            {
+                name: 'Feedback',
+                icon: 'envelope',
+                href: '/app/feedback/message',
+                label: 'フィードバック送信',
+            },
+            {
                 name: 'Settings',
                 icon: 'gear',
                 href: '/app/settings',
