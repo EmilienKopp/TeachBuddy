@@ -66,53 +66,62 @@
 </script>
 <svelte:window bind:innerWidth={innerWidth} />
 
-{#if $message}
-<Toast transition={fade} position="top-right" divClass="w-full max-w-[250px] p-2 md:mt-24 mt-12">
-    {$message}
-</Toast>
-{/if}
-
 <!-- Path: src\routes\app\generator\+page.svelte -->
 <div class="w-full h-full sm:px-16 px-2 mt-10">
     <Badge class="mb-4">長文生成・Generator</Badge>
     <form method="POST" action="?/getPassage" use:enhance>
-        <div class="md:grid md:grid-cols-2 flex flex-col gap-2">
+        <div class="grid grid-cols-3 md:grid-cols-2  gap-2">
+            
+            {#if data.ENV == "dev"}
+                <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode} class="text-xs md:text-md col-span-3 md:col-span-2"> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
+            {/if}
             <Label for="type">
-                <span class="italic">種類・Type</span>
+                <span class="italic text-xs">種類・Type</span>
                 <Select label="Type" name="type" bind:value={$form.type} items={data.types}/>
             </Label>
 
             <Label>
-                <span class="italic">言語・Language</span>
+                <span class="italic text-xs">言語・Language</span>
                 <Select label="Language" name="language" bind:value={$form.language} items={ data.languages }/>
             </Label>
+            <Label>
+                <span class="italic text-xs">長さ・Length</span>
+                <Select label="length" name="length" bind:value={$form.length} items={ data.lengths }/>
+            </Label>
+            <div class="col-span-2 md:col-span-1">
+                <Label>
+                    <span class="italic text-xs">質・Quality</span>
+                    <Select label="length" name="length" bind:value={$form.quality} items={ data.qualityLevels }/>
+                </Label>
+            </div>
+            
+            <div class="col-span-3">
             {#if $form.freeInput}
+            
                 <Label for="prompt">
-                    <span class="italic">自分で入力・Custom Prompt</span>
+                    <span class="italic text-xs">自分で入力・Custom Prompt</span>
                     <Input type="text" name="prompt" label="テーマ" placeholder="ここで入力・Type here..." bind:value={$form.customPrompt}/>
-                    <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint</Helper>
+                    <!-- <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint</Helper> -->
                 </Label>
             {:else}
                 <Label for="prompt">
-                    <span class="italic">テーマ・Prompt</span>
+                    <span class="italic text-xs">テーマ・Prompt</span>
                     <Select label="Topic" name="prompt" bind:value={$form.prompt} items={data.topics}/>
-                    <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint </Helper>
+                    <!-- <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint </Helper> -->
                 </Label>
             {/if}
-
-
-            <Toggle color={randomColor} name="freeInput" bind:checked={$form.freeInput}> 自分で入力・Free Input </Toggle>
-            <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode}> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
+            </div>
+            <Toggle color={randomColor} name="freeInput" bind:checked={$form.freeInput} class="col-span-2 text-xs md:text-md"> 自分で入力・Free Input </Toggle>
         </div>
         <Badge class="mt-2" color="green">
             <span class="text-xl mr-2">⏱️</span> 平均生成時間: { 1.1 * data.averageDuration ? Math.round(data.averageDuration / 1000) : 0} seconds 
         </Badge>
 
-        <Button pill={true} type="submit" color="tealToLime" outline gradient class="m-4" on:click={handleSubmit}> 
+        <Button pill={true} type="submit" color={randomColor} outline class="m-4" on:click={handleSubmit}> 
             <span class="text-3xl mr-2">
                 {#if loading}
-                    <Spinner size="10" color={randomColor} />
-                    <span class="text-xs">{elapsedTime}</span>
+                    <Spinner size="8" color={randomColor} />
+                    <span class="text-xs inline-block w-5">{elapsedTime}</span>
                 {:else}
                     🖋️
                 {/if}

@@ -1,11 +1,12 @@
 // @ts-nocheck
 
 import { Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai';
-import { message, superValidate } from 'sveltekit-superforms/server';
-
 import {
+    ENV,
     OPENAI_API_KEY
 } from '$env/static/private';
+import { message, superValidate } from 'sveltekit-superforms/server';
+
 import { fail } from '@sveltejs/kit';
 import { storeUserVocabSchema } from '$lib/config/schemas';
 import { toSelectOptions } from '$lib/helpers/Arrays';
@@ -19,9 +20,11 @@ const schema = z.object({
     vocabulary_id: z.number().int().optional(),
     custom_translation: z.string().optional(),
     POS: z.string().optional(),
-    language: z.string().optional(),
+    language: z.string().optional().default('en'),
     freeInput: z.boolean().default(false),
     customPrompt: z.string().optional(),
+    length: z.number().int().default(300),
+    quality: z.string().default('3.5'),
 });
 
 
@@ -39,9 +42,22 @@ const config = new Configuration({
 const openAI = new OpenAIApi(config);
 
 const types = [
-    { value: 1, name: 'Short Story' },
+    { value: 1, name: 'Fictional Story' },
     { value: 2, name: 'Essay' },
     { value: 3, name: 'Conversation between two people' },
+];
+
+let lengths = [
+    { value: 100, name: 'S (~100 words)'},
+    { value: 300, name: 'M (~300 words)'},
+    { value: 500, name: 'L (~500 words)'},
+    { value: 1000, name: 'XL (~1000 words)'},
+];
+
+let qualityLevels = [
+    { value: '3', name: 'Trial・お試し', multiplier: 0 },
+    { value: '3.5', name: 'Fast・速い', multiplier: 1 },
+    { value: '4', name: 'High・高品質', multiplier: 1.5 },
 ];
 
 const topics = [
@@ -74,8 +90,9 @@ export async function load({locals: { supabase, getSession}}) {
 
     grades = toSelectOptions(grades, 'id', 'name');
     languages = toSelectOptions(languages, 'lang_code', 'name_native');
+    lengths = toSelectOptions(lengths, 'value', 'name');
 
-    return { form, types, grades, topics, POS, languages, averageDuration };
+    return { form, types, grades, topics, POS, languages, averageDuration, ENV, lengths, qualityLevels };
 }
 
 export const actions = {
@@ -96,21 +113,24 @@ export const actions = {
         
         const contentType = types.find( elem => elem.value == form.data.type).name;
         const { user } = await getSession();
-
-        let content;
-        if(form.data.language != 'fr') {
-            content = form.data.freeInput ?
-                `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary. Keep the grammar simple. 
-                The theme is provided in Japanese, but the passage has to be in English. The theme is: "${topic}". Provide the passage in English.`
-                : `Write a ${contentType} understandable by an ESL student who has no more than 600 words of vocabulary about the theme of: "${topic}". Keep the grammar simple.`;
-            content += ` The passage won't be longer than 500 words.`;
+        const { data, error} = await supabase.from('languages').select('name_en').eq('lang_code',form.data.language).single();
+        let language;
+        if(data) {
+            let split = data.name_en.split(';');
+            language = split.length > 0 ? split[split.length - 1] : data.name_en;
         } else {
-            content = `Ecris une histoire EN FRANCAIS très courte à propos de deux amis qui visitent Paris. 
-            L'histoire doit être compréhensible par un étudiant de niveau A1 inférieur. N'utilise que les 300 mots les plus courants de la langue française. Utilise uniquement le présent de l'indicatif.`;
+            language = 'en';
         }
+        console.log('Language: ', data.name_en, language);
+
+        let content = `Write a ${contentType} understandable by a student who has no more than 600 words of vocabulary. Keep the grammar simple. 
+                The theme is provided in a non ${language} language, but the passage has to be in ${language}. The theme is: "${topic}". Provide the passage in ${language}.
+                The passage won't be longer than ${form.data.length} words.`;
+        
+        console.log('Prompt: ', content);
 
         if( form.data.testMode ) {
-            console.log('POSTING TO OPENAI', content);
+            
             const response = fetch('https://3cqrx07xfh.execute-api.ap-northeast-1.amazonaws.com/dev/',{
                 method: 'POST',
                 header: {
@@ -120,9 +140,25 @@ export const actions = {
                     content: content,
                     owner_id: user.id,
                     customPrompt: form.data.customPrompt,
+                    quality: form.data.quality,
+                    language: form.data.language,
+                    topic: topic,
                 }),
             });
+
+            const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
+            
+            const { data: actionsData, error: actionsError } = await supabase.from('actions').select('*').eq('verb', 'generate').single();
+            const { data: pointsData, error: pointsError} = await supabase.from('points_master').select('amount, multiplier').eq('action_id', actionsData.id).single();
+            const { data: userProfile, error: profileError} = await supabase.from('profiles').select('*').eq('id', user.id).single();
+
+            console.log('Cost: ',(pointsData.multiplier * form.data.length * qualityMultiplier))
+            console.log('New Balance:', userProfile.point_balance - (pointsData.multiplier * form.data.length * qualityMultiplier))
+
+            const {error} = await supabase.from('profiles').update({point_balance: userProfile.point_balance - (pointsData.multiplier * form.data.length)}).eq('id', user.id);
         } 
+        // The passage is generated by the OpenAI API and stored in the database by an AWS Microservice.
+        // It is then retrieved from the database through Supabases's realtime API and displayed on the frontend.
         return message(form,'SUCCESS!');     
     },
     storeUserVocab: async ({ request, locals: { supabase, getSession } }) => {
