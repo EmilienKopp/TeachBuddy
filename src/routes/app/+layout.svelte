@@ -18,7 +18,7 @@
   
   export let data: PageData;  
 
-  const points = data.user.profile.point_balance
+  const points = data.user?.profile?.point_balance
   const storeValue: Writable<number> = writable(0);
   const user = $page.data.session?.user;
   
@@ -47,7 +47,7 @@
       <svg data-testid="geist-icon" fill="none" height="16" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 24 24" width="32" style="color: var(--accents-2);"><path d="M16.88 3.549L7.12 20.451"></path></svg>
       <p class="mr-2 text-xs md:text-md">{user?.user_metadata.username ?? user?.email}</p>
     </NavBrand>
-    {#if points} <span>{formatMG(data.user.profile.point_balance)}🪙</span> {/if}
+    {#if points} <span>{formatMG(points)}🪙</span> {/if}
     <NotificationDropdown data={data.friendsRequests} />
     <NavHamburger on:click={toggle} />
     <NavUl {hidden} on:click={toggle} class="py-0.5">

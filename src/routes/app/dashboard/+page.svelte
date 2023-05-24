@@ -10,5 +10,5 @@
 </script>
 
 <div class="mt-12 flex flex-col justify-start mx-auto w-3/4 font-gloria">
-  Welcome, {data.user.profile.username}!
+  Welcome, {data.user.profile.username ?? data.user.email}!
 </div>
