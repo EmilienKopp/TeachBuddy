@@ -9,4 +9,4 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 lambda/supabase-openai-layer/nodejs.zip
-/src-tauri
+./src-tauri

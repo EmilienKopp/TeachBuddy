@@ -12,6 +12,7 @@ module.exports = {
 		extend: {
 			colors: {
 				darkish: '#282828',
+				darkshine: '#151F29'
 			  },
 			fontFamily: {
 				raleway: ['Raleway', 'sans-serif'],
