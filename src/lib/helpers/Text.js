@@ -1,5 +1,14 @@
 // @ts-nocheck
 
+export function formatMG(nb) {
+    if (nb > 1000000000) {
+        return (nb / 1000000000).toFixed(1) + 'G';
+    } else if (nb > 1000000) {
+        return (nb / 1000000).toFixed(1) + 'M';
+    } else {
+        return nb;
+    }
+}
 
 export function splitWords(input) {
     if(!input) return [];
