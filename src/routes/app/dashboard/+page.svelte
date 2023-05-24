@@ -6,19 +6,9 @@
   import type { PageData } from "./$types";
 
   export let data: PageData;
+  console.log(data);
 </script>
 
-<h1 class="text-4xl text-teal-600 mt-20 md:mt-8">Nothing to see here yet...</h1>
-<div class="flex flex-col justify-start mx-auto w-3/4">
-  <p>Go to:</p>
-  <ul class="self-start">
-    {#each Scaffolder.AppRail.Tiles as tile, index}
-      <li class="flex flex-row items-center">
-        <NavButton href={tile.href}>
-          <i class="bi {`bi-${tile.icon}`} md:text-xl" />
-        </NavButton>
-        {tile.label}
-      </li>
-    {/each}
-  </ul>
+<div class="mt-12 flex flex-col justify-start mx-auto w-3/4 font-gloria">
+  Welcome, {data.user.profile.username}!
 </div>

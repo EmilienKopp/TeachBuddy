@@ -22,6 +22,6 @@
 
 </script>
 
-<div class="bg-gray-800 h-full w-full text-white font-raleway">
+<div class="bg-[#151F29] h-full w-full text-white font-raleway">
 	<slot />
 </div>
