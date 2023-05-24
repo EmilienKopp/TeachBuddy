@@ -4,6 +4,9 @@
     export let pageData: any = null;
     export let user: any;
     export let isFriend: boolean = false;
+
+    let challengeModalOpen: boolean = false;
+
     const supabase = pageData.supabase;
 
     async function friendRequest() {
@@ -16,15 +19,25 @@
             console.log(error);
         }
     }
+
+    async function challengeFriend() {
+        alert('チャレンジしました！');
+        const { error } = await supabase.from('challenges').insert([{   
+                challenger_id: pageData.session.user.id, // logged user
+                challengee_id: user.id, // target user
+            }]);
+        if (error) {
+            console.log(error);
+        }
+    }
 </script>
 
 <Card padding='sm'>
     <div class="flex justify-end">
       <MenuButton />
       <Dropdown class="w-36">
-        <DropdownItem>Edit</DropdownItem>
-        <DropdownItem>Export data</DropdownItem>
-        <DropdownItem>Delete</DropdownItem>
+        <DropdownItem>図書室を見る・See Library</DropdownItem>
+        <DropdownItem on:click={challengeFriend}>チャレンジ・Challenge</DropdownItem>
       </Dropdown>
     </div>
     <div class="flex flex-col items-center p-1">
@@ -41,6 +54,7 @@
             {#if !isFriend}
                 <Button gradient color="greenToBlue" on:click={friendRequest}>追加😊</Button>
             {/if}
+            
           <!-- <Button color="light" class="dark:text-white">Message</Button> -->
         </div>
     </div>

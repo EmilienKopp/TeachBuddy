@@ -211,6 +211,7 @@ $: console.log(passage);
                         <li>error: {error.message}</li>
                     {/await}
                 </ol>
+                {#if passage.language == 'en'}
                 <div class="pt-2 flex justify-center">
                     <button type="button" on:click={() => searchWeblio(word) } class="btn variant-filled-primary">
                         <span class="text-3xl">🔍</span>
@@ -219,6 +220,12 @@ $: console.log(passage);
                         <span class="text-3xl">💾</span>
                     </button>
                 </div>
+                {:else}
+                    <p>
+                        Sorry, this feature is only available for English passages.
+                    </p>
+                {/if}
+                
             </Popover>
             &nbsp;
         {/if}
