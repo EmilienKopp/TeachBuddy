@@ -54,7 +54,13 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
 
     if(event.url.pathname == '/') {
-      throw redirect(303, '/app/dashboard');
+      const session = await event.locals.getSession();
+      if (!session) {
+        // the user is not signed in
+        throw redirect(303, '/auth/login');
+      } else {
+        throw redirect(303, '/app/dashboard');
+      }
     }
     
     // protect requests to all routes that start with /protected-routes
@@ -62,7 +68,7 @@ export const handle: Handle = async ({ event, resolve }) => {
       const session = await event.locals.getSession();
       if (!session) {
         // the user is not signed in
-        throw redirect(303, '/auth/login');
+        throw redirect(303, '/');
       }
     }
 
