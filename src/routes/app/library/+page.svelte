@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { Button, FloatingLabelInput, Input, Modal, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, TableSearch } from 'flowbite-svelte';
+    import { Badge, Button, FloatingLabelInput, Input, Label, Modal, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, TableSearch } from 'flowbite-svelte';
     import type { PageData } from './$types';
     import { invalidateAll } from '$app/navigation';
     import InfoBubble from '$lib/components/atoms/InfoBubble.svelte';
     import { superForm } from 'sveltekit-superforms/client';
     import { goto } from '$app/navigation';
+    import LibraryModal from './LibraryModal.svelte';
 
     export let data: PageData;
     const supabase = data.supabase;
@@ -23,6 +24,7 @@
         await supabase.from('passages').delete().match({ id: selectedItem?.id });
         if(data.passagesData)
             data.passagesData = data.passagesData.filter((item) => selectedItem.id !== item.id);
+        modalOpen = false;
     }
 
     async function updatePassage() {
@@ -34,6 +36,7 @@
             console.log(error);
         }
         invalidateAll();
+        modalOpen = false;
     }
 
     async function openPassage() {
@@ -52,41 +55,48 @@
         (item: any) => {
             if(!searchTerm) return true;
             return (item?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item?.content?.toLowerCase().includes(searchTerm.toLowerCase()) )
+                item?.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item?.created_at?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item?.prompt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item?.language?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item?.topic_string?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
     });
 
 </script>
 
 
-<div class="mt-12">
+<div class="mt-12 flex flex-col justify-center items-center">
+
 {#if !data.passagesData}
     <p>データがありません。</p>
 {/if}
 
-<div class="px-5 z-10">
-    <Input type="text" bind:value={searchTerm} placeholder="検索 (何語でも👍)" class="max-w-[50ch] mb-6" >
-        <i slot="left" class="bi bi-search"></i>
-    </Input>
+<div class="px-5 z-10 w-5/6">
+    <Label>
+        <span class="font-raleway md:text-3xl">検索</span>
+        <Input type="text" bind:value={searchTerm} placeholder="Search"/>
+    </Label>
 </div>
 
-<InfoBubble message="テーブルにクリック・タップして展開・編集・削除できます。"/>
-
-<Table hoverable={true} divClass="relative md:w-5/6 w-full md:mx-auto overflow-x-clip shadow-md sm:rounded-lg pt-4" >
+<Table hoverable={true} divClass="relative xs:w-5/6 w-full xs:mx-auto overflow-x-clip shadow-md sm:rounded-lg pt-4" >
     <TableHead>
-        <TableHeadCell>日付</TableHeadCell>
-        <TableHeadCell>内容</TableHeadCell>
+        <TableHeadCell class="text-lg px-2 hidden md:block">作成日</TableHeadCell>
+        <TableHeadCell class="text-xs md:text-lg px-2">内容<InfoBubble message="テーブルにクリック・タップして展開・編集・削除できます。"/></TableHeadCell>
     </TableHead>
     <TableBody>
         {#each filteredItems as item, key}
-            <TableBodyRow on:click={() => openModal(item,key)}>
-                <TableBodyCell class="text-xs px-2">{item.created_at}</TableBodyCell>
+            <TableBodyRow on:click={() => openModal(item,key)} class="cursor-pointer">
+                <TableBodyCell class="text-md px-2 hidden md:block">{item.created_at}</TableBodyCell>
                 <TableBodyCell tdClass="px-3 py-3 font-medium" id={`vocab-${item.id}`}>
                     <div class="max-w-[40ch] md:w-full text-md text-lime-400 py-1">
                         {item.title ?? 'タイトルなし'}
+                        <span class="inline xs:hidden text-xs text-gray-400"> ({item.created_at})</span>
+                        {#if item.language} <Badge>{item.language}</Badge> {/if}
                     </div>
                     {#if item.prompt}
-                    <div class="max-w-[40ch] md:max-w-[150ch] italic py-1 text-xs">
-                        {item.prompt}
+                    <div class="max-w-[40ch] md:max-w-[150ch] italic py-1 text-xs lg:text-lg">
+                        {item.topic_string ?? item.prompt}
                     </div>
                     {/if}
                 </TableBodyCell>
@@ -95,18 +105,5 @@
         {/each}
     </TableBody>
 </Table>
-<Modal bind:open={modalOpen} autoclose>
-    <div class="z-50 mt-3">
-        <FloatingLabelInput type="text" label="タイトルを入力" bind:value={selectedItem.title} placeholder="タイトルを変更"/>
-        {#if selectedItem.prompt}
-        <div class="max-w-[40ch] md:max-w-[150ch] text-ellipsis overflow-hidden italic border rounded-md border-slate-500 my-2 p-1">
-            <h3 class="font-bold text-teal-500 text-lg">プロンプト</h3>
-            <div class="text-xs">{selectedItem.prompt}</div>
-        </div>
-        {/if}
-        <Button class="mt-3" type="button" pill size="sm" fill color="red" on:click={deletePassage}>🗑️ 削除</Button>
-        <Button class="mt-3" type="button" pill size="sm" fill color="green" on:click={updatePassage}>💾 保存</Button>
-        <Button class="mt-3" type="button" pill size="sm" fill color="blue" on:click={()=> { goto('/app/library/' + selectedItem.id) }}>開く</Button>
-    </div>
-</Modal>
+<LibraryModal {selectedItem} {modalOpen} deleteHandler={deletePassage} updateHandler={updatePassage}/>
 </div>
