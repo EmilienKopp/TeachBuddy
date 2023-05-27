@@ -3,7 +3,7 @@
     import type { PageData } from './$types';
     import { superForm } from 'sveltekit-superforms/client';
     import { FORMS } from '$lib/config/forms';
-    import { Button, ButtonGroup, Helper, Input, InputAddon, Label } from 'flowbite-svelte';
+    import { Button, ButtonGroup, GradientButton, Helper, Input, InputAddon, Label } from 'flowbite-svelte';
 
     export let data: PageData;
     let showPassword: boolean = false;
@@ -26,22 +26,22 @@
 </script>
 
 
-<div class="bg-inherit min-h-screen flex flex-col items-center justify-center py-4 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen flex flex-col items-center justify-center py-4 px-3 sm:px-4 lg:px-5 mx-auto container">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 class="mt-6 text-center text-5xl font-bold tracking-tight text-slate-200 font-informal">
-            <p class="text-lg font-yippy">Welcome to </p> Page-Turner
+        <h2 class="mt-6 text-center text-4xl md:text-6xl dark:text-slate-200 font-pixel">
+            <p class="text-2xl md:text-3xl">Welcome to </p> Page Turner
         </h2>
     </div>
 
-    <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="py-8 px-4 shadow shadow-cyan-200 rounded sm:rounded-lg sm:px-10">
+    <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-md font-pixel">
+        <div class="py-8 px-4 rounded sm:rounded-lg sm:px-10">
             <form class="space-y-4" method="POST" action="?/signin" use:enhance >
-                <Label>
+                <Label class="font-bold md:text-xl">
                     Email
                     <Input id="email" type="email" name="email" placeholder="Gimme your email!" bind:errorMessage={$errors.email}  bind:value={$form.email} {...$constraints.email}/>
                 </Label>
                  <!-- パスワード -->
-                 <Label for="show-password">パスワード
+                 <Label for="show-password" class="font-bold md:text-xl">Password
                     <ButtonGroup class="w-full mt-0">
                         <InputAddon>
                         <button type="button" on:click={() => (showPassword = !showPassword)} tabindex="-1">
@@ -53,28 +53,45 @@
                         </button>
                         </InputAddon>
                         <Input  id="show-password" bind:value={$form.password} type={showPassword ? 'text' : 'password'} 
-                                name="password" placeholder="Your password here" {...$constraints.password}/>
+                                name="password" placeholder="Your password here" {...$constraints.password} class="font-raleway"/>
                     </ButtonGroup>
                         {#if $errors.password}<Helper class="mt-2" color="red">{$errors.password}</Helper>{/if}
                     </Label>
-
-                <div class="flex items-center justify-between">
-                    <div class="text-sm">
-                        <a href={FORMS.Links.forgotPassword.href} class="font-medium text-indigo-600 hover:text-indigo-500"> 
-                            {FORMS.Links.forgotPassword.label}
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <Button type="submit" color="blue">
+                    <GradientButton type="submit" shadow color="lime" size="xl" class="md:text-xl w-full">
                         {FORMS.Buttons.login.label}
-                    </Button>
-                    <a href={FORMS.Links.createAccount.href} class="font-medium text-indigo-600 hover:text-indigo-500"> 
-                        {FORMS.Links.createAccount.label}
-                    </a>
-                </div>
+                    </GradientButton>
+                    <div class="flex flex-col text-sm md:text-md text-left h-20">
+                        <ul class="mb-2  py-3 h-full ">
+                            <li class="mb-2 h-1/2">
+                                <a href={FORMS.Links.forgotPassword.href} class="ml-1 font-medium md:text-xl text-white dark:text-indigo-600 hover:text-lime-400 focus:text-lime-400  md:hover:text-2xl"> 
+                                    {FORMS.Links.forgotPassword.label}
+                                </a>
+                            </li>
+                            <li class="mb-2 h-1/2">
+                                <a href={FORMS.Links.createAccount.href} class="ml-1 font-medium md:text-xl text-white dark:text-indigo-600 hover:text-lime-400 focus:text-lime-400 md:hover:text-2xl"> 
+                                    {FORMS.Links.createAccount.label}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
             </form>
         </div>
     </div>
 </div>
+
+<style lang="postcss">
+    :global(body) {
+        background-image: url('/backgrounds/bg-arcade-blank.png');
+        background-repeat: repeat-x;
+        background-size: cover;
+    }
+
+    li {
+        @apply bg-slate-500 bg-opacity-50 rounded md:bg-transparent;
+    }
+    
+    li a:hover::after,
+    li a:focus::after {
+        content: "👈";
+    }
+</style>

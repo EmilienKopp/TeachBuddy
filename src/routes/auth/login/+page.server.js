@@ -33,7 +33,5 @@ export const actions = {
 
 
         throw redirect(303, '/app/dashboard');
-
-        return { form };
     },   
 }
