@@ -31,7 +31,7 @@
     </Label>
     <Label>
         <p class="font-semibold italic"></p>
-        <Button><Chevron>勉強中・I'm studying...</Chevron></Button>
+        <Button color="blue" class="w-full"><Chevron>勉強中・I'm studying...</Chevron></Button>
         <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
             {#each selectableLanguages as lang, key}
             <li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
