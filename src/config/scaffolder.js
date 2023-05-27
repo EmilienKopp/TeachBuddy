@@ -9,12 +9,12 @@ export const Scaffolder = {
                 href: '/app/dashboard',
                 label: 'ホーム'
             },
-            {
-                name: 'Flashcards',
-                icon: 'card-heading',
-                href: '/app/flashcards',
-                label: 'flashcards'
-            },
+            // {
+            //     name: 'Flashcards',
+            //     icon: 'card-heading',
+            //     href: '/app/flashcards',
+            //     label: 'flashcards'
+            // },
             {
                 name: 'Account',
                 icon: 'person-fill',
