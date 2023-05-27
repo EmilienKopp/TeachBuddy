@@ -13,6 +13,15 @@ export const registerSchema = z.object({
 });
 
 /**
+ * Schema for the Password Reset form.
+ * .../auth/register
+ */
+export const resetSchema = z.object({
+    password: z.string().min(8).max(64),
+    password_confirm: z.string().min(8).max(64),
+});
+
+/**
  * Schema for the User Basic Info form.
  */
 export const userBasicInfoSchema = z.object({

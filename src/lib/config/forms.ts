@@ -46,7 +46,7 @@ export const FORMS = {
         },
         forgotPassword: {
             label: 'Forgot your password?',
-            href: '/forgot-password',
+            href: '/auth/forgot-password',
         },
     },
 };
