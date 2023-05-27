@@ -135,7 +135,7 @@
                     <Spinner size="5" color={getRandomColor()} />
                     <span class="text-lg inline-block w-5 mx-4">{elapsedTime}</span>
                 {:else}
-                {$form.testMode ? costToGenerate($form.length, multiplier ?? 1) : 0 }🪙 Abracadabra! <span class="text-5xl inline-block">🪄</span>
+                {$form.testMode ? costToGenerate($form.length, multiplier ?? 1) : 0 }🪙 これで作る! <span class="text-5xl inline-block">🪄</span>
                 
                 {/if}
             </GradientButton>

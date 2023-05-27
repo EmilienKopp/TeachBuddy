@@ -49,7 +49,7 @@
     </div>
     </TabItem>
     <TabItem title="一覧・List">
-        <p>友人</p>
+        <p>フレンド</p>
         {#if data.friends}
             <div class="grid grid-cols-2">
                 {#each data.friends as friend}

@@ -105,5 +105,5 @@
         {/each}
     </TableBody>
 </Table>
-<LibraryModal {selectedItem} {modalOpen} deleteHandler={deletePassage} updateHandler={updatePassage}/>
+<LibraryModal {selectedItem} bind:modalOpen={modalOpen} deleteHandler={deletePassage} updateHandler={updatePassage}/>
 </div>

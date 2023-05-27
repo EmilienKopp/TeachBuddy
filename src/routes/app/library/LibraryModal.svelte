@@ -6,9 +6,10 @@
     export let selectedItem: any;
     export let deleteHandler: ((e: MouseEvent) => void) | null | undefined;
     export let updateHandler: ((e: MouseEvent) => void) | null | undefined;
+
 </script>
 
-<Modal bind:open={modalOpen}>
+<Modal bind:open={modalOpen} autoclose>
     <div class="z-50 mt-3">
         <FloatingLabelInput type="text" label="タイトルを入力" bind:value={selectedItem.title} placeholder="タイトルを変更"/>
         {#if selectedItem.prompt}

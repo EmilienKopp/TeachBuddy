@@ -50,7 +50,7 @@ export const Scaffolder = {
                 name: 'Friends',
                 icon: 'people-fill',
                 href: '/app/friends',
-                label: '友達',
+                label: 'フレンド',
             },
             {
                 name: 'Feedback',
