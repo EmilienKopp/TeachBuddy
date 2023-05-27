@@ -1,7 +1,7 @@
 <script lang="ts">
     import { superForm } from "sveltekit-superforms/client";
     import type { PageData } from "./$types";
-    import { Button, ButtonGroup, Helper, InputAddon, Input, Label, Select, Spinner} from "flowbite-svelte";
+    import {  ButtonGroup, GradientButton, Helper, InputAddon, Input, Label, Select, Spinner} from "flowbite-svelte";
     import {FORMS} from "$lib/config/forms";
     import { registerSchema } from "$lib/config/schemas";
     import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
@@ -29,43 +29,29 @@
     });
 
 </script>
-<div class="bg-inherit min-h-screen flex flex-col items-center justify-center py-4 px-4 sm:px-6 lg:px-8">
+<div class="bg-inherit min-h-screen flex flex-col items-center justify-center font-pixel py-4 px-4 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <img
-            class="mx-auto md:h-40 h-20 w-auto"
-            src="../../logo_home.png"
-            alt="Your Company"
-        />
-        <h2 class="mt-4 text-center text-5xl font-bold tracking-tight text-slate-200 font-informal">
+        <h2 class="md:mt-6 text-center text-2xl font-bold tracking-tight text-slate-">
             Join the crew!
         </h2>
     </div>
 
     <div class="mt-3 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-darkish py-4 px-4 shadow sm:rounded-lg sm:px-10">
-            <form class="space-y-6 grid grid-cols-1 gap-1" method="POST" use:enhance>
+        <div class="py-4 px-4 sm:px-10">
+            <form class="space-y-3 grid grid-cols-1" method="POST" use:enhance>
                     <!-- <SuperDebug data={$form} /> -->
                     <!-- ユーザー名 -->
                     <Label>
-                    ユーザ名
+                    Username・ユーザ名
                     <Input type="text" name="username" placeholder="Your username" bind:value={$form.username} {...$constraints.username} size="sm">
                         <span slot="left">👋</span>
                     </Input>
                     {#if $errors.username}<Helper class="mt-2" color="red">{$errors.username}</Helper>{/if}
-                    </Label>
-
-                    <Label>
-                        学生番号(任意)
-                        <Input type="text" name="user_number" placeholder="学生番号（任意）" bind:value={$form.user_number} {...$constraints.user_number}>
-                            <span slot="left">#️⃣</span>
-                        </Input>
-                        {#if $errors.user_number}<Helper class="mt-2" color="red">{$errors.user_number}</Helper>{/if}
-                    </Label>
-                    
+                    </Label>                   
 
                     <!-- メールアドレス -->
                     <Label>
-                        メールアドレス
+                        Email・メールアドレス
                         <Input type="email" name="email" placeholder="Your email" bind:value={$form.email} bind:errorMessage={emailError} {...$constraints.email}>
                             <span slot="left">📨</span>
                         </Input>
@@ -73,10 +59,10 @@
                     </Label>
 
                     <!-- パスワード -->
-                    <Label for="show-password1">パスワード
+                    <Label for="show-password1">Password・パスワード
                     <ButtonGroup class="w-full mt-0">
                         <InputAddon>
-                        <button type="button" on:click={() => (showPassword = !showPassword)}>
+                        <button type="button" on:click={() => (showPassword = !showPassword)} tabindex="-1">
                             {#if showPassword}
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                             {:else}
@@ -90,20 +76,30 @@
                     </Label>
 
                     <Label>
-                        <span class="italic">母国語は...・My native language is ...</span>
+                        <span class="italic">Native language・母国語</span>
                         <Select class="mt-2" name="native_language" items={data.languages} bind:value={$form.native_language}/>
                     </Label>
 
                     <div class="mt-4 text-center">
-                        <Button type="submit" gradient color="teal" on:click={ () => { loading = true }}>
+                        <GradientButton type="submit" shadow color="lime" size="xl" class="md:text-xl w-full" on:click={ () => { loading = true }}>
                             {FORMS.Buttons.register.label}
                             {#if loading}
                             <Spinner class="ml-2" size="3" color="white"/>
                             {/if}
-                        </Button>
-                        
+                        </GradientButton>
+                        <GradientButton outline href="/auth/login" class="font-medium mt-2 text-sm md:text-md text-white dark:text-indigo-600 hover:text-lime-400 focus:text-lime-400 md:hover:text-2xl"> 
+                            Back・戻る
+                        </GradientButton>
                     </div>
             </form>
         </div>
     </div>
 </div>
+
+<style lang="postcss">
+    :global(body) {
+        background-image: url('/backgrounds/bg-arcade-blank.png');
+        background-repeat: repeat-x;
+        background-size: cover;
+    }
+</style>

@@ -34,18 +34,21 @@ export const actions = {
                     user_number: form.data.user_number,
                     native_language: form.data.native_language,
                 },
-                emailRedirectTo: '/app/dashboard'
             }
         });
-
+        console.log(signUpData);
+        const {error} = await supabase.from('profiles').insert({
+            id: signUpData.user.id,
+            username: form.data.username,
+            user_number: form.data.user_number,
+            native_language: form.data.native_language,
+        });
+        console.log(error);
         if(signUpError) {
             return fail(400, { form });
         } else {                                                                             
             throw redirect(300,'/auth/confirmation');
         }
-        
-
-        return { form };
     },
 }
 
