@@ -28,10 +28,10 @@ export const handle: Handle = async ({ event, resolve }) => {
       if(session) {
         const { data: profileData, error } = await event.locals.supabase.from('profiles').select('*').eq('id', session.user.id).single();
         const { data: studyingLanguages, error: studyingLangError} = await event.locals.supabase.from('studying_languages').select('lang_code').eq('user_id', session.user.id);
-        
+
         if(studyingLanguages && profileData) {
-          profileData.studying_languages = studyingLanguages.map(el => el.lang_code);
-          (session.user as any).profile = profileData;
+            profileData.studying_languages = studyingLanguages.map(el => el.lang_code);
+            (session.user as any).profile = profileData;
         }
       }
       return session;
