@@ -168,12 +168,7 @@ $: console.log(passage);
 
 {#if splitPassage.length > 0}
 <div class="mt-4 md:mt-12 flex flex-row justify-around md:justify-normal gap-2">
-    {#if passage?.title}
-        <h2 class="w-full text-2xl md:text-4xl text-lime-500 font-pixel px-3 pb-2 bg-white bg-opacity-80 rounded md:bg-transparent;">{passage?.title ?? 'タイトルなし'}</h2>
-    {:else}
-    <span class="text-3xl">🏷️</span>
-    <Input placeholder="New title・タイトル入力" bind:value={newTitle} class="md:w-[60ch] font-pixel text-black text-xs" on:change={saveTitle}/>
-    {/if}
+    <h2 class="w-full text-2xl md:text-4xl text-lime-500 font-pixel px-3 pb-2 bg-white bg-opacity-80 rounded md:bg-transparent;">{passage?.title ?? 'タイトルなし'}</h2>
     <GradientButton pill={true} type="button" class="noprint hidden sm:block text-center" color="red" on:click={print}> <i class="bi bi-download text-3xl"></i> </GradientButton>
 </div>
 {#if passage.rating}
