@@ -13,7 +13,7 @@
 
 <UnderConstruction />
 
-<div class="mt-10 md:mt-2 px-2 md:px-12 md:mx-auto md:w-3/5">
+<div class="mt-10 md:mt-2 px-2 md:px-12 md:mx-auto md:w-3/5 pb-20">
 
     <Tabs >
         <TabItem title="基本・Basic" open inactiveClasses="p-4 text-gray-800 bg-white bg-opacity-50 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300">
