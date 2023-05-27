@@ -5,8 +5,10 @@ import {
     ENV,
     OPENAI_API_KEY
 } from '$env/static/private';
+import { getLastGeneratedDate, isAllowedToGenerate } from '$lib/logic/passages';
 import { message, superValidate } from 'sveltekit-superforms/server';
 
+import { costToGenerate } from '$lib/logic/points';
 import { fail } from '@sveltejs/kit';
 import { storeUserVocabSchema } from '$lib/config/schemas';
 import { toSelectOptions } from '$lib/helpers/Arrays';
@@ -48,10 +50,10 @@ const types = [
 ];
 
 let lengths = [
-    { value: 100, name: 'S (~100 words)'},
-    { value: 300, name: 'M (~300 words)'},
-    { value: 500, name: 'L (~500 words)'},
-    { value: 1000, name: 'XL (~1000 words)'},
+    { value: 100, name: 'S (~100 words)', allowedForTrial: true},
+    { value: 300, name: 'M (~300 words)', allowedForTrial: true},
+    { value: 500, name: 'L (~500 words)', allowedForTrial: false},
+    { value: 1000, name: 'XL (~1000 words)', allowedForTrial: false},
 ];
 
 let qualityLevels = [
@@ -78,6 +80,8 @@ const topics = [
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({locals: { supabase, getSession}}) {
+
+    const { user } = await getSession();
     
     const form = await superValidate(schema);
 
@@ -90,9 +94,12 @@ export async function load({locals: { supabase, getSession}}) {
 
     grades = toSelectOptions(grades, 'id', 'name');
     languages = toSelectOptions(languages, 'lang_code', 'name_native');
-    lengths = toSelectOptions(lengths, 'value', 'name');
 
-    return { form, types, grades, topics, POS, languages, averageDuration, ENV, lengths, qualityLevels };
+    const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
+
+    const allowed = await isAllowedToGenerate(supabase, user, form.data.length, qualityMultiplier, form.data.quality);
+
+    return { form, types, grades, topics, POS, languages, averageDuration, ENV, lengths, qualityLevels, allowed };
 }
 
 export const actions = {
@@ -112,25 +119,31 @@ export const actions = {
         }
         
         const contentType = types.find( elem => elem.value == form.data.type).name;
+
         const { user } = await getSession();
         const { data, error} = await supabase.from('languages').select('name_en').eq('lang_code',form.data.language).single();
+
         let language;
+
         if(data) {
             let split = data.name_en.split(';');
             language = split.length > 0 ? split[split.length - 1] : data.name_en;
         } else {
             language = 'en';
         }
-        console.log('Language: ', data.name_en, language);
 
         let content = `Write a ${contentType} understandable by a student who has no more than 600 words of vocabulary. Keep the grammar simple. 
                 The theme is provided in a non ${language} language, but the passage has to be in ${language}. The theme is: "${topic}". Provide the passage in ${language}.
                 The passage won't be longer than ${form.data.length} words.`;
-        
-        console.log('Prompt: ', content);
 
-        if( form.data.testMode ) {
-            
+        const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
+
+        console.log(`isAllowedToGenerate: ${await isAllowedToGenerate(supabase, user, form.data.length, qualityMultiplier, form.data.quality)}`);
+        if(! await isAllowedToGenerate(supabase, user, form.data.length, qualityMultiplier, form.data.quality)) 
+            return fail(401, {form, error: 'You have reached your limit of generations.'})
+
+        if( form.data.testMode) {
+            console.log("POSTING TO GENERATOR API");
             const response = fetch('https://3cqrx07xfh.execute-api.ap-northeast-1.amazonaws.com/dev/',{
                 method: 'POST',
                 header: {
@@ -146,16 +159,15 @@ export const actions = {
                 }),
             });
 
-            const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
+            
             
             const { data: actionsData, error: actionsError } = await supabase.from('actions').select('*').eq('verb', 'generate').single();
             const { data: pointsData, error: pointsError} = await supabase.from('points_master').select('amount, multiplier').eq('action_id', actionsData.id).single();
             const { data: userProfile, error: profileError} = await supabase.from('profiles').select('*').eq('id', user.id).single();
 
-            console.log('Cost: ',(pointsData.multiplier * form.data.length * qualityMultiplier))
-            console.log('New Balance:', userProfile.point_balance - (pointsData.multiplier * form.data.length * qualityMultiplier))
+            const cost = costToGenerate(form.data.length, pointsData.multiplier);
 
-            const {error} = await supabase.from('profiles').update({point_balance: userProfile.point_balance - (pointsData.multiplier * form.data.length)}).eq('id', user.id);
+            const {error} = await supabase.from('profiles').update({point_balance: userProfile.point_balance - cost}).eq('id', user.id);
         } 
         // The passage is generated by the OpenAI API and stored in the database by an AWS Microservice.
         // It is then retrieved from the database through Supabases's realtime API and displayed on the frontend.

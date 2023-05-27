@@ -2,11 +2,15 @@
     import type { PageData } from './$types';
     
     import { superForm } from 'sveltekit-superforms/client';
-    import { Badge, Button, FloatingLabelInput, Helper, Input, Label, Select, TextPlaceholder, Spinner, Toggle, Toast } from 'flowbite-svelte';
+    import { Badge, Button, FloatingLabelInput, GradientButton, Helper, Input, Label, Select, TextPlaceholder, Spinner, Toggle, Toast } from 'flowbite-svelte';
     import { slide, fade } from 'svelte/transition';
     import { random, uniquify, Policies, toSelectOptions } from '$lib/helpers/Arrays';
     import Reader from '$lib/components/organisms/Reader.svelte';
     import { DUMMY_PASSAGE } from '../../../config/constants';
+    import { costToGenerate } from '$lib/logic/points';
+    import { isAllowedToGenerate } from '$lib/logic/passages';
+    import type { GenerationPermission } from '$lib/types';
+    import { goto } from '$app/navigation';
 
     export let data: PageData;
     const supabase = data.supabase;
@@ -19,23 +23,27 @@
     });
 
     let loading: boolean = false;
-    let randomColor: any = random(["green","blue","red","yellow","purple","pink"]);
+    const getRandomColor = () => { return random(["green","blue","red","yellow","purple","pink"]) };
     let innerWidth: number;
     let passage: any;
     let startTime: number;
     let timer: any;
     let elapsedTime: string;
+    let multiplier: number | undefined = 1;
+    let allowed: GenerationPermission = data.allowed;
+    let allowedLengths = data.lengths;
     
     supabase.channel('any')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'passages' }, payload => {
                 console.log('Change received!', payload);
                 loading = false;
-                passage = payload.new;
+                // passage = payload.new;
                 // splitPassage = splitWords(passage);
                 const totalTime = Math.round(Date.now() - startTime);
                 supabase.from('passages').update({ total_time: totalTime }).eq('id', payload.new.id).then(({ data, error }) => {
                     if (error) console.log('Error updating passage:', error);
                 });
+                goto('/app/library/' + payload.new.id);
                 clearInterval(timer);
             }).subscribe()
 
@@ -62,82 +70,103 @@
         elapsedTime = elapsedTimeRounded.toFixed(1);
     }
 
-    // $: if(passage) { console.log(passage); splitPassage = splitWords(passage); }
+    async function assessAllowed() {
+        allowed = await isAllowedToGenerate(supabase, data?.session?.user, $form.length, multiplier ?? 0, $form.quality);
+    }
+
+    $: multiplier = data.qualityLevels.find((level: any) => level.value == $form.quality)?.multiplier;
+    $: allowedLengths = $form.quality == '3' ? data.lengths.filter((length: any) => length.allowedForTrial ) : data.lengths;
+
 </script>
 <svelte:window bind:innerWidth={innerWidth} />
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
-<div class="w-full h-full sm:px-16 px-2 mt-10">
-    <Badge class="mb-4">長文生成・Generator</Badge>
+<div class="w-full h-full sm:px-16 px-2 md:mt-10 mt-10">
+    <Badge class="mt-2 md:text-lg p-1"><span class="text-lg mr-2">🤖</span>Generator</Badge>
+    <Badge class="mt-2 md:text-lg p-1" color="yellow">
+        <span class="text-lg mr-2">⏱️</span> ～ { 1.1 * data.averageDuration ? Math.round(data.averageDuration / 1000) : 0} seconds 
+    </Badge>
     <form method="POST" action="?/getPassage" use:enhance>
-        <div class="grid grid-cols-3 md:grid-cols-2  gap-2">
-            
-            {#if data.ENV == "dev"}
-                <Toggle color={randomColor} name="testMode" bind:checked={$form.testMode} class="text-xs md:text-md col-span-3 md:col-span-2"> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
-            {/if}
+        <div class="grid grid-cols-3 md:grid-cols-2 gap-2 font-pixel mt-4">
             <Label for="type">
-                <span class="italic text-xs">種類・Type</span>
+                <span class="text-xs md:text-lg">種類・Type</span>
                 <Select label="Type" name="type" bind:value={$form.type} items={data.types}/>
             </Label>
 
             <Label>
-                <span class="italic text-xs">言語・Language</span>
-                <Select label="Language" name="language" bind:value={$form.language} items={ data.languages }/>
+                <span class="text-xs md:text-lg">言語・Language</span>
+                <Select label="Language" name="language" bind:value={$form.language} items={ data.languages } on:change={assessAllowed}/>
             </Label>
             <Label>
-                <span class="italic text-xs">長さ・Length</span>
-                <Select label="length" name="length" bind:value={$form.length} items={ data.lengths }/>
+                <span class="text-xs md:text-lg">長さ・Length</span>
+                <Select label="length" name="length" bind:value={$form.length} items={ allowedLengths } on:change={assessAllowed}/>
             </Label>
             <div class="col-span-2 md:col-span-1">
                 <Label>
-                    <span class="italic text-xs">質・Quality</span>
-                    <Select label="length" name="length" bind:value={$form.quality} items={ data.qualityLevels }/>
+                    <span class="text-xs md:text-lg">質・Quality</span>
+                    <Select label="length" name="length" bind:value={$form.quality} items={ data.qualityLevels } on:change={assessAllowed}/>
                 </Label>
             </div>
-            
-            <div class="col-span-3">
+
+            <div class="col-span-3 md:col-span-2">
             {#if $form.freeInput}
             
                 <Label for="prompt">
-                    <span class="italic text-xs">自分で入力・Custom Prompt</span>
+                    <span class="text-xs md:text-lg">自分で入力・Custom Prompt</span>
                     <Input type="text" name="prompt" label="テーマ" placeholder="ここで入力・Type here..." bind:value={$form.customPrompt}/>
                     <!-- <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint</Helper> -->
                 </Label>
             {:else}
                 <Label for="prompt">
-                    <span class="italic text-xs">テーマ・Prompt</span>
+                    <span class="text-xs md:text-lg">テーマ・Prompt</span>
                     <Select label="Topic" name="prompt" bind:value={$form.prompt} items={data.topics}/>
                     <!-- <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint </Helper> -->
                 </Label>
             {/if}
             </div>
-            <Toggle color={randomColor} name="freeInput" bind:checked={$form.freeInput} class="col-span-2 text-xs md:text-md"> 自分で入力・Free Input </Toggle>
-        </div>
-        <Badge class="mt-2" color="green">
-            <span class="text-xl mr-2">⏱️</span> 平均生成時間: { 1.1 * data.averageDuration ? Math.round(data.averageDuration / 1000) : 0} seconds 
-        </Badge>
+            <Toggle color={getRandomColor()} name="freeInput" bind:checked={$form.freeInput} class="col-span-2 text-xs md:text-lg"> 自分で入力・Free Input </Toggle>
+            {#if data.ENV == "dev"}
+                <Toggle color={getRandomColor()} name="testMode" bind:checked={$form.testMode} class="text-xs md:text-lg col-span-3 md:col-span-2"> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
+            {/if}
 
-        <Button pill={true} type="submit" color={randomColor} outline class="m-4" on:click={handleSubmit}> 
-            <span class="text-3xl mr-2">
+            {#if allowed.ok}
+            <GradientButton type="submit" shadow color="tealToLime" class="col-span-3 md:col-span-2 text-xl md:text-4xl pb-4 md:mt-2" on:click={handleSubmit}> 
                 {#if loading}
-                    <Spinner size="8" color={randomColor} />
-                    <span class="text-xs inline-block w-5">{elapsedTime}</span>
+                    <Spinner size="5" color={getRandomColor()} />
+                    <span class="text-lg inline-block w-5 mx-4">{elapsedTime}</span>
                 {:else}
-                    🖋️
+                {$form.testMode ? costToGenerate($form.length, multiplier ?? 1) : 0 }🪙 Abracadabra! <span class="text-5xl inline-block">🪄</span>
+                
                 {/if}
-            </span>GIVE ME SOME 長文！！
-        </Button>
+            </GradientButton>
+            {:else}
+            <GradientButton type="submit" shadow color="pinkToOrange" class="col-span-3 md:col-span-2 text-xl md:text-2xl pb-4 md:mt-2" disabled> 
+                {#each allowed?.messages as message}
+                    {message} <br/>
+                {/each}
+            </GradientButton>
+            {/if}
+        </div>
+        
+
+        
     </form>
 
     
 
     {#if passage}
         <div class="pb-16">
-            <Reader {passage} themeColor={randomColor} pageData={data}/>
+            <Reader {passage} themeColor={getRandomColor()} pageData={data}/>
         </div>
     {:else}
         {#if loading}
-            <TextPlaceholder size="xxl" class="mx-2 p-2 "/>
+        <div class="rounded md:w-full mt-4 mx-2 p-2 bg-slate-200 grid grid-cols-2 gap-1">
+            <TextPlaceholder size="xxl"/>
+            <TextPlaceholder size="xxl"/>
+            <TextPlaceholder size="xxl"/>
+            <TextPlaceholder size="xxl"/>
+            <TextPlaceholder size="xxl"/>
+        </div>  
         {/if}
     {/if}
 </div>
