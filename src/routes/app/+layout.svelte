@@ -7,6 +7,7 @@
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import type { PageData } from './$types';
+  import type { CustomUser } from "$lib/types";
   import {
     Navbar,
     NavBrand,
@@ -18,10 +19,10 @@
   
   export let data: PageData;  
 
-  const points = data.user?.profile?.point_balance
-  const storeValue: Writable<number> = writable(0);
-  const user = $page.data.session?.user;
   
+  const storeValue: Writable<number> = writable(0);
+  const user: CustomUser | undefined = $page.data.session?.user;
+  const points = user?.profile?.point_balance;
 
   const logout = async () => {
     const { error } = await $page.data.supabase.auth.signOut();
@@ -35,7 +36,7 @@
 
 <div class="relative px-8">
   <Navbar
-    navClass="px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
+    navClass="noprint bg-[#EBA487] bg-opacity-80 font-pixel tracking-wide text-darkish px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
     let:hidden
     let:toggle>
 
@@ -45,17 +46,21 @@
         Page-Turner
       </span> -->
       <svg data-testid="geist-icon" fill="none" height="16" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 24 24" width="32" style="color: var(--accents-2);"><path d="M16.88 3.549L7.12 20.451"></path></svg>
-      <p class="mr-2 text-xs md:text-md">{user?.user_metadata.username ?? user?.email}</p>
+      <p class="font-raleway mr-2 text-xs md:text-xl">{user?.user_metadata.username ?? user?.email}</p>
     </NavBrand>
     {#if points} <span>{formatMG(points)}🪙</span> {/if}
-    <NotificationDropdown data={data.friendsRequests} />
+
+    {#if data.friendsRequests.length > 0}
+      <NotificationDropdown data={data.friendsRequests} />
+    {/if}
+
     <NavHamburger on:click={toggle} />
     <NavUl {hidden} on:click={toggle} class="py-0.5">
       {#each Scaffolder.AppRail.Tiles as tile, index}
         {#if !tile.disabled}
-          <NavLi href={tile.href} class="text-center" >
-              <i class="bi {`bi-${tile.icon}`} md:text-xl"></i>
-              <p>
+          <NavLi href={tile.href} class="text-center border-b md:border-0 font-raleway" >
+              <i class="bi {`bi-${tile.icon}`} md:text-2xl"></i>
+              <p class="text-xs lg:text-lg">
                   {tile.label}
               </p>
           </NavLi>

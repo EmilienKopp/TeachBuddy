@@ -3,6 +3,13 @@
 @tailwind utilities;
 @tailwing forms;
 
+body {
+  background-image: url('/backgrounds/bg-arcade-blank.png');
+  background-repeat: repeat-x;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
 #app {
   background-color: #121212;
   border-color: #202425;
@@ -13,11 +20,22 @@
   min-height: 100%;
   overflow:auto;
   font-family: circular,"Helvetica Neue",Helvetica,Arial,"sans-serif";
+  
 }
 
 @font-face {
   font-family: 'Raleway';
   src: url('/fonts/Raleway-VariableFont_wght.ttf');
+}
+
+@font-face {
+  font-family: 'PublicPixel';
+  src: url('/fonts/PublicPixel.ttf');
+}
+
+@font-face {
+  font-family: 'BestTen';
+  src: url('/fonts/BestTen.otf');
 }
 
 @font-face {
@@ -43,6 +61,27 @@
 @font-face {
   font-family: 'InFormal';
   src: url('/fonts/InFormal_Style_Regular.otf');
+}
+
+@font-face {
+  font-family: 'Barlow-Condensed';
+  src:  url('/fonts/BarlowCondensed-Regular.ttf'),
+        url('/fonts/BarlowCondensed-Medium.ttf'),
+        url('/fonts/BarlowCondensed-SemiBold.ttf'),
+        url('/fonts/BarlowCondensed-Bold.ttf'),
+        url('/fonts/BarlowCondensed-ExtraBold.ttf'),
+        url('/fonts/BarlowCondensed-Black.ttf'),
+        url('/fonts/BarlowCondensed-ExtraLight.ttf'),
+        url('/fonts/BarlowCondensed-Light.ttf'),
+        url('/fonts/BarlowCondensed-Thin.ttf'),
+        url('/fonts/BarlowCondensed-MediumItalic.ttf'),
+        url('/fonts/BarlowCondensed-SemiBoldItalic.ttf'),
+        url('/fonts/BarlowCondensed-BoldItalic.ttf'),
+        url('/fonts/BarlowCondensed-ExtraBoldItalic.ttf'),
+        url('/fonts/BarlowCondensed-BlackItalic.ttf'),
+        url('/fonts/BarlowCondensed-ExtraLightItalic.ttf'),
+        url('/fonts/BarlowCondensed-LightItalic.ttf'),
+        url('/fonts/BarlowCondensed-ThinItalic.ttf');
 }
 
 @layer components {
@@ -217,5 +256,11 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+@media print {
+  nav, input, select, button, .noprint {
+    display: none;
   }
 }

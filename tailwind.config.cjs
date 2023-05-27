@@ -12,7 +12,8 @@ module.exports = {
 		extend: {
 			colors: {
 				darkish: '#282828',
-				darkshine: '#151F29'
+				darkshine: '#151F29',
+				sky: '#87CEEB',
 			  },
 			fontFamily: {
 				raleway: ['Raleway', 'sans-serif'],
@@ -21,6 +22,8 @@ module.exports = {
 				yippy: ['Yippy Skippy', 'sans-serif'],
 				semicasual: ['Semicasual', 'sans-serif'],
 				informal: ['InFormal', 'sans-serif'],
+				barlow: ['Barlow-Condensed', 'sans-serif'],
+				pixel: ['BestTen', 'PublicPixel', 'sans-serif'],
 			},
 		},
 		screens: {
