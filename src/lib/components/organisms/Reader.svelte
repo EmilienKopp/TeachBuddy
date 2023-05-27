@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Badge, Button, Checkbox, FloatingLabelInput, Input, Label, Modal, TextPlaceholder, Popover, Radio, Rating, Select, Spinner, Toggle} from 'flowbite-svelte';
+    import { Badge, Button, Checkbox, FloatingLabelInput, GradientButton, Input, Label, Modal, TextPlaceholder, Popover, Radio, Rating, Select, Spinner, Toggle} from 'flowbite-svelte';
     import { removePunctuation, splitWords } from "$lib/helpers/Text";
     import { vertical, toSelectOptions} from '$lib/helpers/Arrays';
     import { searchWeblio } from '$lib/services/weblio';
@@ -145,6 +145,11 @@ async function saveTitle() {
     console.log(updatedData);
 }
 
+async function print() {
+    window.print();
+}
+
+
 $: noTranslationFound = wordMatchesList?.filter((el: any) => el.ja_word).length === 0;
 
 $: if(passage) {
@@ -162,13 +167,14 @@ $: console.log(passage);
 <!-- TODO: do something about a11y -->
 
 {#if splitPassage.length > 0}
-<div class="my-4 flex flex-row justify-around md:justify-normal gap-4">
+<div class="mt-4 md:mt-12 flex flex-row justify-around md:justify-normal gap-2">
     {#if passage?.title}
-        <h2 class="text-lg md:text-3xl text-lime-500">{passage?.title ?? 'タイトルなし'}</h2>
+        <h2 class="w-full text-2xl md:text-4xl text-lime-500 font-pixel px-3 pb-2 bg-white bg-opacity-80 rounded md:bg-transparent;">{passage?.title ?? 'タイトルなし'}</h2>
     {:else}
-        <FloatingLabelInput label="タイトル" bind:value={newTitle} class="md:w-[60ch]" on:change={saveTitle}/>
+    <span class="text-3xl">🏷️</span>
+    <Input placeholder="New title・タイトル入力" bind:value={newTitle} class="md:w-[60ch] font-pixel text-black text-xs" on:change={saveTitle}/>
     {/if}
-    
+    <GradientButton pill={true} type="button" class="noprint hidden sm:block text-center" color="red" on:click={print}> <i class="bi bi-download text-3xl"></i> </GradientButton>
 </div>
 {#if passage.rating}
 <Badge>User Ratings: {passage.rating}  / 5</Badge> <Badge color="red"> {passage.nb_ratings} ratings </Badge>
@@ -176,14 +182,14 @@ $: console.log(passage);
 {/if}
 <!-- <div class="italic text-md mb-3">{passage.prompt ?? ''}</div> -->
 
-<div class="passage md:p-8 p-2 text-black bg-slate-50 mt-4">
+<div class="passage md:p-8 p-2 text-black bg-slate-50 mt-4 rounded">
     {#each splitPassage as word,index}
         {#if word == '\n'}
             <br />
         {:else if word == '\t' }
             &nbsp;&nbsp;&nbsp;&nbsp;
         {:else}
-            <button type="button" id="word-{index}" on:click={() => { clickedWord = removePunctuation(word) }}> 
+            <button class="forceprint" type="button" id="word-{index}" on:click={() => { clickedWord = removePunctuation(word) }}> 
                 {word}
             </button>
             <Popover trigger="click" triggeredBy="[id='word-{index}']" placement="top" arrow={false} yOnly={ innerWidth <= 425}
