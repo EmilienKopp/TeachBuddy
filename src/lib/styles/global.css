@@ -263,4 +263,8 @@ button:focus-visible {
   nav, input, select, button, .noprint {
     display: none;
   }
+
+  button.forceprint {
+    display: inline-block;
+  }
 }
