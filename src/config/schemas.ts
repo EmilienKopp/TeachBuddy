@@ -25,11 +25,10 @@ export const resetSchema = z.object({
  * Schema for the User Basic Info form.
  */
 export const userBasicInfoSchema = z.object({
-    username: z.string().min(3).max(20).optional(),
-    first_name: z.string().min(3).max(20).optional(),
-    last_name: z.string().min(3).max(20).optional(),
-    email: z.string().email().optional(),
-    user_number: z.string().min(3).max(20).optional().or(z.number().optional()),
+    username: z.optional(z.string().min(3).max(20)).nullable(),
+    first_name: z.optional(z.string().min(3).max(20)).nullable(),
+    last_name: z.optional(z.string().min(3).max(20)).nullable(),
+    user_number: z.optional(z.string().min(3).max(20)).nullable(),
 });
 
 /**
