@@ -20,15 +20,15 @@
 </script>
 
 <div class="pt-10">
-    <GradientButton class="noprint fixed bottom-6 right-6 md:text-xl md:p-3" type="button" pill color="pinkToOrange" on:click={() => { goto('/app/library') }}>
-        戻る
+    <GradientButton class="noprint fixed bottom-6 right-6 md:text-xl md:p-3" type="button" pill color="pinkToOrange" on:click={() => { history.back() }}>
+        <i class="bi bi-reply-fill"></i>
     </GradientButton>
     <GradientButton class="noprint fixed bottom-6 right-24 md:text-3xl md:p-5 sm:hidden" type="button" pill color="pinkToOrange" on:click={() => { window.print() }}>
         <i class="bi bi-download"></i> 
     </GradientButton>
     <div class="mt-4 px-2 pb-16 md:px-16">
         <form method="POST" action="?/getPassage" use:enhance>
-            <Reader passage={data.passage} themeColor="blue" pageData={data}/>
+            <Reader passage={data.passage} themeColor="blue" pageData={data} {form}/>
         </form>
     </div>
 </div>
