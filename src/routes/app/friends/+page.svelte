@@ -8,17 +8,14 @@
     export let data: PageData;
     let searchTerm: string | undefined;
     let filteredUsers: any;
-
-
-    console.log(data);
     
     $: filteredUsers = data.profiles?.filter((profile) => {
         if (searchTerm === undefined || searchTerm.length < 3) {
             return false;
         }
-        return profile.username.toLowerCase().includes(searchTerm.toLowerCase()) 
-                || profile.first_name.toLowerCase().includes(searchTerm.toLowerCase())
-                || profile.last_name.toLowerCase().includes(searchTerm.toLowerCase());
+        return profile?.username?.toLowerCase().includes(searchTerm.toLowerCase()) 
+                || profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase())
+                || profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
     });
 </script>
 
