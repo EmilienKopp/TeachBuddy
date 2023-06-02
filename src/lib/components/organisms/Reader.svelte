@@ -13,7 +13,7 @@
 
     const userLanguage = pageData?.session?.user?.user_metadata?.language ?? 'ja';
 
-    let clickedWord: string = "";
+    let clickedWord: string | any = "";
     let custom_translation: string | null = null;
     let selectedPOS: string = "";
     let newTitle: string = "";
@@ -31,7 +31,6 @@
     
 
     const PosSelectOptions = toSelectOptions(pageData.POS,'id',userLanguage + '_name');
-    console.log('PosSelectOptions:',PosSelectOptions, typeof PosSelectOptions);
 
 async function lookupVocab(word: string) {
     // Reset wordMatchesList    
@@ -60,10 +59,12 @@ async function lookupVocab(word: string) {
         return [];
     }
 
-    // Lookup customized translations existing on 'user_vocabulary'
-    const {data: userVocabData, error: userVocabError } = await supabase.from('user_vocabulary').select('custom_translation').eq('word',word.toLowerCase());
-    console.log('userVocabData:',userVocabData);
-    custom_translation = userVocabData?.[0]?.custom_translation ?? '';
+    // // Lookup customized translations existing on 'user_vocabulary'
+    // const {data: userVocabData, error: userVocabError } = await supabase.from('user_vocabulary').select('custom_translation').eq('word',word.toLowerCase());
+    // console.log('userVocabData:',userVocabData);
+    // if(userVocabData?.length > 0) {
+    //     custom_translation = userVocabData?.[0]?.custom_translation ?? '';
+    // }
 
     // concatenate results if not null
     wordMatchesList = wordMatchesList?.concat(inflectionData ?? [], enWordData ?? []);
@@ -80,56 +81,59 @@ async function lookupVocab(word: string) {
 function displayPOS(item: any) {
     selectedPOS = item.POS;
     const posName =  pageData.POS.find((el: any) => el.id === item.POS)?.[userLanguage + '_name'];
-    console.log(pageData.POS,userLanguage, posName);
     return posName;
 }
 
-async function launchSaveProcess(item: string | any) {
+async function launchSaveProcess(word: string | any) {
+    pageData.form.data.vocabulary_id = [];
     translationModal = true;
-    const isWord = typeof item === 'string';
     isCustomizedTranslation = noTranslationFound ? true : isCustomizedTranslation;
-    clickedWord = removePunctuation( isWord ? item : item.en_word );
-
-    if(!isWord) {
-        selectedPOS = item.POS;
-        selectedVocab = item;
-    }
-
     // if word not in 'vocabulary', add it with a isPublic flag at false
     if(wordMatchesList?.length === 0) {
         console.log('No matches found, adding word to vocabulary');
-        const {data: insertData, error } = await supabase.from('vocabulary').insert({en_word: clickedWord, isPublic: false});
+        const {data: insertData, error } = await supabase.from('vocabulary')
+                                .insert({word: removePunctuation(word), isPublic: false})
+                                .select().single();
         console.log('insertData:',insertData);
         if(error) console.log('Error inserting word:',error);
+        else {
+            wordMatchesList = [insertData];
+            selectedVocab = insertData;
+        }
     }
-    console.log(form, pageData, custom_translation);
 }
 
 async function handleTranslationSubmit(vocabulary: any) {
-    console.log('handleTranslationSubmit', pageData);
+    console.log('handleTranslationSubmit', vocabulary);
+    if(isCustomizedTranslation) {
+        console.log('CUSTOM', custom_translation, pageData?.session?.user.id, vocabulary.id, selectedPOS);
+        const { data, error } = await supabase.from('user_vocabulary').insert({
+            custom_translation, 
+            user_id: pageData?.session?.user.id,
+            vocabulary_id: vocabulary.id,
+        }).select();
+        console.log(data,error);
 
-    // Handle vocabulary not existing in DB
-    if(!vocabulary.id) {
-        console.log('Vocabulary not existing in DB, adding it');
-        const {data: insertData, error } = await supabase.from('vocabulary').insert({en_word: clickedWord, isPublic: false});
-        if(error) {
-            console.log('Error inserting word:',error);
-            return;
-        }
-        vocabulary = insertData?.[0];
-    }
-
-    const {data: insertData, error } = await supabase.from('user_vocabulary').insert({
-        custom_translation, 
-        user_id: pageData?.session?.user.id,
-        vocabulary_id: vocabulary.id,
-    });
-    if(error) {
-        console.log('Error inserting word:',error);
-        return;
+        const {data:updateData, error:updateError} = await supabase.from('vocabulary').update({POS: selectedPOS}).eq('id',vocabulary.id).select();
+        console.log(updateData,updateError);
+        
+    } else {
+        console.log('SELECTION', pageData?.session?.user.id, pageData.form.data.vocabulary_id);
+        pageData.form.data.vocabulary_id.forEach( async (id: any) => {
+            const {data: insertData, error } = await supabase.from('user_vocabulary').insert({
+                custom_translation, 
+                user_id: pageData?.session?.user.id,
+                vocabulary_id: id,
+            }).select();
+            if(error) {
+                console.log('Error inserting word:',error);
+                return;
+            }
+            console.log(insertData,error);
+        });
     }
     translationModal = false;
-    form.custom_translation = '';
+    custom_translation = '';
 }
 
 async function saveTitle() {
@@ -158,7 +162,7 @@ $: if(passage) {
     splitPassage = splitWords(form?.message);
 }
 
-$: console.log(passage);
+$: console.log(pageData.form.data);
 
 </script>
 
@@ -277,10 +281,10 @@ $: console.log(passage);
             {/if}
         </div>
         {/if}
-        <Button  pill={true} type="button" color="tealToLime" gradient class="m-4" disabled={!pageData.form.data.vocabulary_id && !custom_translation}
+        <GradientButton  pill={true} type="button" color="tealToLime" class="m-4" disabled={!pageData.form.data.vocabulary_id && !custom_translation}
         on:click={()=>{ handleTranslationSubmit(selectedVocab) }}> 
             {isCustomizedTranslation ? '入力' : '選択'}した翻訳で保存
-        </Button>
+        </GradientButton>
 
     </div>
 </Modal>
