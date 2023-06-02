@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import { fail } from '@sveltejs/kit';
 import { mapHeaders } from '$lib/helpers/Arrays';
 import { superValidate } from 'sveltekit-superforms/server';
-import { vocabSettingsSchema } from '$lib/config/schemas';
+import { vocabSettingsSchema } from '/src/config/schemas';
 
 const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
 

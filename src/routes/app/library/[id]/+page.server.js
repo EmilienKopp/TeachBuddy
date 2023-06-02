@@ -2,24 +2,18 @@
 
 import { message, superValidate } from 'sveltekit-superforms/server';
 
-import { storeUserVocabSchema } from '$lib/config/schemas';
+import { storeUserVocabSchema } from '/src/config/schemas';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ params,locals: { supabase}}) {
-    console.log(params);
+export async function load({ parent,params,locals: { supabase}}) {
+    const parentData = await parent();
     const form = await superValidate(storeUserVocabSchema);
-    let { data: passage, error } = await supabase.from('passages')
-                                                      .select('*, passage_ratings(rating)')
-                                                      .eq('id', params.id).single();
-    let { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
+
+    const passage = parentData.passages.find((passage) => passage.id == params.id);
     
-    if(error) {
-        return message(form, 'エラーが発生しました 😬');
-    }
-    
-    return { passage, form, POS };
+    return { passage, form };
 }
 
 export const actions = {

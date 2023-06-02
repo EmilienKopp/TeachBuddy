@@ -24,17 +24,11 @@ export async function load({locals: { supabase, getSession}}) {
     
     const form = await superValidate(schema);
 
-    let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
-    let { data: languages, error: langError} = await supabase.from('languages').select('lang_code, name_native').neq('name_native',null);
-
-    grades = toSelectOptions(grades, 'id', 'name');
-    languages = toSelectOptions(languages, 'lang_code', 'name_native');
-
     if (gradesError || langError) {
         fail('Failed to load data');
     }
 
-    return { form, grades, languages };
+    return { form };
 }
 
 export const actions = {

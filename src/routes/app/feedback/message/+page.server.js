@@ -29,7 +29,6 @@ export const actions = {
         const form = await superValidate(formData, messageSchema);
         
         if(!form.valid) {
-            console.log(form);
             return fail(401, {form});
         }
 

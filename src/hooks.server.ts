@@ -55,7 +55,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     if(event.url.pathname == '/') {
       const session = await event.locals.getSession();
-      if (!session) {
+      if (!session && !['/auth/reset','/auth/forgot-password'].includes(event.url.pathname)) {
         // the user is not signed in
         throw redirect(303, '/auth/login');
       } else {

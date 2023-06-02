@@ -10,7 +10,7 @@ import { message, superValidate } from 'sveltekit-superforms/server';
 
 import { costToGenerate } from '$lib/logic/points';
 import { fail } from '@sveltejs/kit';
-import { storeUserVocabSchema } from '$lib/config/schemas';
+import { storeUserVocabSchema } from '/src/config/schemas';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
@@ -85,21 +85,15 @@ export async function load({locals: { supabase, getSession}}) {
     
     const form = await superValidate(schema);
 
-    let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
-    let { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
-    let { data: passagesData, error: avgError} = await supabase.from('passages').select('*');
     let { data: languages, error: langError} = await supabase.from('languages').select('lang_code, name_native').neq('name_native',null);
 
-    const averageDuration = passagesData.map( el => el.generation_duration).reduce((a,b) => a+b, 0) / passagesData.length;
-
-    grades = toSelectOptions(grades, 'id', 'name');
     languages = toSelectOptions(languages, 'lang_code', 'name_native');
 
     const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
 
     const allowed = await isAllowedToGenerate(supabase, user, form.data.length, qualityMultiplier, form.data.quality);
 
-    return { form, types, grades, topics, POS, languages, averageDuration, ENV, lengths, qualityLevels, allowed };
+    return { form, types, topics, languages, ENV, lengths, qualityLevels, allowed };
 }
 
 export const actions = {
@@ -134,7 +128,9 @@ export const actions = {
 
         let content = `Write a ${contentType} understandable by a student who has no more than 600 words of vocabulary. Keep the grammar simple. 
                 The theme is provided in a non ${language} language, but the passage has to be in ${language}. The theme is: "${topic}". Provide the passage in ${language}.
-                The passage won't be longer than ${form.data.length} words.`;
+                The passage won't be longer than ${form.data.length} words.
+                After the passage, provide a list of the 10 most difficult words you used, followed by their translation in ${user.profile.native_language ?? 'Japanese'}.
+                Finally, ask a COMPREHENSION QUESTION about the passage (not a yes/no question).`;
 
         const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
 
