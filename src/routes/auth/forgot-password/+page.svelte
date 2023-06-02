@@ -1,35 +1,31 @@
 <script lang="ts">
-    import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
     import type { PageData } from "./$types";
-    import { superForm } from 'sveltekit-superforms/client';
-    import { FORMS } from '$lib/config/forms';
-    import { Button, ButtonGroup, GradientButton, Helper, Input, InputAddon, Label } from 'flowbite-svelte';
+    import {  GradientButton, Input, Label } from 'flowbite-svelte';
+    import { FORMS } from '/src/config/forms';
 
     export let data: PageData;
 
     let email: string = '';
-
-    // Session
-    const session = data.session;
     
     async function sendResetEmail() {
         const { error } = await data.supabase.auth.resetPasswordForEmail(email,{
-            redirectTo: 'https://teach-buddy.vercel.app/auth/reset',
+            redirectTo: FORMS.Redirects.resetPassword,
         });
         if (error) {
             console.log('Error sending reset email:', error);
         } else {
-            console.log('Reset email sent!');
+            console.log('Reset email sent!', FORMS.Redirects.resetPassword);
         }
     }
 
+    console.log(FORMS);
 </script>
 
 
 <div class="min-h-screen flex flex-col items-center justify-center py-4 px-1 sm:px-4 lg:px-2 mx-auto container">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 class="mt-6 text-center text-4xl md:text-6xl dark:text-slate-200 font-pixel">
-            <p class="text-2xl md:text-3xl">パスワードリセット・ Password Reset</p>
+            <p class="text-2xl md:text-3xl">パスワードリセット<br/> Password Reset</p>
         </h2>
     </div>
 

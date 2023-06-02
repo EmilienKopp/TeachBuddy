@@ -2,26 +2,30 @@
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
     import type { PageData } from './$types';
     import { superForm } from 'sveltekit-superforms/client';
-    import { FORMS } from '$lib/config/forms';
-    import { Button, ButtonGroup, GradientButton, Helper, Input, InputAddon, Label } from 'flowbite-svelte';
+    import { FORMS } from '/src/config/forms';
+    import { Button, ButtonGroup, GradientButton, Helper, Input, InputAddon, Label, Spinner } from 'flowbite-svelte';
+    import Underlay from '$lib/components/atoms/Underlay.svelte';
 
     export let data: PageData;
     let showPassword: boolean = false;
+    let loading: boolean = false;
+    let formElement: HTMLFormElement;
 
     const { form, enhance, errors, constraints } = superForm(data.form, {
         dataType: 'json',
         applyAction: true,
         resetForm: false,
         invalidateAll: true,
+        taintedMessage: null,
     });
 
     // Session
     const session = data.session;
-    console.log(session)
 
-
-    $: {
-        console.error($errors);
+    function handleSubmit(e: any) {
+        e.preventDefault();
+        loading = true;
+        formElement.submit();
     }
 </script>
 
@@ -33,9 +37,10 @@
         </h2>
     </div>
 
+    {#if !loading}
     <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-md font-pixel">
         <div class="py-8 px-4 rounded sm:rounded-lg sm:px-10">
-            <form class="space-y-4" method="POST" action="?/signin" use:enhance >
+            <form class="space-y-4" method="POST" action="?/signin" use:enhance bind:this={formElement}>
                 <Label class="font-bold md:text-xl">
                     Email
                     <Input id="email" type="email" name="email" placeholder="Gimme your email!" bind:errorMessage={$errors.email}  bind:value={$form.email} {...$constraints.email}/>
@@ -53,12 +58,24 @@
                         </button>
                         </InputAddon>
                         <Input  id="show-password" bind:value={$form.password} type={showPassword ? 'text' : 'password'} 
-                                name="password" placeholder="Your password here" {...$constraints.password} class="font-raleway"/>
+                                name="password" placeholder="Your password here" {...$constraints.password} class="font-{showPassword? 'pixel' : 'raleway'} tracking-wide"/>
                     </ButtonGroup>
-                        {#if $errors.password}<Helper class="mt-2" color="red">{$errors.password}</Helper>{/if}
+                    
+                        {#if $errors.password || $errors.email}
+                            <Underlay extraClasses="mt-2 pb-3 tracking-wide">
+                                {#each Object.entries($errors) as [field,message]}
+                                    <Helper color="red">{message == 'Invalid login credentials' ? message + ' ログイン情報が正しくありません' : message}</Helper>
+                                {/each}
+                            </Underlay>
+                        {/if}
                     </Label>
-                    <GradientButton type="submit" shadow color="lime" size="xl" class="md:text-xl w-full">
-                        {FORMS.Buttons.login.label}
+                    <GradientButton type="submit" shadow color="lime" size="xl" class="w-full text-xl md:text-4xl pb-4 md:mt-2" on:click={handleSubmit} disabled={loading}>
+                            
+                            {#if loading}
+                                <Spinner size="5" />
+                            {:else}
+                                {FORMS.Buttons.login.label}
+                            {/if}
                     </GradientButton>
                     <div class="flex flex-col text-sm md:text-md text-left h-20">
                         <ul class="mb-2  py-3 h-full ">
@@ -77,6 +94,11 @@
             </form>
         </div>
     </div>
+    {:else}
+    <div class="flex justify-center items-center h-screen">
+        <Spinner size="10" />
+    </div>
+    {/if}
 </div>
 
 <style lang="postcss">

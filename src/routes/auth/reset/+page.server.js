@@ -2,7 +2,7 @@
 
 import { fail } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
-import { resetSchema } from '$lib/config/schemas';
+import { resetSchema } from '/src/config/schemas';
 import { superValidate } from 'sveltekit-superforms/server';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 
@@ -29,10 +29,10 @@ export const actions = {
         })
 
 
-        if(signUpError) {
+        if(error) {
             return fail(400, { form });
         } else {                                                                             
-            throw redirect(300,'/auth/confirmation');
+            throw redirect(300,'/auth/login');
         }
     },
 }

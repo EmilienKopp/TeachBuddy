@@ -2,7 +2,7 @@
 
 import { fail } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
-import { registerSchema } from '$lib/config/schemas';
+import { registerSchema } from '/src/config/schemas';
 import { superValidate } from 'sveltekit-superforms/server';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 

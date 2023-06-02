@@ -4,7 +4,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { setError, superValidate } from 'sveltekit-superforms/server';
 
 import { AuthApiError } from '@supabase/supabase-js';
-import { loginSchema } from '$lib/config/schemas';
+import { loginSchema } from '/src/config/schemas';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
