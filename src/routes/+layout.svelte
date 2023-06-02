@@ -22,7 +22,7 @@
 
 </script>
 
-<div class="h-full w-full dark:text-white text-black font-raleway">
+<div class="h-full w-full dark:text-white text-black font-raleway overflow-scroll">
 	<slot />
 </div>
 
