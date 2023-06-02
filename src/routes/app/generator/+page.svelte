@@ -2,15 +2,15 @@
     import type { PageData } from './$types';
     
     import { superForm } from 'sveltekit-superforms/client';
-    import { Badge, Button, FloatingLabelInput, GradientButton, Helper, Input, Label, Select, TextPlaceholder, Spinner, Toggle, Toast } from 'flowbite-svelte';
-    import { slide, fade } from 'svelte/transition';
-    import { random, uniquify, Policies, toSelectOptions } from '$lib/helpers/Arrays';
+    import { Badge, GradientButton, Input, Label, Modal, Select, TextPlaceholder, Spinner, Toggle } from 'flowbite-svelte';
+    import { random} from '$lib/helpers/Arrays';
     import Reader from '$lib/components/organisms/Reader.svelte';
     import { DUMMY_PASSAGE } from '../../../config/constants';
     import { costToGenerate } from '$lib/logic/points';
     import { isAllowedToGenerate } from '$lib/logic/passages';
     import type { GenerationPermission } from '$lib/types';
     import { goto } from '$app/navigation';
+    import { onMount } from 'svelte';
 
     export let data: PageData;
     const supabase = data.supabase;
@@ -32,10 +32,11 @@
     let multiplier: number | undefined = 1;
     let allowed: GenerationPermission = data.allowed;
     let allowedLengths = data.lengths;
+    let averageDuration = data.passages.map( (el: any) => el.generation_duration).reduce((a: any, b: any) => a+b, 0) / data.passages.length;
     
-    supabase.channel('any')
+    onMount( () => {
+        supabase.channel('any')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'passages' }, payload => {
-                console.log('Change received!', payload);
                 loading = false;
                 // passage = payload.new;
                 // splitPassage = splitWords(passage);
@@ -46,6 +47,8 @@
                 goto('/app/library/' + payload.new.id);
                 clearInterval(timer);
             }).subscribe()
+    })
+    
 
     function handleSubmit(e: any) {
         loading = true;
@@ -84,7 +87,7 @@
 <div class="w-full h-full sm:px-16 px-2 md:mt-10 mt-10">
     <Badge class="mt-2 md:text-lg p-1"><span class="text-lg mr-2">🤖</span>Generator</Badge>
     <Badge class="mt-2 md:text-lg p-1" color="yellow">
-        <span class="text-lg mr-2">⏱️</span> ～ { 1.1 * data.averageDuration ? Math.round(data.averageDuration / 1000) : 0} seconds 
+        <span class="text-lg mr-2">⏱️</span> ～ { 1.1 * averageDuration ? Math.round(averageDuration / 1000) : 0} seconds 
     </Badge>
     <form method="POST" action="?/getPassage" use:enhance>
         <div class="grid grid-cols-3 md:grid-cols-2 gap-2 font-pixel mt-4">
@@ -171,3 +174,8 @@
         {/if}
     {/if}
 </div>
+
+<Modal bind:open={loading} autoclose>
+    <p class="text-2xl">Generating...</p>
+    <GradientButton color="pinkToOrange" href="/sverdle">Play a game ? 😃</GradientButton>
+</Modal>
