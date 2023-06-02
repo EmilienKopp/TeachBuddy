@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { languagesSettingsSchema, userBasicInfoSchema } from '$lib/config/schemas';
+import { languagesSettingsSchema, userBasicInfoSchema } from '/src/config/schemas';
 import { message, superValidate } from 'sveltekit-superforms/server';
 
 import { toSelectOptions } from '$lib/helpers/Arrays';
