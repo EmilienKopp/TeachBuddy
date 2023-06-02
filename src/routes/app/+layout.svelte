@@ -46,7 +46,7 @@
         Page-Turner
       </span> -->
       <svg data-testid="geist-icon" fill="none" height="16" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 24 24" width="32" style="color: var(--accents-2);"><path d="M16.88 3.549L7.12 20.451"></path></svg>
-      <p class="font-raleway mr-2 text-xs md:text-xl">{user?.user_metadata.username ?? user?.email}</p>
+      <p class="font-raleway mr-2 text-xs md:text-xl">{user?.profile?.username ?? user?.email}</p>
     </NavBrand>
     {#if points} <span>{formatMG(points)}🪙</span> {/if}
 
