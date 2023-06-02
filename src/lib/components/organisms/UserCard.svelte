@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Card, MenuButton, Dropdown, DropdownItem, Avatar, Button } from "flowbite-svelte";
+    import { Card, MenuButton, Dropdown, DropdownItem, Avatar, Button, GradientButton } from "flowbite-svelte";
 
     export let pageData: any = null;
     export let user: any;
@@ -52,7 +52,7 @@
         {/if}
         <div class="flex mt-4 space-x-3 lg:mt-6">
             {#if !isFriend}
-                <Button gradient color="greenToBlue" on:click={friendRequest}>追加😊</Button>
+                <GradientButton color="greenToBlue" on:click={friendRequest}>追加😊</GradientButton>
             {/if}
             
           <!-- <Button color="light" class="dark:text-white">Message</Button> -->

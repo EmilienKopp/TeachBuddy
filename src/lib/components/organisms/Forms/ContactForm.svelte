@@ -17,8 +17,6 @@
 
     let message: string = '';
 
-    $: console.log($form, $errors)
-
 </script>
 
 <section class="mt-12 mx-auto w-2/3 min-w-90">
