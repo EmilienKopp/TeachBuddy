@@ -3,6 +3,7 @@
 import { languagesSettingsSchema, userBasicInfoSchema } from '/src/config/schemas';
 import { message, superValidate } from 'sveltekit-superforms/server';
 
+import { fail } from '@sveltejs/kit';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { vertical } from '$lib/helpers/Arrays';
 import { z } from 'zod';
@@ -30,17 +31,14 @@ export async function load({request, locals: { supabase, getSession}}) {
     const { data: profileData, error: profileError } = await supabase.from('profiles')
                                                                      .select('username, first_name, last_name, user_number')
                                                                      .eq('id', user.id).single(); 
-    console.log('ProfileData:',profileData);
+
     if(profileData) {
-        console.log('PROFILE DATA FOUND')
         const { username, first_name, last_name, user_number } = profileData;
         userBasicInfo = { username, first_name, last_name, user_number, email: user.email };
         infoForm = await superValidate( userBasicInfo,userBasicInfoSchema, { id: 'infoForm' });
     } else {
-        console.log('PROFILE DATA NOT FOUND');
         infoForm = await superValidate( userBasicInfoSchema, { id: 'infoForm' });
     }
-    console.log('InfoForm:', infoForm);
 
     const session = await getSession();
 
@@ -57,7 +55,7 @@ export const actions = {
     saveLanguageInfo: async ({ request, locals: { supabase, getSession, refreshSession } }) => {
         const form = await superValidate(request, languagesSettingsSchema);
         const { user } = await getSession();
-        console.log('SAVE LANGUAGE INFO server action: ', form)
+
         // Validation
         if(!form.valid) {
             return fail(401, {form});
@@ -89,7 +87,6 @@ export const actions = {
             else console.log('Studying languages updated:', studyingData, studyingDeleteData);
 
             const newSession = await refreshSession();
-            console.log('New session:', newSession);
         }
     },
     saveBasicInfo: async ({ request, locals: { supabase, getSession, refreshSession } }) => {
@@ -97,12 +94,13 @@ export const actions = {
         const { user } = await getSession();
         // Validation
         if(!form.valid) {
+            console.warn('INVALID FORM', form);
             return fail(401, {form});
         }
 
         const { data: updatedProfileData, error } = 
                                     await supabase.from('profiles')
-                                    .update({ id: user.id, 
+                                    .update({
                                                 username: form.data.username, 
                                                 first_name: form.data.first_name,
                                                 last_name: form.data.last_name, 
