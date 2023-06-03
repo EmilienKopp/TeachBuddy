@@ -14,6 +14,5 @@ export async function load({ locals: { supabase, getSession }}) {
                                                                .select('id, username, first_name, last_name')
                                                                 .in('id', friendships.map(friendship => friendship.friend_id));
                                                                 
-    console.log(user.id,friendships.map(friendship => friendship.friend_id), profiles, friends);
     return { profiles, friends };
 }

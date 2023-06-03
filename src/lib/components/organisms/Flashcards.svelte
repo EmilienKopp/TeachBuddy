@@ -11,7 +11,7 @@
         back: `${card.vocabulary.ja_word ?? ''} \n ${card.custom_translation ?? ''}`,
       };
     });
-    console.log(cards)
+
     let currentIndex = 0;
     let isFlipped = false;
     let isBackFirst = false;

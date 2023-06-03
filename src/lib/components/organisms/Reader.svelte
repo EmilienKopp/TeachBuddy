@@ -41,7 +41,6 @@ async function lookupVocab(word: string) {
     const {data: exactMatches, error } = await supabase.from('vocabulary').select('*').eq('word',word.toLowerCase());
 
     if(exactMatches && exactMatches?.length == 1) {
-        console.log(`${word.toLowerCase()} has a single exact match:`,exactMatches);
         selectedVocab = exactMatches[0];
         wordMatchesList = exactMatches;
         return wordMatchesList;
@@ -55,7 +54,7 @@ async function lookupVocab(word: string) {
             {data: enWordData, error: enWordError } ] = await Promise.all([fuzzyInflectionSearch,fuzzyEnWordSearch]);
     
     if(enWordError || inflectionError) {
-        console.log('Error looking up word:',enWordError,inflectionError);
+
         return [];
     }
 
@@ -74,7 +73,6 @@ async function lookupVocab(word: string) {
                 const found = acc.find((item: any) => (item.id === current.id || (item.word == current.word && item.POS == current.POS)));
                 return (!found) ? acc.concat([current]) : acc;
             }, []);
-    console.log('Lookup results:',wordMatchesList);
     return wordMatchesList;
 }
 
@@ -90,11 +88,9 @@ async function launchSaveProcess(word: string | any) {
     isCustomizedTranslation = noTranslationFound ? true : isCustomizedTranslation;
     // if word not in 'vocabulary', add it with a isPublic flag at false
     if(wordMatchesList?.length === 0) {
-        console.log('No matches found, adding word to vocabulary');
         const {data: insertData, error } = await supabase.from('vocabulary')
                                 .insert({word: removePunctuation(word), isPublic: false})
                                 .select().single();
-        console.log('insertData:',insertData);
         if(error) console.log('Error inserting word:',error);
         else {
             wordMatchesList = [insertData];
@@ -104,21 +100,14 @@ async function launchSaveProcess(word: string | any) {
 }
 
 async function handleTranslationSubmit(vocabulary: any) {
-    console.log('handleTranslationSubmit', vocabulary);
     if(isCustomizedTranslation) {
-        console.log('CUSTOM', custom_translation, pageData?.session?.user.id, vocabulary.id, selectedPOS);
         const { data, error } = await supabase.from('user_vocabulary').insert({
             custom_translation, 
             user_id: pageData?.session?.user.id,
             vocabulary_id: vocabulary.id,
         }).select();
-        console.log(data,error);
-
         const {data:updateData, error:updateError} = await supabase.from('vocabulary').update({POS: selectedPOS}).eq('id',vocabulary.id).select();
-        console.log(updateData,updateError);
-        
     } else {
-        console.log('SELECTION', pageData?.session?.user.id, pageData.form.data.vocabulary_id);
         pageData.form.data.vocabulary_id.forEach( async (id: any) => {
             const {data: insertData, error } = await supabase.from('user_vocabulary').insert({
                 custom_translation, 
@@ -129,7 +118,6 @@ async function handleTranslationSubmit(vocabulary: any) {
                 console.log('Error inserting word:',error);
                 return;
             }
-            console.log(insertData,error);
         });
     }
     translationModal = false;
@@ -137,7 +125,6 @@ async function handleTranslationSubmit(vocabulary: any) {
 }
 
 async function saveTitle() {
-    console.log(passage, newTitle);
     const {data: updatedData, error } = await supabase.from('passages')
                                                      .update({title: newTitle})
                                                      .eq('id',passage?.id).select();
@@ -146,7 +133,6 @@ async function saveTitle() {
         return;
     }
     passage.title = newTitle;
-    console.log(updatedData);
 }
 
 async function print() {
@@ -162,8 +148,6 @@ $: if(passage) {
     splitPassage = splitWords(form?.message);
 }
 
-$: console.log(pageData.form.data);
-
 </script>
 
 <svelte:window bind:innerWidth={innerWidth} />
@@ -173,15 +157,23 @@ $: console.log(pageData.form.data);
 {#if splitPassage.length > 0}
 <div class="mt-4 md:mt-12 flex flex-row justify-around md:justify-normal gap-2">
     <h2 class="w-full text-2xl md:text-4xl text-lime-500 font-pixel px-3 pb-2 bg-white bg-opacity-80 rounded md:bg-transparent;">{passage?.title ?? 'タイトルなし'}</h2>
+    
     <GradientButton pill={true} type="button" class="noprint hidden sm:block text-center" color="red" on:click={print}> <i class="bi bi-download text-3xl"></i> </GradientButton>
 </div>
+
+
+
+
 {#if passage.rating}
 <Badge>User Ratings: {passage.rating}  / 5</Badge> <Badge color="red"> {passage.nb_ratings} ratings </Badge>
 <Rating total={5} rating={passage.rating} />
 {/if}
 <!-- <div class="italic text-md mb-3">{passage.prompt ?? ''}</div> -->
-
+<span class="text-[0.5rem]">Photo credit: {pageData.pic.photographer} from <a href={pageData.pic.photographer_url}>Pexels</a></span>
 <div class="passage md:p-8 p-2 text-black bg-slate-50 mt-4 rounded">
+    <div class="w-full h-32 mb-2 bg-center bg-no-repeat bg-cover rounded-lg" style="background-image:url({pageData.pic.src.large})">
+    </div>
+    
     {#each splitPassage as word,index}
         {#if word == '\n'}
             <br />

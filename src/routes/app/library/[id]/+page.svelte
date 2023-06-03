@@ -15,8 +15,6 @@
         resetForm: false,
         invalidateAll: true,
     });
-
-    $: console.log(data);
 </script>
 
 <div class="pt-10">

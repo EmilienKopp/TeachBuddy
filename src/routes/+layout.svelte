@@ -3,6 +3,7 @@
 	import '$lib/styles/global.css';
 	import { onMount } from 'svelte';
 	import type { LayoutData } from './$types';
+	import { locale } from 'svelte-i18n';
 
 	export let data: LayoutData;
 
@@ -20,6 +21,7 @@
 		return () => subscription.unsubscribe();
 	});
 
+	$: console.log('Locale set to:',$locale);
 </script>
 
 <div class="h-full w-full dark:text-white text-black font-raleway overflow-scroll">

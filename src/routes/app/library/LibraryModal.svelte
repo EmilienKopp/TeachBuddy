@@ -37,7 +37,6 @@
     }
 
     async function handleUntagging(event: any, index: number) {
-        console.log(selectedItem.tags[index]);
         if (!selectedItem.tags[index].toggled) {
             selectedItem.tags[index].toggled = true;
             return;
@@ -69,7 +68,7 @@
             {#if selectedItem?.tags?.length > 0}
                 {#each selectedItem.tags as tag,key}
                 <a type="button" class="inline-block m-1 p-1 text-xs border rounded-lg bg-{tag.toggled ? 'red' : 'blue'}-400 text-white" id="tag-{key}" 
-                    on:click={(e) => handleUntagging(e,key) } on:keydown={(e) => {e.preventDefault(); tag.toggled = true; console.log(tag)} }>
+                    on:click={(e) => handleUntagging(e,key) } on:keydown={(e) => {e.preventDefault(); tag.toggled = true} }>
                     {#if !tag.toggled}
                        #️⃣{tag.label}
                     {:else}

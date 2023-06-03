@@ -20,7 +20,6 @@ export const actions = {
         const session = await getSession();
         const formData = await request.formData();
         const form = await superValidate(formData, registerSchema);
-        console.log(form);
         if (!form.valid) {
             return fail(400, { form });
         }
@@ -36,14 +35,14 @@ export const actions = {
                 },
             }
         });
-        console.log(signUpData);
+
         const {error} = await supabase.from('profiles').insert({
             id: signUpData.user.id,
             username: form.data.username,
             user_number: form.data.user_number,
             native_language: form.data.native_language,
         });
-        console.log(error);
+
         if(signUpError) {
             return fail(400, { form });
         } else {                                                                             

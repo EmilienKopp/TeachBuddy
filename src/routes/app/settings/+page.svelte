@@ -12,7 +12,6 @@
 
     async function saveNativeLanguage() {
         if(nativeLanguage) {
-            console.log('Saving native language:', nativeLanguage, data.session?.user.id);
             const { data: profileData, error: profileError } = await data.supabase.from('profiles')
                                                     .upsert({ id: data.session?.user.id, native_language: nativeLanguage })
                                                     .eq('id', data.session?.user.id).select();
@@ -39,7 +38,6 @@
     
 
     $: selectableLanguages = languages.filter(lang => lang.value !== nativeLanguage);
-    $: console.log(selectedLanguages, nativeLanguage)
 </script>
 
 <div class="mt-12 p-2 md:p-8">

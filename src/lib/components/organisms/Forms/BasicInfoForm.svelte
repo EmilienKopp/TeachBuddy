@@ -3,6 +3,8 @@
     import { toSelectOptions } from '$lib/helpers/Arrays';
     import { superForm } from 'sveltekit-superforms/client';
     import SaveButton from '$lib/components/atoms/SaveButton.svelte';
+    import { _ } from 'svelte-i18n';
+    import { C_ } from '$lib/i18n/helpers';
 
     export let data: any;
     export let grades: any;
@@ -21,19 +23,19 @@
 
 <form method="POST" use:infoFormEnhance action="?/saveBasicInfo" class="h-5/6">
     <section class="flex flex-col gap-4">
-        <Label for="username">Username
+        <Label for="username">{$C_('username')}
             <Input type="text" id="username" name="username" bind:value={$infoForm.username} />
             <Helper color="red">{$errors?.username ?? ''}</Helper>
         </Label>
-        <Label for="first_name">First Name
+        <Label for="first_name">{$C_('first_name')}
             <Input type="text" id="first_name" name="first_name" bind:value={$infoForm.first_name} />
             <Helper color="red">{$errors?.first_name ?? ''}</Helper>
         </Label>
-        <Label for="last_name">Last Name
+        <Label for="last_name">{$C_('last_name')}
             <Input type="text" id="last_name" name="last_name" bind:value={$infoForm.last_name} />
             <Helper color="red">{$errors?.last_name ?? ''}</Helper>
         </Label>
-        <Label for="user_number">User Number / Student Number
+        <Label for="user_number">{$C_('user_number')}
             <Input type="text" id="user_number" name="user_number" bind:value={$infoForm.user_number} />
             <Helper color="red">{$errors?.user_number ?? ''}</Helper>
         </Label>

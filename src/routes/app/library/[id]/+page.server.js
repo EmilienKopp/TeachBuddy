@@ -2,18 +2,29 @@
 
 import { message, superValidate } from 'sveltekit-superforms/server';
 
+import { PEXELS_API_KEY } from '$env/static/private';
+import { createClient } from 'pexels';
+import { random } from '$lib/helpers/Arrays';
 import { storeUserVocabSchema } from '/src/config/schemas';
-import { toSelectOptions } from '$lib/helpers/Arrays';
-import { z } from 'zod';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ parent,params,locals: { supabase}}) {
     const parentData = await parent();
     const form = await superValidate(storeUserVocabSchema);
 
+    const pxl = createClient(PEXELS_API_KEY);
+
     const passage = parentData.passages.find((passage) => passage.id == params.id);
+
+    const query = passage.topic_string;
     
-    return { passage, form };
+    const {photos} = await pxl.photos.search({ query, per_page: 30 });
+
+    console.log('PEXELS', photos);
+
+    const pic = random(photos);
+    
+    return { passage, form, pic };
 }
 
 export const actions = {

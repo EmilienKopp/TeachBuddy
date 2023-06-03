@@ -7,6 +7,7 @@ import {
 
 import type { Handle } from '@sveltejs/kit';
 import { createSupabaseServerClient } from '@supabase/auth-helpers-sveltekit';
+import { locale } from 'svelte-i18n'
 import { redirect } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -70,6 +71,11 @@ export const handle: Handle = async ({ event, resolve }) => {
         // the user is not signed in
         throw redirect(303, '/');
       }
+    }
+
+    const lang = event.request.headers.get('accept-language')?.split(',')[0]
+    if (lang) {
+      locale.set(lang)
     }
 
     return resolve(event, {

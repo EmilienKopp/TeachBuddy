@@ -1,5 +1,9 @@
 // @ts-nocheck
 
+export function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function formatMG(nb) {
     if (nb > 1000000000) {
         return (nb / 1000000000).toFixed(1) + 'G';

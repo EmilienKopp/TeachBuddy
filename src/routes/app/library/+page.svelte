@@ -92,13 +92,10 @@
     <p>データがありません。</p>
 {/if}
 
-<div class="px-5 z-10 w-5/6">
-    <Label>
-        <span class="font-raleway md:text-3xl">検索</span>
-        <Input type="text" bind:value={searchTerm} placeholder="Search"/>
-    </Label>
-    <Button color="blue" class="mt-2 w-full sm:w-auto"><Chevron>Languages・言語</Chevron></Button>
-
+<div class="px-5 z-10 w-5/6 grid grid-cols-3 gap-1">
+    <Input class="col-span-2" type="text" bind:value={searchTerm} placeholder="Search・検索"/>
+    <GradientButton color="pinkToOrange" class="w-full sm:w-auto" on:click={resetFilters}>Reset</GradientButton>
+    <Button color="blue" class="mt-2 w-full col-span-2 sm:w-auto text-xs md:text-md"><Chevron>Languages 言語</Chevron></Button>
     <Dropdown>
             {#each data?.languages as lang}
             <li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 ">
@@ -106,12 +103,15 @@
             </li>
             {/each}
     </Dropdown>
-    <input class="bg-lime-100 rounded-md border border-green-400 mt-2 w-full sm:w-auto" placeholder="Select month" type="month" bind:value={filterDate} />
-    <GradientButton color="pinkToOrange" class="mt-2 w-full sm:w-auto" on:click={resetFilters}>Reset</GradientButton>
-    <br/>
-    {#each filterLanguages as lang}
-        <Badge color="blue" class="m-2">{lang}</Badge>
-    {/each}
+    <input class="bg-lime-100 rounded-md border border-green-400 mt-2 w-full sm:w-auto" type="month" bind:value={filterDate} />
+    <div class="col-span-3 h-8">
+        {#each filterLanguages as lang}
+        <Indicator color="red" border size="xl">
+            <span class="text-white text-xs font-bold">{lang}</span>
+        </Indicator>
+        {/each}
+    </div>
+    
 </div>
 <div class="hidden md:block">
     <Table hoverable={true} divClass="relative xs:w-5/6 w-full xs:mx-auto overflow-x-clip shadow-md sm:rounded-lg pt-4 mb-12" >

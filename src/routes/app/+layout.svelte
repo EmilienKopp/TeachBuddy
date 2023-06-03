@@ -1,13 +1,16 @@
 <script lang="ts">
   import "$lib/styles/global.css";
   import NotificationDropdown from "$lib/components/atoms/NotificationDropdown.svelte";
+  import GenerationCompleteAlert from "$lib/components/organisms/GenerationCompleteAlert.svelte";
   import { writable, type Writable } from "svelte/store";
   import { Scaffolder } from "/src/config/scaffolder";
-  import { formatMG } from "$lib/helpers/Text";
+  import { formatMG, capitalize } from "$lib/helpers/Text";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import type { PageData } from './$types';
   import type { CustomUser } from "$lib/types";
+  import { _ } from 'svelte-i18n';
+  import { C_ } from '$lib/i18n/helpers';
   import { pointStore } from "$lib/stores";
   import {
     Navbar,
@@ -35,6 +38,8 @@
 
 </script>
 
+<GenerationCompleteAlert {data}/>
+
 <div class="relative px-8">
   <Navbar
     navClass="noprint bg-[#EBA487] bg-opacity-80 font-pixel tracking-wide text-darkish px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
@@ -59,17 +64,17 @@
     <NavUl {hidden} on:click={toggle} class="py-0.5">
       {#each Scaffolder.AppRail.Tiles as tile, index}
         {#if !tile.disabled}
-          <NavLi href={tile.href} class="text-center border-b md:border-0 font-raleway" >
+          <NavLi href={tile.href} class="text-center border-b md:border-0" >
               <i class="bi {`bi-${tile.icon}`} md:text-2xl"></i>
               <p class="text-xs lg:text-lg">
-                  {tile.label}
+                  {$C_(tile.name)}
               </p>
           </NavLi>
         {/if}
       {/each}
       <NavLi class="text-center" on:click={logout}>
         <i class="bi bi-box-arrow-right md:text-xl"></i>
-        <p>
+        <p class="text-xs lg:text-lg">
           Logout
         </p>
       </NavLi>

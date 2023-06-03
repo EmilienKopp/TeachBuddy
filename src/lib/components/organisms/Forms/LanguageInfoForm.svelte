@@ -3,6 +3,9 @@
     import type { SelectOptionType } from '$lib/helpers/Arrays';
     import SaveButton from '$lib/components/atoms/SaveButton.svelte';
     import { superForm } from 'sveltekit-superforms/client';
+    import { _ } from 'svelte-i18n';
+    import { capitalize } from '$lib/helpers/Text';
+    import { C_ } from '$lib/i18n/helpers';
 
     export let data: any;
 
@@ -20,18 +23,18 @@
     let FORM: HTMLFormElement;
     
     $: selectableLanguages = languages.filter(lang => lang.value !== $langForm.native_language);
-    $: console.log('Form:', $langForm)
+
 </script>
 
 <section class="mt-1">
 <form bind:this={FORM} class="flex flex-col gap-5 pb-12" method="POST" use:langFormEnhance action="?/saveLanguageInfo">
     <Label>
-        <span class="italic">母国語は...・My native language is ...</span>
+        <span class="italic">{$C_('my_native_language_is')}</span>
         <Select class="mt-2" name="native_language" items={languages} bind:value={$langForm.native_language} change={() => FORM.submit()}/>
     </Label>
     <Label>
         <p class="font-semibold italic"></p>
-        <Button color="blue" class="w-full"><Chevron>勉強中・I'm studying...</Chevron></Button>
+        <Button color="blue" class="w-full"><Chevron>{$C_('now_studying')}</Chevron></Button>
         <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
             {#each selectableLanguages as lang, key}
             <li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">

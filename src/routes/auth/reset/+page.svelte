@@ -28,7 +28,6 @@
 
     // $: $errors.password_confirm = $form.password_confirm !== $form.password ? ['Passwords do not match・パスワードは一致していません'] : [];
     $: {
-        console.log($form,$errors);
         if($form.password_confirm !== $form.password) {
             $errors.password_confirm = ['Passwords do not match・パスワードは一致していません'];
         } else {

@@ -17,7 +17,6 @@ export function deleteColumn(arr, columnIndex) {
 }
 
 export function mapHeaders(headers,arr) {
-  console.log('MAP HEADERS', headers.length, arr.map(el => el.length).find(el => el !== headers.length));
   if(!headers || !arr) throw new Error('mapHeaders requires both headers and array arguments');
   // if(!arr.every(el => el.length === headers.length)) throw new Error('mapHeaders requires headers and array arguments to have the same length');
   return arr.map((row) => {

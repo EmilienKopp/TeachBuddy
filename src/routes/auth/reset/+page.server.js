@@ -19,7 +19,7 @@ export const actions = {
         const session = await getSession();
         const formData = await request.formData();
         const form = await superValidate(formData, resetSchema);
-        console.log(form);
+
         if (!form.valid || formData.get('password') !== formData.get('password_confirm')) {
             return fail(400, { form });
         }

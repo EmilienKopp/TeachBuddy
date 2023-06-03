@@ -88,14 +88,13 @@
 		} else if (guess.length < 5) {
 			data.guesses[i] += key;
 		}
-		console.log(data.guesses);
+
 		if(won) {
 			givePoints();
 		}
 	}
 	$: gains = (7 - data.guesses.filter(g => g !== '').length) * 100;
 	$: {
-		console.log(gains);
 		if(won) {
 			givePoints();
 		}

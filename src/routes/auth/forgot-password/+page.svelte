@@ -18,7 +18,6 @@
         }
     }
 
-    console.log(FORMS);
 </script>
 
 

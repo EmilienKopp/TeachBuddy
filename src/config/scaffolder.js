@@ -1,10 +1,12 @@
 
+
+
 export const Scaffolder = {
 
     AppRail: {
         Tiles: [
             {
-                name: 'Home',
+                name: 'home',
                 icon: 'house-door-fill',
                 href: '/app/dashboard',
                 label: 'ホーム'
@@ -16,50 +18,51 @@ export const Scaffolder = {
             //     label: 'flashcards'
             // },
             {
-                name: 'Account',
-                icon: 'person-fill',
-                href: '/app/account',
-                label: 'アカウント'
-            },
-            {
-                name: 'Generator',
+                name: 'generator',
                 icon: 'robot',
                 href: '/app/generator',
                 label: '長文生成'
             },
             {
-                name: 'Wordbook',
+                name: 'study',
                 icon: 'book',
-                href: '/app/wordbook',
-                label: '単語帳',
+                href: '/app/library',
+                label: '勉強',
             },
             {
-                name: 'Library',
+                name: 'library',
                 icon: 'bookshelf',
                 href: '/app/library',
-                label: '図書室'
+                label: '図書室',
+                disabled: true,
             },
             {
-                name: 'Bugs',
+                name: 'bugs',
                 icon: 'bug-fill',
                 href: '/app/bugs',
                 label: 'バグ報告',
                 disabled: true,
             },
             {
-                name: 'Friends',
-                icon: 'people-fill',
+                name: 'friends',
+                icon: 'emoji-smile-fill',
                 href: '/app/friends',
                 label: 'フレンド',
             },
             {
-                name: 'Feedback',
+                name: 'account',
+                icon: 'person-fill',
+                href: '/app/account',
+                label: 'アカウント'
+            },
+            {
+                name: 'feedback',
                 icon: 'envelope',
                 href: '/app/feedback/message',
                 label: 'フィードバック送信',
             },
             {
-                name: 'Settings',
+                name: 'settings',
                 icon: 'gear',
                 href: '/app/settings',
                 label: '設定',

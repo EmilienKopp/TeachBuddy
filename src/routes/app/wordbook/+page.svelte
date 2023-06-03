@@ -11,7 +11,6 @@
     let searchTerm: string | undefined;
     let filteredItems: any = data.vocabData;
 
-    console.log(data.vocabData);
 
     const supabase = data.supabase;
 
@@ -23,7 +22,6 @@
     }
 
     async function updateUserVocab(id: string | number, value: string) {
-        console.log(id, typeof id, value);
         const {error} = await supabase.from('user_vocabulary').update({ custom_translation: value }).eq('id', id);
     }
 

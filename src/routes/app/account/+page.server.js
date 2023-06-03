@@ -106,6 +106,5 @@ export const actions = {
                                                 last_name: form.data.last_name, 
                                                 user_number: form.data.user_number })
                                     .eq('id', user.id).select();
-        console.log('Updated profile data:', updatedProfileData, error);
     },
 }

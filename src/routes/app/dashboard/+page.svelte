@@ -1,10 +1,12 @@
 <script lang="ts">
   import type { PageData } from "./$types";
   import type { CustomUser } from "$lib/types";
-    import { Card, GradientButton } from "flowbite-svelte";
-    import UnderConstruction from "$lib/components/atoms/UnderConstruction.svelte";
-    import { random } from "$lib/helpers/Arrays";
-    import { goto } from "$app/navigation";
+  import { _ } from 'svelte-i18n';
+  import { C_ } from '$lib/i18n/helpers';
+  import { Card, GradientButton } from "flowbite-svelte";
+  import UnderConstruction from "$lib/components/atoms/UnderConstruction.svelte";
+  import { random } from "$lib/helpers/Arrays";
+  import { goto } from "$app/navigation";
 
   export let data: PageData;
   const user: CustomUser | undefined = data.session?.user;
@@ -36,7 +38,7 @@
       </ul>
     </Card>
     <Card>
-      <h5 class="mb-2 text-xl md:text-3xl font-bold text-gray-900 dark:text-white">Friends・友達</h5>
+      <h5 class="mb-2 text-xl md:text-3xl font-bold text-gray-900 dark:text-white">{$C_('friends')}</h5>
       <ul class="text-sm">
         <li>Number of friends: 
           <span class="font-bold">{ data.friends.length ?? 0 }</span>
