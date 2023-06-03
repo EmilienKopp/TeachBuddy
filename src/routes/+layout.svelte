@@ -21,7 +21,7 @@
 		return () => subscription.unsubscribe();
 	});
 
-	$: console.log('Locale set to:',$locale);
+
 </script>
 
 <div class="h-full w-full dark:text-white text-black font-raleway overflow-scroll">

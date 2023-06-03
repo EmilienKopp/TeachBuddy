@@ -6,6 +6,7 @@ import {
 } from '$env/static/public';
 import { locale, waitLocale } from 'svelte-i18n'
 
+import type { CustomUser } from '$lib/types';
 import type { Database } from '../DatabaseDefinitions';
 import type { LayoutLoad } from './$types';
 import { browser } from '$app/environment';
@@ -14,8 +15,6 @@ import { createSupabaseLoadClient } from '@supabase/auth-helpers-sveltekit';
 export const load: LayoutLoad = async ({ fetch, data, depends }) => {
     depends('supabase:auth');
 
-    
-    
     const supabase = createSupabaseLoadClient<Database>({
         supabaseUrl: PUBLIC_SUPABASE_URL,
         supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
@@ -23,29 +22,20 @@ export const load: LayoutLoad = async ({ fetch, data, depends }) => {
         serverSession: data.session
     });
 
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
+    const session = data.session;
 
     if(session) {
-        const { data: profileData, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-        const { data: studyingLanguages, error: studyingLangError} = await supabase.from('studying_languages').select('lang_code').eq('user_id', session.user.id);
-
-        if(studyingLanguages && profileData) {
-            profileData.studying_languages = studyingLanguages.map(el => el.lang_code);
-            (session.user as any).profile = profileData;
-        }
-
-        if (browser && !profileData?.native_language) {
+        
+        if (browser && !(session.user as CustomUser).profile?.native_language) {
+            console.log('Setting locale to', window.navigator.language);
             locale.set(window.navigator.language)
         } else {
-            locale.set(profileData?.native_language)
+            console.log('Setting locale to', (session.user as CustomUser).profile?.native_language);
+            locale.set((session.user as CustomUser).profile?.native_language)
         }
     }
 
-    
-    
 	await waitLocale()
 
-    return { supabase, session };
+    return { supabase, session,  };
 };
