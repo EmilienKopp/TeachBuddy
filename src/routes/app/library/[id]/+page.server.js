@@ -2,9 +2,12 @@
 
 import { message, superValidate } from 'sveltekit-superforms/server';
 
-import { PEXELS_API_KEY } from '$env/static/private';
 import { createClient } from 'pexels';
 import { storeUserVocabSchema } from '/src/config/schemas';
+
+// import { PEXELS_API_KEY } from '$env/static/private';
+
+
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ parent,params,locals: { supabase}}) {
@@ -13,7 +16,7 @@ export async function load({ parent,params,locals: { supabase}}) {
     const parentData = await parent();
     const form = await superValidate(storeUserVocabSchema);
 
-    const pxl = createClient(PEXELS_API_KEY);
+    // const pxl = createClient(PEXELS_API_KEY);
 
     const passage = parentData.passages.find((passage) => passage.id == params.id);
 
