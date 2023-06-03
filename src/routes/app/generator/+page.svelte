@@ -84,7 +84,7 @@
 <svelte:window bind:innerWidth={innerWidth} />
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
-<div class="w-full h-full sm:px-16 px-2 md:mt-10 mt-10">
+<div class="w-full h-full sm:px-16 px-2 md:mt-10 mt-10 mb-32">
     <Badge class="mt-2 md:text-lg p-1"><span class="text-lg mr-2">🤖</span>Generator</Badge>
     <Badge class="mt-2 md:text-lg p-1" color="yellow">
         <span class="text-lg mr-2">⏱️</span> ～ { 1.1 * averageDuration ? Math.round(averageDuration / 1000) : 0} seconds 
@@ -177,5 +177,5 @@
 
 <Modal bind:open={loading} autoclose>
     <p class="text-2xl">Generating...</p>
-    <GradientButton color="pinkToOrange" href="/sverdle">Play a game ? 😃</GradientButton>
+    <GradientButton color="pinkToOrange" href="/app/sverdle">Play a game ? 😃</GradientButton>
 </Modal>
