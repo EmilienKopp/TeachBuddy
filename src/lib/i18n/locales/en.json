@@ -79,6 +79,16 @@
     "surprise_me": "surprise me!",
 
     "my_native_language_is": "My native language is...",
-    "now_studying": "Now studying..."
+    "now_studying": "Now studying...",
+
+    "delete": "delete",
+    "edit": "edit",
+    "save": "save",
+    "cancel": "cancel",
+    "add": "add",
+    "remove": "remove",
+    "update": "update",
+    "change": "change",
+    "read": "read"
 
 }

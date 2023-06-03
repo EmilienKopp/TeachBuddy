@@ -92,7 +92,7 @@
     <p>データがありません。</p>
 {/if}
 
-<div class="px-5 z-10 w-5/6 grid grid-cols-3 gap-1">
+<div class="px-5 z-10 w-7/8 grid grid-cols-3 gap-1">
     <Input class="col-span-2" type="text" bind:value={searchTerm} placeholder="Search・検索"/>
     <GradientButton color="pinkToOrange" class="w-full sm:w-auto" on:click={resetFilters}>Reset</GradientButton>
     <Button color="blue" class="mt-2 w-full col-span-2 sm:w-auto text-xs md:text-md"><Chevron>Languages 言語</Chevron></Button>

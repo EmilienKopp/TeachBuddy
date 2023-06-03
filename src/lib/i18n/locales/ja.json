@@ -80,4 +80,14 @@
 
     "my_native_language_is": "私の母国語は...",
     "now_studying": "勉強中なのは...",
+
+    "delete": "削除",
+    "edit": "編集",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "add": "追加",
+    "remove": "削除",
+    "update": "更新",
+    "change": "変更",
+    "read": "読む"
 }

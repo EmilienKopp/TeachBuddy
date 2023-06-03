@@ -4,6 +4,7 @@
     import { strLimitByWords, strLimit } from '$lib/helpers/Text';
     import TextInput from '$lib/components/atoms/TextInput.svelte';
     import type { PageData } from '../../$types';
+    import { C_ } from '$lib/i18n/helpers';
 
     export let modalOpen: boolean = false;
     export let selectedItem: any;
@@ -58,9 +59,9 @@
             <div class="text-xs">{['zh','ja'].includes(selectedItem.language) ? strLimit(selectedItem.content,50,'...') : strLimitByWords(selectedItem.content, 30, '...')}</div>
         </div>
         <div class="w-full grid grid-cols-3 gap-1">
-            <Button class="mt-3" type="button" pill outline size="sm" color="red" on:click={deleteHandler}>🗑️</Button>
-            <Button class="mt-3" type="button" pill outline size="sm" color="green" on:click={updateHandler}>💾</Button>
-            <Button class="mt-3" type="button" pill outline size="sm" color="blue" on:click={()=> { goto('/app/library/' + selectedItem.id) }}>👁️</Button>
+            <Button class="mt-3" type="button" pill outline size="sm" color="red" on:click={deleteHandler}>🗑️ {$C_('delete')} </Button>
+            <Button class="mt-3" type="button" pill outline size="sm" color="green" on:click={updateHandler}>💾 {$C_('save')}</Button>
+            <Button class="mt-3" type="button" pill outline size="sm" color="blue" on:click={()=> { goto('/app/library/' + selectedItem.id) }}> 👁️ {$C_('read')} </Button>
         </div>
         <div class="max-w-[40ch] md:max-w-[150ch] text-ellipsis overflow-hidden italic  my-2 p-1">
             <h3 class="font-bold text-teal-500 text-lg">#TAGS</h3>
