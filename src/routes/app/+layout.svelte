@@ -8,6 +8,7 @@
   import { goto } from "$app/navigation";
   import type { PageData } from './$types';
   import type { CustomUser } from "$lib/types";
+  import { pointStore } from "$lib/stores";
   import {
     Navbar,
     NavBrand,
@@ -22,7 +23,7 @@
   
   const storeValue: Writable<number> = writable(0);
   const user: CustomUser | undefined = $page.data.session?.user;
-  const points = user?.profile?.point_balance;
+  $pointStore = user?.profile?.point_balance ?? 0;
 
   const logout = async () => {
     const { error } = await $page.data.supabase.auth.signOut();
@@ -48,7 +49,7 @@
       <svg data-testid="geist-icon" fill="none" height="16" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 24 24" width="32" style="color: var(--accents-2);"><path d="M16.88 3.549L7.12 20.451"></path></svg>
       <p class="font-raleway mr-2 text-xs md:text-xl">{user?.profile?.username ?? user?.email}</p>
     </NavBrand>
-    {#if points} <span>{formatMG(points)}🪙</span> {/if}
+    {#if $pointStore} <span>{formatMG($pointStore)}🪙</span> {/if}
 
     {#if data.friendsRequests.length > 0}
       <NotificationDropdown data={data.friendsRequests} />
