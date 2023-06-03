@@ -1,11 +1,17 @@
+import { Game, simplifiedWordList } from './game';
+
 import { fail } from '@sveltejs/kit';
-import { Game } from './game';
 
 /** @type {import('./$types').PageServerLoad} */
-export const load = ({ cookies }) => {
+export const load = async ({ cookies, locals: {supabase, getSession}}) => {
 	const game = new Game(cookies.get('sverdle'));
+	const { user } = await getSession();
+
+
 
 	return {
+		simplifiedWordList,
+		user,
 		/**
 		 * The player's guessed words so far
 		 */
@@ -20,7 +26,8 @@ export const load = ({ cookies }) => {
 		/**
 		 * The correct answer, revealed if the game is over
 		 */
-		answer: game.answers.length >= 6 ? game.answer : null
+		answer: game.answers.length >= 6 ? game.answer : null,
+		
 	};
 };
 
@@ -65,6 +72,12 @@ export const actions = {
 	},
 
 	restart: async ({ cookies }) => {
+		console.log('restartings');
+		cookies.delete('sverdle');
+	},
+
+	retry: async ({ cookies }) => {
+		console.log('restartings');
 		cookies.delete('sverdle');
 	}
 };

@@ -1,9 +1,13 @@
 <script>
+// @ts-nocheck
+
 	import { confetti } from '@neoconfetti/svelte';
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { reduced_motion } from './reduced-motion';
     import { goto } from '$app/navigation';
+	import { pointStore } from '$lib/stores';
+	import { GradientButton, Modal } from 'flowbite-svelte';
 
 	/** @type {import('./$types').PageData} */
 	export let data;
@@ -11,22 +15,28 @@
 	/** @type {import('./$types').ActionData} */
 	export let form;
 
-	onMount( () => {
-        data.supabase.channel('any')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'passages' }, payload => {
-                console.log('Change received!', payload);
-				goto('/app/library/' + payload.new.id);
-            }).subscribe()
-    })
+	let incomingPassage;
+	let suggestions = [];
+	let modalOpen = false;
+	let generatorFinishedAlert = false;
+	let suggestionModalOpen = false;
+	let gaveUp = false;
+	let gains = 0;
+
+	
 
 	/** Whether or not the user has won */
-	$: won = data.answers.at(-1) === 'xxxxx';
+	$: won = (data.answers.at(-1) === 'xxxxx');
 
 	/** The index of the current guess */
 	$: i = won ? -1 : data.answers.length;
 
 	/** Whether the current guess can be submitted */
 	$: submittable = data.guesses[i]?.length === 5;
+
+	
+
+	
 
 	/**
 	 * A map of classnames for all letters that have been guessed,
@@ -78,6 +88,17 @@
 		} else if (guess.length < 5) {
 			data.guesses[i] += key;
 		}
+		console.log(data.guesses);
+		if(won) {
+			givePoints();
+		}
+	}
+	$: gains = (7 - data.guesses.filter(g => g !== '').length) * 100;
+	$: {
+		console.log(gains);
+		if(won) {
+			givePoints();
+		}
 	}
 
 	/**
@@ -92,6 +113,23 @@
 			.querySelector(`[data-key="${event.key}" i]`)
 			?.dispatchEvent(new MouseEvent('click', { cancelable: true }));
 	}
+
+	async function givePoints() {
+		const bonusMultiplier = 7 - data.guesses.length;
+		gains = 100 * bonusMultiplier;
+		$pointStore += gains;
+		const {error} = await data.supabase.from('profiles').update({
+			point_balance: $pointStore,
+		}).eq('id', data.user.id);
+		console.log(error);
+	}
+
+	async function showHints() {
+		suggestionModalOpen = true;
+		// Get 3 Random five letter words from simplifiedWordList
+		suggestions = data.simplifiedWordList.sort(() => 0.5 - Math.random()).slice(0, 3);
+		$pointStore -= 5;
+	}
 </script>
 
 <svelte:window on:keydown={keydown} />
@@ -104,6 +142,7 @@
 <h1 class="visually-hidden">Sverdle</h1>
 
 <form
+	class="mt-12"
 	method="POST"
 	action="?/enter"
 	use:enhance={() => {
@@ -113,8 +152,9 @@
 		};
 	}}
 >
-	<a class="how-to-play" href="/sverdle/how-to-play">How to play</a>
-
+<GradientButton type="button" color="pinkToOrange" on:click={() => modalOpen = true}>
+	How to play・遊び方
+</GradientButton>
 	<div class="grid" class:playing={!won} class:bad-guess={form?.badGuess}>
 		{#each Array.from(Array(6).keys()) as row (row)}
 			{@const current = row === i}
@@ -147,13 +187,13 @@
 		{/each}
 	</div>
 
-	<div class="controls">
+	<div class="controls mb-12">
 		{#if won || data.answers.length >= 6}
 			{#if !won && data.answer}
 				<p>the answer was "{data.answer}"</p>
 			{/if}
 			<button data-key="enter" class="restart selected" formaction="?/restart">
-				{won ? 'you won :)' : `game over :(`} play again?
+				{won ? 'you won ' + gains + '🪙!' : `game over :(`} play again?
 			</button>
 		{:else}
 			<div class="keyboard">
@@ -189,10 +229,14 @@
 				{/each}
 			</div>
 		{/if}
+		<button type="button" data-key="enter" class="mt-2 text-xs rounded w-fit h-6 bg-blue-500 p-1" on:click={showHints}>
+			5🪙 Show Hints・ヒントを見る
+		</button>
 	</div>
+	
 </form>
 
-{#if won}
+{#if !gaveUp && won}
 	<div
 		style="position: absolute; left: 50%; top: 30%"
 		use:confetti={{
@@ -204,6 +248,75 @@
 		}}
 	/>
 {/if}
+
+<!-- RULES MODAL -->
+<Modal bind:open={modalOpen} autoclose size="xs">
+
+		<h1 class="text-lg font-bold">How to play Sverdle</h1>
+		<div class="text-xl">Win 100~600🪙!</div>
+		<div class="text-xs">Your game is saved as long as you are connected. You can come back whenever you want!</div>
+		<div class="text-xs">ログインしている間はゲームは保存されます。途中でやめたり戻ったりしてOKです。</div>
+
+		<h2 class="text-lg">Rules</h2>
+
+		<div class="example">
+			<span class="close">r</span>
+			<span class="missing">i</span>
+			<span class="close">t</span>
+			<span class="missing">z</span>
+			<span class="exact">y</span>
+		</div>
+	
+		<p>
+			You have to guess a five-letter word. <br/><br/>
+			5文字の単語を当てるゲームです。
+		</p>
+	
+		<p>
+			You can't just type a random word. It has to be a real one!
+			<br/><br/>
+			ただ適当な単語を入力してもダメです。実在する単語でないといけないぞ。
+		</p>
+	
+		<p>
+			<span class="exact">y</span> is in the right place. <br/><br/>
+			<span class="exact">y</span> は正しい位置にある <br/><br/>
+			<span class="close">r</span> and
+			<span class="close">t</span>
+			are the right letters, but in the wrong place. The other letters are wrong, and can be discarded.
+			<br/><br/>
+			<span class="close">r</span> and
+			<span class="close">t</span>
+			は必要な文字だが、位置が違います。
+			<br/><br/>
+		</p>
+	
+		<div class="example">
+			<span class="exact">p</span>
+			<span class="exact">a</span>
+			<span class="exact">r</span>
+			<span class="exact">t</span>
+			<span class="exact">y</span>
+		</div>
+	
+		<p>This time we guessed right! You have <strong>six</strong> guesses to get the word.</p>
+		<p>これで単語があてられた。 <strong>6回</strong> しか試せないので、慎重に！</p>
+
+</Modal>
+
+<!-- SUGGESTIONS MODAL -->
+<Modal bind:open={suggestionModalOpen} autoclose size="sm">
+	<h1 class="text-lg font-bold mt-4 text-center">Hints</h1>
+
+	<ul class="block w-32 text-center">
+		{#each suggestions as suggestion}
+			<li>{suggestion}</li>
+		{/each}
+	</ul>
+
+</Modal>
+
+
 
 <style>
 	form {
@@ -244,7 +357,7 @@
 		align-self: center;
 		justify-self: center;
 		width: 100%;
-		height: 100%;
+
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-start;
@@ -415,5 +528,58 @@
 		100% {
 			transform: translateX(0);
 		}
+	}
+
+	.visually-hidden {
+		display: none;
+	}
+
+	span {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		font-size: 0.8em;
+		width: 2.4em;
+		height: 2.4em;
+		background-color: white;
+		box-sizing: border-box;
+		border-radius: 2px;
+		border-width: 2px;
+		color: rgba(0, 0, 0, 0.7);
+	}
+
+	.missing {
+		background: rgba(255, 255, 255, 0.5);
+		color: rgba(0, 0, 0, 0.5);
+	}
+
+	.close {
+		border-style: solid;
+		border-color: var(--color-theme-2);
+	}
+
+	.exact {
+		background: var(--color-theme-2);
+		color: white;
+	}
+
+	.example {
+		display: flex;
+		justify-content: flex-start;
+		margin: 1rem 0;
+		gap: 0.1rem;
+	}
+
+	.example span {
+		font-size: 1.1rem;
+	}
+
+	p span {
+		position: relative;
+		border-width: 1px;
+		border-radius: 1px;
+		font-size: 0.4em;
+		transform: scale(2) translate(0, -10%);
+		margin: 0 1em;
 	}
 </style>

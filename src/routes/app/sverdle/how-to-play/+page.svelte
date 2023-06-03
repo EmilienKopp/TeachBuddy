@@ -1,15 +1,14 @@
+
+<script>
+	import { GradientButton } from "flowbite-svelte";
+</script>
 <svelte:head>
 	<title>How to play Sverdle</title>
 	<meta name="description" content="How to play Sverdle" />
 </svelte:head>
 
-<div class="text-column">
-	<h1>How to play Sverdle</h1>
-
-	<p>
-		Sverdle is a clone of <a href="https://www.nytimes.com/games/wordle/index.html">Wordle</a>, the
-		word guessing game. To play, enter a five-letter English word. For example:
-	</p>
+<div class="mx-auto bg-white bg-opacity-50 w-11/12 p-1 mt-8 mb-12 pb-8 rounded-lg">
+	<h1 class="text-lg font-bold">How to play Sverdle</h1>
 
 	<div class="example">
 		<span class="close">r</span>
@@ -20,10 +19,27 @@
 	</div>
 
 	<p>
-		The <span class="exact">y</span> is in the right place. <span class="close">r</span> and
+		You have to guess a five-letter word. <br/><br/>
+		5文字の単語を当てるゲームです。
+	</p>
+
+	<p>
+		You can't just type a random word. It has to be a real one!
+		<br/><br/>
+		ただ適当な単語を入力してもダメです。実在する単語でないといけないぞ。
+	</p>
+
+	<p>
+		<span class="exact">y</span> is in the right place. <br/><br/>
+		<span class="exact">y</span> は正しい位置にある <br/><br/>
+		<span class="close">r</span> and
 		<span class="close">t</span>
 		are the right letters, but in the wrong place. The other letters are wrong, and can be discarded.
-		Let's make another guess:
+		<br/><br/>
+		<span class="close">r</span> and
+		<span class="close">t</span>
+		は必要な文字だが、位置が違います。
+		<br/><br/>
 	</p>
 
 	<div class="example">
@@ -35,13 +51,12 @@
 	</div>
 
 	<p>This time we guessed right! You have <strong>six</strong> guesses to get the word.</p>
-
-	<p>
-		Unlike the original Wordle, Sverdle runs on the server instead of in the browser, making it
-		impossible to cheat. It uses <code>&lt;form&gt;</code> and cookies to submit data, meaning you can
-		even play with JavaScript disabled!
-	</p>
+	<p>これで単語があてられた。 <strong>6回</strong> しか試せないので、慎重に！</p>
 </div>
+<GradientButton class="noprint fixed bottom-6 right-6 md:text-xl md:p-3" type="button" pill color="pinkToOrange" on:click={() => { history.back() }}>
+	<i class="bi bi-reply-fill"></i>
+</GradientButton>
+
 
 <style>
 	span {

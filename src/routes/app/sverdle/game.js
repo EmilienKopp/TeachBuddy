@@ -1,4 +1,19 @@
-import { words, allowed } from './words.server';
+// @ts-nocheck
+
+import {
+    PUBLIC_SUPABASE_ANON_KEY,
+    PUBLIC_SUPABASE_URL
+} from '$env/static/public';
+import { allowed, words } from './words.server';
+
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
+
+let {data:vocab, error} = await supabase.from('vocabulary').select('word');
+vocab = vocab.map((v) => v.word);
+
+export const simplifiedWordList = words.filter(w => vocab?.includes(w));
 
 export class Game {
 	/**
@@ -13,12 +28,12 @@ export class Game {
 			this.guesses = guesses ? guesses.split(' ') : [];
 			this.answers = answers ? answers.split(' ') : [];
 		} else {
-			this.index = Math.floor(Math.random() * words.length);
+			this.index = Math.floor(Math.random() * simplifiedWordList.length);
 			this.guesses = ['', '', '', '', '', ''];
 			this.answers = /** @type {string[]} */ ([]);
 		}
 
-		this.answer = words[this.index];
+		this.answer = simplifiedWordList[this.index];
 	}
 
 	/**
