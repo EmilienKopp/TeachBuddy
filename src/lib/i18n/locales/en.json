@@ -38,6 +38,7 @@
     "review": "review",
     "search": "search",
     "list": "list",
+    "challenge": "challenge",
 
 
     "friends": "buddies",
@@ -89,6 +90,13 @@
     "remove": "remove",
     "update": "update",
     "change": "change",
-    "read": "read"
+    "read": "read",
+    "number_of_passages": "Number of passages",
+    "number_of_words": "Number of words",
+
+    "friends_searchable_fields": "You can look up your friends by their username, email, first name, or last name.",
+    "friends_conditions_to_find": "(You can only find your friends if they have set their profile information)",
+    "friends_challenge": "Challenge your friends to a vocabulary duel!",
+    "friend_request_pending": "Requested"
 
 }

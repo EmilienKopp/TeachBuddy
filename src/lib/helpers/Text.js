@@ -37,7 +37,7 @@ export function extractPunctuationAndPad(input) {
 }
 
 export function removePunctuation(word) {
-    return word.replace(/[.?,\/#!$%\^&\*;":{}=\-_`~()]/g, "");
+    return word.replace(/[.?,\/#!$%\^&\*;":{}=\-_`~()]/g, "").replace('\'s', '');
 }
 
 export function strLimit(str, limit, end = '...') {

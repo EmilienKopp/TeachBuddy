@@ -39,6 +39,7 @@
     "review": "レビュー",
     "search": "検索",
     "list": "一覧",
+    "challenge": "チャレンジ",
 
     "friends": "フレンド",
     "learning": "学習",
@@ -89,5 +90,12 @@
     "remove": "削除",
     "update": "更新",
     "change": "変更",
-    "read": "読む"
+    "read": "読む",
+    "number_of_passages": "文章の数",
+    "number_of_words": "単語の数",
+
+    "friends_searchable_fields": "とりあえず、username, first name, last nameで検索してください。",
+    "friends_conditions_to_find": "(アカウントの「基本情報」入力済みの人のみ検索できます)",
+    "friends_challenge": "フレンドに単語チャレンジを送ろう！",
+    "friend_request_pending": "承認待ち"
 }

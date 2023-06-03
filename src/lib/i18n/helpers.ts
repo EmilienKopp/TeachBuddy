@@ -4,4 +4,4 @@ import { derived } from 'svelte/store';
 
 export const C_ = derived(_, $_ => (str: string) => capitalize($_(str)));
 export const U_ = derived(_, $_ => (str: string) => $_(str).toLocaleUpperCase());
-export const L_ = derived(_, $_ => (str: string) => $_(str).toLocaleLowerCase());
+

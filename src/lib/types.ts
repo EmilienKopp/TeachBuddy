@@ -4,6 +4,7 @@ export interface CustomUser extends User {
     profile?: {
         id: string | undefined | null;
         username?: string | undefined | null;
+        native_language?: string | undefined | null;
         avatar_url?: string | undefined | null;
         user_number?: string | undefined | null;
         studying_languages?: string[] | undefined | null;
