@@ -18,13 +18,10 @@
     NavLi,
     NavUl,
     NavHamburger,
-    Badge
   } from "flowbite-svelte";
   
   export let data: PageData;  
 
-  
-  const storeValue: Writable<number> = writable(0);
   const user: CustomUser | undefined = $page.data.session?.user;
   $pointStore = user?.profile?.point_balance ?? 0;
 
@@ -35,6 +32,8 @@
     }
     await goto("/auth/login");
   };
+
+  $: console.log('POINTS:', $pointStore);
 
 </script>
 

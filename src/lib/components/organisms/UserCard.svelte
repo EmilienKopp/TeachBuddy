@@ -1,9 +1,11 @@
 <script lang="ts">
     import { Card, MenuButton, Dropdown, DropdownItem, Avatar, Button, GradientButton } from "flowbite-svelte";
+    import { C_ } from '$lib/i18n/helpers';
 
     export let pageData: any = null;
     export let user: any;
     export let isFriend: boolean = false;
+    export let isPending: boolean = pageData.friendships.some((friendship: any) => friendship.friend_id === user.id && friendship.approved === false);
 
     let challengeModalOpen: boolean = false;
 
@@ -52,7 +54,13 @@
         {/if}
         <div class="flex mt-4 space-x-3 lg:mt-6">
             {#if !isFriend}
-                <GradientButton color="greenToBlue" on:click={friendRequest}>追加😊</GradientButton>
+                {#if isPending}
+                    <Button color="light" class="dark:text-white pointer-events-none cursor-default">{$C_('friend_request_pending')}</Button>
+                {:else}
+                    <GradientButton color="greenToBlue" on:click={friendRequest}>
+                        追加😊
+                    </GradientButton>
+                {/if}
             {/if}
             
           <!-- <Button color="light" class="dark:text-white">Message</Button> -->

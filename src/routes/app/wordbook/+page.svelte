@@ -1,5 +1,4 @@
 <script lang="ts">
-    import UnderConstruction from '$lib/components/atoms/UnderConstruction.svelte';
     import { searchWeblio } from '$lib/services/weblio';
     import InfoBubble from '$lib/components/atoms/InfoBubble.svelte';
     import type { PageData } from './$types';
@@ -39,8 +38,6 @@
         });
 
 </script>
-
-<UnderConstruction />
 
 <div class="mt-10 px-2">
 <Badge class="mb-4">単語帳・Wordbook</Badge>
