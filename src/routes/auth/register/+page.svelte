@@ -2,7 +2,7 @@
     import { superForm } from "sveltekit-superforms/client";
     import type { PageData } from "./$types";
     import {  ButtonGroup, GradientButton, Helper, InputAddon, Input, Label, Select, Spinner} from "flowbite-svelte";
-    import {FORMS} from "$lib/config/forms";
+    import {FORMS} from "/src/config/forms";
     import { registerSchema } from "/src/config/schemas";
     import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
