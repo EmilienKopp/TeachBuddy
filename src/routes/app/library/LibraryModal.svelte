@@ -2,9 +2,9 @@
     import { Badge, Button, FloatingLabelInput, Input, Modal, Popover} from 'flowbite-svelte';
     import { goto } from '$app/navigation';
     import { strLimitByWords, strLimit } from '$lib/helpers/Text';
-    import TextInput from '$lib/components/atoms/TextInput.svelte';
     import type { PageData } from '../../$types';
     import { C_ } from '$lib/i18n/helpers';
+    import I18n from '$lib/components/atoms/i18n.svelte';
 
     export let modalOpen: boolean = false;
     export let selectedItem: any;
@@ -51,7 +51,10 @@
 
 </script>
 
+
+
 <Modal bind:open={modalOpen} autoclose>
+
     <div class="z-50 mt-3">
         <FloatingLabelInput type="text" label="タイトルを入力" bind:value={selectedItem.title} placeholder="タイトルを変更"/>
         <div class="max-w-[40ch] md:max-w-[150ch] text-ellipsis overflow-hidden italic border rounded-md border-slate-500 my-2 p-1">
@@ -59,9 +62,15 @@
             <div class="text-xs">{['zh','ja'].includes(selectedItem.language) ? strLimit(selectedItem.content,50,'...') : strLimitByWords(selectedItem.content, 30, '...')}</div>
         </div>
         <div class="w-full grid grid-cols-3 gap-1">
-            <Button class="mt-3" type="button" pill outline size="sm" color="red" on:click={deleteHandler}>🗑️ {$C_('delete')} </Button>
-            <Button class="mt-3" type="button" pill outline size="sm" color="green" on:click={updateHandler}>💾 {$C_('save')}</Button>
-            <Button class="mt-3" type="button" pill outline size="sm" color="blue" on:click={()=> { goto('/app/library/' + selectedItem.id) }}> 👁️ {$C_('read')} </Button>
+            <Button class="mt-3" type="button" pill outline size="sm" color="red" on:click={deleteHandler}>
+                🗑️ <br/> {$C_('delete')} 
+            </Button>
+            <Button class="mt-3" type="button" pill outline size="sm" color="green" on:click={updateHandler}>
+                💾 <br/> {$C_('save')}
+            </Button>
+            <Button class="mt-3" type="button" pill outline size="sm" color="blue" on:click={()=> { goto('/app/library/' + selectedItem.id) }}>
+                👁️ <br/> {$C_('read')}
+            </Button>
         </div>
         <div class="max-w-[40ch] md:max-w-[150ch] text-ellipsis overflow-hidden italic  my-2 p-1">
             <h3 class="font-bold text-teal-500 text-lg">#TAGS</h3>

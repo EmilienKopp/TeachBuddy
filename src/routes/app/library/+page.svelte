@@ -7,6 +7,7 @@
     import { goto } from '$app/navigation';
     import LibraryModal from './LibraryModal.svelte';
     import { strLimit, strLimitByWords } from '$lib/helpers/Text';
+    import { C_ } from '$lib/i18n/helpers';
 
     export let data: PageData;
     const supabase = data.supabase;
@@ -167,7 +168,7 @@
             <div id={`vocab-${item.id}`}>
                 <div class="grid grid-cols-5 py-1 text-xs text-lime-400">
                     <div class="col-span-4"> 
-                        {item.title ?? 'No Title'}
+                        {$C_('no_title')}
                     </div>
                     <Indicator color="red" border size="xl">
                         <span class="text-white text-xs font-bold">{item.language ?? '?'}</span>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button, Helper, Spinner, TabItem, Tabs, Label, Input } from 'flowbite-svelte';
+    import { Helper, Label, Input } from 'flowbite-svelte';
     import { toSelectOptions } from '$lib/helpers/Arrays';
     import { superForm } from 'sveltekit-superforms/client';
     import SaveButton from '$lib/components/atoms/SaveButton.svelte';
@@ -8,12 +8,13 @@
 
     export let data: any;
     export let grades: any;
+    let loading: boolean = false;
+    let FORM: HTMLFormElement;
 
-    const { form: infoForm, enhance: infoFormEnhance , errors, tainted} = superForm(data.infoForm, {
-        dataType: 'json',
-        applyAction: true,
-        resetForm: false,
-        invalidateAll: true
+    const { form: infoForm, enhance: infoFormEnhance , errors, tainted, delayed} = superForm(data.infoForm, {
+        id: 'infoForm',
+        onSubmit: () => { loading = true; },
+        onUpdated: () => { loading = false; },
     }); 
 
     grades = toSelectOptions(grades, 'id', 'name');
@@ -21,7 +22,7 @@
 </script>
 
 
-<form method="POST" use:infoFormEnhance action="?/saveBasicInfo" class="h-5/6">
+<form method="POST" use:infoFormEnhance action="?/saveBasicInfo" class="h-5/6" bind:this={FORM}>
     <section class="flex flex-col gap-4">
         <Label for="username">{$C_('username')}
             <Input type="text" id="username" name="username" bind:value={$infoForm.username} />
@@ -42,7 +43,7 @@
     </section>
 
     {#if Object.values($infoForm).some(value => !!value)}
-        <SaveButton type="submit" tainted={$tainted} />
+        <SaveButton type="submit" tainted={$tainted} loading={$delayed}/>
     {/if}
 
 </form>

@@ -9,48 +9,23 @@ import { vertical } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({request, locals: { supabase, getSession}}) {
-    const { user } = await getSession();
+export async function load({request, parent, locals: { supabase, getSession}}) {
+    const parentData = await parent();
+
+    const user = parentData.session.user;
 
     let infoForm, langForm;
-    let userBasicInfo, userLanguages;
+    
+    infoForm = await superValidate( user.profile,userBasicInfoSchema, { id: 'infoForm' });
 
-    const { data: studyingLanguages, error: studyingLanguagesError } = await supabase.from('studying_languages')
-                                                                                     .select('lang_code').eq('user_id', user.id);
-    const { data: nativeLanguage, error: nativeLanguageError } = await supabase.from('profiles')
-                                                                               .select('native_language')
-                                                                               .eq('id', user.id).single();
+    const userLanguages = { native_language: user.profile.native_language, studying_languages: user.profile.studying_languages };
 
-    if(!(studyingLanguagesError && nativeLanguageError)) {
-        userLanguages = { native_language: nativeLanguage?.native_language, studying_languages: vertical(studyingLanguages,'lang_code') };
-        langForm = await superValidate( userLanguages, languagesSettingsSchema, { id: 'langForm' } );
-    } else {
-        langForm = await superValidate( languagesSettingsSchema, { id: 'langForm' } );
-    }
+    langForm = await superValidate( userLanguages, languagesSettingsSchema, { id: 'langForm' } );
 
-    const { data: profileData, error: profileError } = await supabase.from('profiles')
-                                                                     .select('username, first_name, last_name, user_number')
-                                                                     .eq('id', user.id).single(); 
-
-    if(profileData) {
-        const { username, first_name, last_name, user_number } = profileData;
-        userBasicInfo = { username, first_name, last_name, user_number, email: user.email };
-        infoForm = await superValidate( userBasicInfo,userBasicInfoSchema, { id: 'infoForm' });
-    } else {
-        infoForm = await superValidate( userBasicInfoSchema, { id: 'infoForm' });
-    }
-
-    const session = await getSession();
-
-    let { data: grades, error: gradesError } = await supabase.from('grades').select('*');
-    let { data: languages, error: langError} = await supabase.from('languages').select('lang_code, name_native').neq('name_native',null);
-
-    grades = toSelectOptions(grades, 'id', 'name');
-    languages = toSelectOptions(languages, 'lang_code', 'name_native');
-
-    return { langForm, infoForm, grades, languages, session };
+    return { langForm, infoForm };
 }
 
+/** @type {import('./$types').Actions} */
 export const actions = {
     saveLanguageInfo: async ({ request, locals: { supabase, getSession, refreshSession } }) => {
         const form = await superValidate(request, languagesSettingsSchema);
@@ -86,7 +61,9 @@ export const actions = {
             if(studyingError || studyingDeleteError) console.log('Error updating studying languages:', studyingError, studyingDeleteError);
             else console.log('Studying languages updated:', studyingData, studyingDeleteData);
 
-            const newSession = await refreshSession();
+            const languagesTabOpen = true;
+
+            return { form };
         }
     },
     saveBasicInfo: async ({ request, locals: { supabase, getSession, refreshSession } }) => {
@@ -106,5 +83,7 @@ export const actions = {
                                                 last_name: form.data.last_name, 
                                                 user_number: form.data.user_number })
                                     .eq('id', user.id).select();
+
+        return { form };
     },
 }

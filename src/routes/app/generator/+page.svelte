@@ -35,19 +35,6 @@
     let allowedLengths = data.lengths;
     let averageDuration = data.passages.map( (el: any) => el.generation_duration).reduce((a: any, b: any) => a+b, 0) / data.passages.length;
     
-    // onMount( () => {
-    //     supabase.channel('any')
-    //         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'passages' }, payload => {
-    //             loading = false;
-    //             const totalTime = Math.round(Date.now() - startTime);
-    //             supabase.from('passages').update({ total_time: totalTime }).eq('id', payload.new.id).then(({ data, error }) => {
-    //                 if (error) console.log('Error updating passage:', error);
-    //             });
-    //             clearInterval(timer);
-    //             console.log('Change received!', payload);
-    //         }).subscribe()
-    // })
-    
 
     function handleSubmit(e: any) {
         loading = true;

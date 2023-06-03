@@ -31,7 +31,6 @@ const schema = z.object({
 });
 
 
-
 const config = new Configuration({
     apiKey: OPENAI_API_KEY || import.meta.env.VITE_OPENAI_API_KEY,
     baseOptions: {
@@ -80,9 +79,13 @@ const topics = [
 ]
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({locals: { supabase, getSession}}) {
+export async function load({parent, locals: { supabase, getSession}}) {
 
-    const { user } = await getSession();
+    
+
+    const parentData = await parent();
+
+    const user = parentData.session.user;
     
     const form = await superValidate(schema);
 

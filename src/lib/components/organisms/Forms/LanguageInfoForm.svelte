@@ -1,23 +1,21 @@
 <script lang="ts">
-    import { Button, Checkbox, Chevron, Dropdown, Label, Select } from 'flowbite-svelte';
-    import type { SelectOptionType } from '$lib/helpers/Arrays';
+    import { Button, Checkbox, Chevron, Dropdown, Label, Select, Spinner } from 'flowbite-svelte';
+    import { toSelectOptions, type SelectOptionType } from '$lib/helpers/Arrays';
     import SaveButton from '$lib/components/atoms/SaveButton.svelte';
     import { superForm } from 'sveltekit-superforms/client';
     import { _ } from 'svelte-i18n';
-    import { capitalize } from '$lib/helpers/Text';
     import { C_ } from '$lib/i18n/helpers';
 
     export let data: any;
+    let loading: boolean = false;
 
-    const { form: langForm, enhance: langFormEnhance, tainted } = superForm(data.langForm, {
+    const { form: langForm, enhance: langFormEnhance, tainted, delayed } = superForm(data.langForm, {
         id: 'langForm',
-        dataType: 'json',
-        applyAction: true,
-        resetForm: false,
-        invalidateAll: true
+        onSubmit: () => { loading = true; },
+        onUpdated: () => { loading = false; },
     });
 
-    let languages: SelectOptionType[] | any[] = data.languages as SelectOptionType[] | any[];
+    let languages: SelectOptionType[] | any[] = toSelectOptions(data.languages, 'lang_code', 'name_native') as SelectOptionType[] | any[];
     let selectableLanguages: SelectOptionType[] | any[];
     let selectedLanguages: string[] = [];
     let FORM: HTMLFormElement;
@@ -55,8 +53,9 @@
         { $tainted ? "Don't forget to save your changes!" : '' }
     {/if}
 
+
     {#if Object.values($langForm).some(value => !!value)}
-        <SaveButton type="submit" tainted={$tainted} />
+        <SaveButton type="submit" tainted={$tainted} loading={$delayed}/>
     {/if}
 </form>
 </section>
