@@ -78,7 +78,7 @@
 	 * if client-side JavaScript is enabled
 	 * @param {MouseEvent} event
 	 */
-	function update(event) {
+	async function update(event) {
 		const guess = data.guesses[i];
 		const key = /** @type {HTMLButtonElement} */ (event.target).getAttribute('data-key');
 
@@ -88,17 +88,10 @@
 		} else if (guess.length < 5) {
 			data.guesses[i] += key;
 		}
+		console.log('Up for a ' + gains + ' win');
+	}
 
-		if(won) {
-			givePoints();
-		}
-	}
 	$: gains = (7 - data.guesses.filter(g => g !== '').length) * 100;
-	$: {
-		if(won) {
-			givePoints();
-		}
-	}
 
 	/**
 	 * Trigger form logic in response to a keydown event, so that
@@ -114,13 +107,10 @@
 	}
 
 	async function givePoints() {
-		const bonusMultiplier = 7 - data.guesses.length;
-		gains = 100 * bonusMultiplier;
-		$pointStore += gains;
-		const {error} = await data.supabase.from('profiles').update({
+		const {data: updateData,error} = await data.supabase.from('profiles').update({
 			point_balance: $pointStore,
-		}).eq('id', data.user.id);
-		console.log(error);
+		}).eq('id', data.user.id).select();
+		console.log(updateData,error);
 	}
 
 	async function showHints() {
@@ -128,6 +118,11 @@
 		// Get 3 Random five letter words from simplifiedWordList
 		suggestions = data.simplifiedWordList.sort(() => 0.5 - Math.random()).slice(0, 3);
 		$pointStore -= 5;
+	}
+
+	$: if(won) {
+		$pointStore += gains;
+		givePoints();
 	}
 </script>
 
@@ -141,7 +136,7 @@
 <h1 class="visually-hidden">Sverdle</h1>
 
 <form
-	class="mt-12"
+	class="mt-12 md:mt-1"
 	method="POST"
 	action="?/enter"
 	use:enhance={() => {
