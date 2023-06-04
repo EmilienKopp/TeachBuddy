@@ -32,6 +32,7 @@
       return surpriseMe();
     }
   }
+  $: console.log(data);
 
   console.timeEnd('dashboard+page')
 </script>
@@ -55,23 +56,11 @@
         </li>
         <li>
           Number of words:
-          <span class="font-bold">{data.words.length}</span>
+          <span class="font-bold">{data.words?.length}</span>
         </li>
       </ul>
     </Card>
-    <Card>
-      <h5
-        class="mb-2 text-xl md:text-3xl font-bold text-gray-900 dark:text-white"
-      >
-        {$C_("friends")}
-      </h5>
-      <ul class="text-sm">
-        <li>
-          Number of friends:
-          <span class="font-bold">{data.friends.length ?? 0}</span>
-        </li>
-      </ul>
-    </Card>
+    
     <GradientButton
       shadow
       class="col-span-1 md:col-span-2"
