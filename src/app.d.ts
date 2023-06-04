@@ -9,6 +9,8 @@ declare global {
       getSession(): Promise<Session | null>;
       refreshSession(): Promise<Session | null>;
       GT: Translate;
+      user: User | CustomUser;
+      session: any;
     }
     interface PageData {
       session: Session | null;

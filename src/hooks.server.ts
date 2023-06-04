@@ -29,7 +29,15 @@ export const handle: Handle = async ({ event, resolve }) => {
     const {
       data: { session }
     } = await event.locals.supabase.auth.getSession();
+    if (session && session.user) {
+      const { data: profileData, error } = await event.locals.supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      const { data: studyingLanguages, error: studyingLangError } = await event.locals.supabase.from('studying_languages').select('lang_code').eq('user_id', session.user.id);
 
+      if (studyingLanguages && profileData) {
+        profileData.studying_languages = studyingLanguages.map(el => el.lang_code);
+        (session.user as any).profile = profileData;
+      }
+    }
     return session;
   };
 
@@ -75,6 +83,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     locale.set(lang)
   }
 
+  event.locals.session = await event.locals.getSession();
+
   const response = await resolve(event, {
     /**
      * There´s an issue with `filterSerializedResponseHeaders` not working when using `sequence`
@@ -87,6 +97,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   });
 
   const end = performance.now();
+  console.log('TOTAL REQUEST TIME:', Math.round(end - start) + 'ms');
   await event.locals.supabase.from('server_logs').insert(
     [
       {

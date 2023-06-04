@@ -13,6 +13,7 @@ import { browser } from '$app/environment';
 import { createSupabaseLoadClient } from '@supabase/auth-helpers-sveltekit';
 
 export const load: LayoutLoad = async ({ fetch, data, depends }) => {
+    console.time('layout.ts_load')
     depends('supabase:auth');
 
     const supabase = createSupabaseLoadClient<Database>({
@@ -36,6 +37,6 @@ export const load: LayoutLoad = async ({ fetch, data, depends }) => {
     }
 
 	await waitLocale()
-
+    console.timeEnd('layout.ts_load')
     return { supabase, session,  };
 };
