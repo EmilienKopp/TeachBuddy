@@ -99,9 +99,11 @@
     "friends_challenge": "Challenge your friends to a vocabulary duel!",
     "friend_request_pending": "Requested",
 
-    "tale": "fiction",
+    "tale": "tale",
     "essay": "essay",
     "speech": "speech",
-    "conversation_2": "conversation between 2 people"
+    "conversation_2": "conversation between 2 people",
+    "story": "fictional story",
+    "poem": "poem"
 
 }
