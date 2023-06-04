@@ -105,7 +105,7 @@ export async function load({ locals: { supabase, getSession}}) {
 
     const topics = async() => {
         console.log('topics', Date.now());
-        const { data, error} = await supabase.from('topics').select('id, string').in('target_language',user.profile.studying_languages);
+        const { data, error} = await supabase.from('topics').select('id, prompt').in('target_language',user.profile.studying_languages);
         if(error) {
             console.error(error);
             return [];
@@ -132,33 +132,53 @@ export async function load({ locals: { supabase, getSession}}) {
 export const actions = {
     getPassage: async ({ request, locals: { supabase, getSession } }) => {
         const form = await superValidate(request, schema);
+        const { user } = await getSession();
         
         // Validation
         if(!form.valid) {
             return fail(401, {form});
         }
 
+        // Content type
+        let contentType;
+        const { data: typesData, error: typesError} = await supabase.from('passage_types').select('name_en').eq('id',form.data.type).single();
+        if(typesError) {
+            console.error(typesError);
+            return fail(500, {typesError});
+        } 
+        contentType = typesData.name;
+    
+
+        // Topic
         let topic;
         if(form.data.freeInput) {
             topic = form.data.customPrompt;
         } else {
-            topic = topics.find( elem => elem.value == form.data.prompt).name;
+            const { data: topicData, error: topicError} = await supabase.from('topics').select('prompt').eq('id',form.data.prompt).single();
+            if(topicError) {
+                console.error(topicError);
+                return fail(500, {topicError});
+            }
+            topic = topicData.prompt;
         }
         
-        const contentType = types.find( elem => elem.value == form.data.type).name;
-
-        const { user } = await getSession();
-        const { data, error} = await supabase.from('languages').select('name_en').eq('lang_code',form.data.language).single();
-
+        
+        // Language
         let language;
-
-        if(data) {
-            let split = data.name_en.split(';');
-            language = split.length > 0 ? split[split.length - 1] : data.name_en;
+        const { data: langData, error: langError} = await supabase.from('languages').select('name_en').eq('lang_code',form.data.language).single();
+        if(langError) {
+            console.error(langError);
+            return fail(500, {langError});
+        }
+        // Deal with the fact that some languages have composite names
+        if(langData) {
+            let split = langData.name_en.split(';');
+            language = split.length > 0 ? split[split.length - 1] : langData.name_en;
         } else {
             language = 'en';
         }
 
+        // Prompt
         let content = `Write a ${contentType} understandable by a student who has no more than 600 words of vocabulary. Keep the grammar simple. 
                 The theme is provided in a non ${language} language, but the passage has to be in ${language}. The theme is: "${topic}". Provide the passage in ${language}.
                 The passage won't be longer than ${form.data.length} words.

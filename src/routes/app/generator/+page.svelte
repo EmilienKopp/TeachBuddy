@@ -12,6 +12,7 @@
     import {pointStore} from '$lib/stores';
     import { C_ } from '$lib/i18n/helpers';
     import { _ } from 'svelte-i18n';
+    import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
     export let data: PageData;
     const supabase = data.supabase;
@@ -71,7 +72,12 @@
 <svelte:window bind:innerWidth={innerWidth} />
 
 <!-- Path: src\routes\app\generator\+page.svelte -->
-<div class="w-full h-full sm:px-16 px-2 md:mt-10 mt-10 mb-32">
+{#if data.ENV == 'dev' && !$form.testMode}
+<div class="fixed bottom-0 leading-3 w-full z-50 opacity-60 text-xs">
+    <SuperDebug data={$form} />
+</div>
+{/if}
+<div class="w-full h-full sm:px-16 px-2 md:mt-10 mt-10 mb-40">
     <Badge class="mt-2 md:text-lg p-1"><span class="text-lg mr-2">🤖</span> {$C_('generator')} </Badge>
     <Badge class="mt-2 md:text-lg p-1" color="yellow">
         <span class="text-lg mr-2">⏱️</span> ～ { 1.1 * averageDuration ? Math.round(averageDuration / 1000) : 0} {$_('seconds')} 
@@ -109,7 +115,7 @@
             {:else}
                 <Label for="prompt">
                     <span class="text-xs md:text-lg"> {$C_('passage_prompt')} </span>
-                    <Select label="Topic" name="prompt" bind:value={$form.prompt} items={ toSelectOptions(data.topics,'id','string') }/>
+                    <Select label="Topic" name="prompt" bind:value={$form.prompt} items={ toSelectOptions(data.topics,'id','prompt') }/>
                     <!-- <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint </Helper> -->
                 </Label>
             {/if}
