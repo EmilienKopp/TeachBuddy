@@ -83,8 +83,6 @@ export const handle: Handle = async ({ event, resolve }) => {
     locale.set(lang)
   }
 
-  event.locals.session = await event.locals.getSession();
-
   const response = await resolve(event, {
     /**
      * There´s an issue with `filterSerializedResponseHeaders` not working when using `sequence`
