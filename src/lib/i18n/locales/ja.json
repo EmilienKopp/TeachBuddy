@@ -97,5 +97,10 @@
     "friends_searchable_fields": "とりあえず、username, first name, last nameで検索してください。",
     "friends_conditions_to_find": "(アカウントの「基本情報」入力済みの人のみ検索できます)",
     "friends_challenge": "フレンドに単語チャレンジを送ろう！",
-    "friend_request_pending": "承認待ち"
+    "friend_request_pending": "承認待ち",
+
+    "tale": "物語",
+    "essay": "説明文",
+    "speech": "スピーチ",
+    "conversation_2": "2人の会話"
 }

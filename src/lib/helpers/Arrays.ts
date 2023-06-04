@@ -1,4 +1,7 @@
 // @ts-nocheck
+
+import { _ } from 'svelte-i18n';
+
 export type SelectOptionType = {
 	name: string | number;
 	value: string | number;
@@ -28,13 +31,13 @@ export function mapHeaders(headers,arr) {
   });
 }
 
-export function toSelectOptions(arr, valueKey, labelKey): SelectOptionType[] | any[] {
+export function toSelectOptions(arr, valueKey, labelKey, formatter: Function | null = null): SelectOptionType[] | any[] {
   if(!arr) return [];
 
   return arr.map(el => {
     return {
       value: el[valueKey],
-      name: el[labelKey]
+      name: formatter ? formatter(el[labelKey]) : el[labelKey]
     };
   });
 }
