@@ -71,6 +71,8 @@ export async function load({ locals: { supabase, getSession}}) {
     const user = (await getSession()).user;
     const form = await superValidate(schema);
 
+    let qualityMultiplier;
+
     const types = async() => {
         console.log('types', Date.now());
         const { data, error} = await supabase.from('passage_types').select('id, name').neq('name',null);
@@ -113,14 +115,23 @@ export async function load({ locals: { supabase, getSession}}) {
         return data;
     }
 
-    const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
 
+    console.log('qualityLevels', Date.now());
+    const { data:qualityLevels, error} = await supabase.from('quality_levels').select('*').order('id');
+    if(error) {
+        console.error(error);
+        return [];
+    }
+    qualityMultiplier = qualityLevels.find( elem => elem.id == form.data.quality)?.multiplier;
+        
+     
     console.log('allowed', Date.now());
     const allowed = async() => await isAllowedToGenerate(supabase, user, form.data.length, qualityMultiplier, form.data.quality);
 
     console.timeEnd('generator+server_load')
     return { 
-        form, qualityLevels, ENV, 
+        form, ENV,
+        qualityLevels,
         types: types(), 
         topics: topics(), 
         languages: languages(),
@@ -140,14 +151,12 @@ export const actions = {
         }
 
         // Content type
-        let contentType;
         const { data: typesData, error: typesError} = await supabase.from('passage_types').select('name_en').eq('id',form.data.type).single();
         if(typesError) {
             console.error(typesError);
             return fail(500, {typesError});
-        } 
-        contentType = typesData.name;
-    
+        }
+        const contentType = typesData.name_en;
 
         // Topic
         let topic;
@@ -162,49 +171,78 @@ export const actions = {
             topic = topicData.prompt;
         }
         
+        // Quality
+        const { data: qualityData, error: qualityError} = await supabase.from('quality_levels').select('id,ai_model,multiplier').eq('id',form.data.quality).single();
+        if(qualityError) {
+            console.error(qualityError);
+            return fail(500, {qualityError});
+        }
+        const quality = qualityData.id;
+        const model = qualityData.ai_model;
+        const qualityMultiplier = qualityData.multiplier;
         
         // Language
         let language;
-        const { data: langData, error: langError} = await supabase.from('languages').select('name_en').eq('lang_code',form.data.language).single();
+        const { data: langData, error: langError} = await supabase.from('languages').select('lang_code,name_en');
         if(langError) {
             console.error(langError);
             return fail(500, {langError});
         }
+        const targetLanguage = langData.find( elem => elem.lang_code == form.data.language);
+        const sourceLanguage = langData.find( elem => elem.lang_code == user.profile.native_language);
         // Deal with the fact that some languages have composite names
-        if(langData) {
-            let split = langData.name_en.split(';');
-            language = split.length > 0 ? split[split.length - 1] : langData.name_en;
+        if(targetLanguage) {
+            let split = targetLanguage.name_en.split(';');
+            language = split.length > 0 ? split[split.length - 1] : targetLanguage.name_en;
         } else {
-            language = 'en';
+            language = 'English';
         }
 
-        // Prompt
-        let content = `Write a ${contentType} understandable by a student who has no more than 600 words of vocabulary. Keep the grammar simple. 
-                The theme is provided in a non ${language} language, but the passage has to be in ${language}. The theme is: "${topic}". Provide the passage in ${language}.
-                The passage won't be longer than ${form.data.length} words.
-                After the passage, provide a list of the 10 most difficult words you used, followed by their translation in ${user.profile.native_language ?? 'Japanese'}.
-                Finally, ask a COMPREHENSION QUESTION about the passage (not a yes/no question).`;
+        // Word list
+        
+        const {data:vocabData, error:vocabError} = await supabase.from('vocabulary')
+                                                    .select('word, frequency').eq('language', targetLanguage.lang_code)
+                                                    .order('frequency', {ascending: false}).limit(600);
+        if(vocabError) {
+            console.error(vocabError);
+            return fail(500, {vocabError});
+        }
+        const wordList = vocabData.map( elem => elem.word)
 
-        const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
+        // Prompt
+        let content = `
+                ${wordList.length > 0 ? `The ${wordList.length} most common words in ${language} are: [${wordList}]. Use the words above to w` : 'W'}rite a 
+                ${contentType} understandable by a young ESL student who has no more than 600 words of vocabulary. Keep the grammar very simple. Avoid colloquialisms and slang.
+                The theme might provided in a non ${language} language, but the passage has to be in ${language}. The theme is: "${topic}". Provide the passage in ${language}.
+                The passage won't be longer than ${form.data.length} words.
+                You will provide a TITLE for the passage at the top.
+                Finally, ask a COMPREHENSION QUESTION about the passage (not a yes/no question).
+                You will provide a list of 'the 10 most difficult words' with their translation
+                in ${ sourceLanguage.name_en ?? 'Japanese'} after the passage.`;
+
 
         if(! await isAllowedToGenerate(supabase, user, form.data.length, qualityMultiplier, form.data.quality)) 
             return fail(401, {form, error: 'You have reached your limit of generations.'})
 
-        if( form.data.testMode) {
+
+        const generationData = {
+            content: content,
+            owner_id: user.id,
+            customPrompt: form.data.customPrompt,
+            model: model,
+            language: form.data.language,
+            topic: topic,
+            quality: quality,
+        };
+        console.log('generationData', generationData);
+        if(form.data.testMode) {
             console.log("POSTING TO GENERATOR API");
             const response = fetch('https://3cqrx07xfh.execute-api.ap-northeast-1.amazonaws.com/dev/',{
                 method: 'POST',
                 header: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    content: content,
-                    owner_id: user.id,
-                    customPrompt: form.data.customPrompt,
-                    quality: form.data.quality,
-                    language: form.data.language,
-                    topic: topic,
-                }),
+                body: JSON.stringify(generationData),
             });
 
             

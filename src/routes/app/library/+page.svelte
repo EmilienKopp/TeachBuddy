@@ -168,7 +168,7 @@
             <div id={`vocab-${item.id}`}>
                 <div class="grid grid-cols-5 py-1 text-xs text-lime-400">
                     <div class="col-span-4"> 
-                        {$C_('no_title')}
+                        { item.title ?? $C_('no_title')}
                     </div>
                     <Indicator color="red" border size="xl">
                         <span class="text-white text-xs font-bold">{item.language ?? '?'}</span>

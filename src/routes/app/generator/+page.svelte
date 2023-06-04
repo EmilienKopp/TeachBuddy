@@ -65,8 +65,8 @@
         allowed = await isAllowedToGenerate(supabase, data?.session?.user, $form.length, multiplier ?? 0, $form.quality);
     }
 
-    $: multiplier = data.qualityLevels.find((level: any) => level.value == $form.quality)?.multiplier;
-    $: allowedLengths = $form.quality == '3' ? data.lengths.filter((length: any) => length.allowedForTrial ) : data.lengths;
+    $: multiplier = (data.qualityLevels as any).find((q: any) => q.id == $form.quality)?.multiplier;
+    $: allowedLengths = $form.quality == '3' ? (data?.lengths as any).filter((length: any) => length.allowedForTrial ) : data.lengths;
     $: console.log($form.length)
 </script>
 <svelte:window bind:innerWidth={innerWidth} />
@@ -100,7 +100,7 @@
             <div class="col-span-2 md:col-span-1">
                 <Label>
                     <span class="text-xs md:text-lg"> {$C_('passage_quality')} </span>
-                    <Select label="length" name="length" bind:value={$form.quality} items={ data.qualityLevels } on:change={assessAllowed}/>
+                    <Select label="length" name="length" bind:value={$form.quality} items={ toSelectOptions(data.qualityLevels,'id','label', $C_, 'multiplier','x') } on:change={assessAllowed}/>
                 </Label>
             </div>
 
