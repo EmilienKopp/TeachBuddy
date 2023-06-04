@@ -31,13 +31,19 @@ export function mapHeaders(headers,arr) {
   });
 }
 
-export function toSelectOptions(arr, valueKey, labelKey, formatter: Function | null = null): SelectOptionType[] | any[] {
+export function toSelectOptions(arr, valueKey, labelKey, 
+  formatter: Function | null = null, 
+  concatColumn: string | null = null, 
+  concatPrefix: string = ''): SelectOptionType[] | any[] 
+{
   if(!arr) return [];
-
+  
   return arr.map(el => {
+    let name = formatter ? formatter(el[labelKey]) : el[labelKey];
+    if(concatColumn) name += (concatColumn && el[concatColumn]) ? ` (${concatPrefix} ${el[concatColumn]})` : '';
     return {
       value: el[valueKey],
-      name: formatter ? formatter(el[labelKey]) : el[labelKey]
+      name,
     };
   });
 }
