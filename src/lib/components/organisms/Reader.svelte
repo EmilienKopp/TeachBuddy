@@ -116,13 +116,13 @@
     );
 
     // Remove duplicates between 'inflections' and 'en_word' results
-    wordMatchesList = wordMatchesList.reduce((acc: any, current: any) => {
+    wordMatchesList = wordMatchesList?.reduce((acc: any, current: any) => {
       const found = acc.find(
         (item: any) =>
           item.id === current.id ||
           (item.word == current.word && item.POS == current.POS)
       );
-      return !found ? acc.concat([current]) : acc;
+      return !found ? acc?.concat([current]) : acc;
     }, []);
     return wordMatchesList;
   }
@@ -288,19 +288,21 @@
             {#await lookupVocab(word)}
               <Spinner size="5" color={themeColor} />
             {:then lookupData}
-              {#each lookupData as item}
-                <li
-                  class="border-b border-slate-500 text-sm mb-1 flex flew-row justify-between"
-                >
-                  <div
-                    class="mr-2 max-w-[38ch] overflow-hidden text-ellipsis md:max-w-fit"
+              {#if lookupData && lookupData.length > 0}
+                {#each lookupData as item}
+                  <li
+                    class="border-b border-slate-500 text-sm mb-1 flex flew-row justify-between"
                   >
-                    {item.POS ? `【${displayPOS(item)}】` : ""}
-                    {item.word}
-                    {item.ja_word ? `➡ ${item.ja_word}` : ""}
-                  </div>
-                </li>
-              {/each}
+                    <div
+                      class="mr-2 max-w-[38ch] overflow-hidden text-ellipsis md:max-w-fit"
+                    >
+                      {item.POS ? `【${displayPOS(item)}】` : ""}
+                      {item.word}
+                      {item.ja_word ? `➡ ${item.ja_word}` : ""}
+                    </div>
+                  </li>
+                {/each}
+              {/if}
             {:catch error}
               <li>error: {error.message}</li>
             {/await}
