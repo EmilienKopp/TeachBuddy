@@ -104,6 +104,10 @@
     "speech": "speech",
     "conversation_2": "conversation between 2 people",
     "story": "fictional story",
-    "poem": "poem"
+    "poem": "poem",
+
+    "trial": "trial",
+    "fast": "faster",
+    "high": "higher quality"
 
 }
