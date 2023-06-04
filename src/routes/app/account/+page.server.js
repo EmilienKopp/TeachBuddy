@@ -9,19 +9,21 @@ import { vertical } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({request, parent, locals: { supabase, getSession}}) {
-    const parentData = await parent();
+export async function load({request, data, parent, locals: { supabase, getSession}}) {
+    console.log('LOAD @ account+page.server.js');
+    console.time('account+server_load');
 
-    const user = parentData.session.user;
+    const user = (await getSession()).user;
 
     let infoForm, langForm;
-    
+
     infoForm = await superValidate( user.profile,userBasicInfoSchema, { id: 'infoForm' });
 
     const userLanguages = { native_language: user.profile.native_language, studying_languages: user.profile.studying_languages };
 
     langForm = await superValidate( userLanguages, languagesSettingsSchema, { id: 'langForm' } );
 
+    console.timeEnd('account+server_load');
     return { langForm, infoForm };
 }
 

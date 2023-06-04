@@ -43,19 +43,6 @@ const config = new Configuration({
 
 const openAI = new OpenAIApi(config);
 
-const types = [
-    { value: 1, name: 'Fictional Story' },
-    { value: 2, name: 'Essay' },
-    { value: 3, name: 'Conversation between two people' },
-];
-
-let lengths = [
-    { value: 100, name: 'S (~100 words)', allowedForTrial: true},
-    { value: 300, name: 'M (~300 words)', allowedForTrial: true},
-    { value: 500, name: 'L (~500 words)', allowedForTrial: false},
-    { value: 1000, name: 'XL (~1000 words)', allowedForTrial: false},
-];
-
 let qualityLevels = [
     { value: '3', name: 'Trial・お試し', multiplier: 0 },
     { value: '3.5', name: 'Fast・速い', multiplier: 1 },
@@ -79,25 +66,67 @@ const topics = [
 ]
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({parent, locals: { supabase, getSession}}) {
-
-    
-
-    const parentData = await parent();
-
-    const user = parentData.session.user;
-    
+export async function load({ locals: { supabase, getSession}}) {
+    console.time('generator+server_load')
+    const user = (await getSession()).user;
     const form = await superValidate(schema);
 
-    let { data: languages, error: langError} = await supabase.from('languages').select('lang_code, name_native').neq('name_native',null);
+    const types = async() => {
+        console.log('types', Date.now());
+        const { data, error} = await supabase.from('passage_types').select('id, name').neq('name',null);
+        if(error) {
+            console.error(error);
+            return [];
+        }
+        return data;
+    }
 
-    languages = toSelectOptions(languages, 'lang_code', 'name_native');
+    const languages = async() => {
+        console.log('languages', Date.now());
+        const { data, error} = await supabase.from('languages').select('lang_code, name_native').in('lang_code',user.profile.studying_languages);
+        if(error) {
+            console.error(error);
+            return [];
+        }
+        return data;
+    }
+
+    const lengths = async() => {
+        console.log('lengths', Date.now());
+        const { data, error} = await supabase.from('passage_lengths').select('label, word_count, available_for_trial');
+        // For now, manually reformat the 'label' field to be more readable with the word count
+        data.map( elem => elem.label = `${elem.label} (~${elem.word_count} words)`);
+        if(error) {
+            console.error(error);
+            return [];
+        }
+        return data;
+    }
+
+    const topics = async() => {
+        console.log('topics', Date.now());
+        const { data, error} = await supabase.from('topics').select('id, string').in('target_language',user.profile.studying_languages);
+        if(error) {
+            console.error(error);
+            return [];
+        }
+        return data;
+    }
 
     const qualityMultiplier = qualityLevels.find( elem => elem.value == form.data.quality).multiplier;
 
-    const allowed = await isAllowedToGenerate(supabase, user, form.data.length, qualityMultiplier, form.data.quality);
+    console.log('allowed', Date.now());
+    const allowed = async() => await isAllowedToGenerate(supabase, user, form.data.length, qualityMultiplier, form.data.quality);
 
-    return { form, types, topics, languages, ENV, lengths, qualityLevels, allowed };
+    console.timeEnd('generator+server_load')
+    return { 
+        form, qualityLevels, ENV, 
+        types: types(), 
+        topics: topics(), 
+        languages: languages(),
+        lengths: lengths(), 
+        allowed: allowed(),
+    };
 }
 
 export const actions = {
