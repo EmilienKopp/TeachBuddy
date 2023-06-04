@@ -3,7 +3,7 @@
     
     import { superForm } from 'sveltekit-superforms/client';
     import { Badge, GradientButton, Input, Label, Modal, Select, TextPlaceholder, Spinner, Toggle } from 'flowbite-svelte';
-    import { random} from '$lib/helpers/Arrays';
+    import { random, toSelectOptions } from '$lib/helpers/Arrays';
     import Reader from '$lib/components/organisms/Reader.svelte';
     import { DUMMY_PASSAGE } from '../../../config/constants';
     import { costToGenerate } from '$lib/logic/points';
@@ -66,7 +66,7 @@
 
     $: multiplier = data.qualityLevels.find((level: any) => level.value == $form.quality)?.multiplier;
     $: allowedLengths = $form.quality == '3' ? data.lengths.filter((length: any) => length.allowedForTrial ) : data.lengths;
-
+    $: console.log($form.length)
 </script>
 <svelte:window bind:innerWidth={innerWidth} />
 
@@ -80,16 +80,16 @@
         <div class="grid grid-cols-3 md:grid-cols-2 gap-2 font-pixel mt-4">
             <Label for="type">
                 <span class="text-xs md:text-lg"> {$C_('passage_type')} </span>
-                <Select label="Type" name="type" bind:value={$form.type} items={data.types}/>
+                <Select label="Type" name="type" bind:value={$form.type} items={ toSelectOptions(data.types,'id','name', $C_) }/>
             </Label>
 
             <Label>
                 <span class="text-xs md:text-lg"> {$C_('language')} </span>
-                <Select label="Language" name="language" bind:value={$form.language} items={ data.languages } on:change={assessAllowed}/>
+                <Select label="Language" name="language" bind:value={$form.language} items={ toSelectOptions(data.languages,'lang_code','name_native') } on:change={assessAllowed}/>
             </Label>
             <Label>
                 <span class="text-xs md:text-lg"> {$C_('passage_length')} </span>
-                <Select label="length" name="length" bind:value={$form.length} items={ allowedLengths } on:change={assessAllowed}/>
+                <Select label="length" name="length" bind:value={$form.length} items={ toSelectOptions(allowedLengths, 'word_count', 'label') } on:change={assessAllowed}/>
             </Label>
             <div class="col-span-2 md:col-span-1">
                 <Label>
@@ -109,7 +109,7 @@
             {:else}
                 <Label for="prompt">
                     <span class="text-xs md:text-lg"> {$C_('passage_prompt')} </span>
-                    <Select label="Topic" name="prompt" bind:value={$form.prompt} items={data.topics}/>
+                    <Select label="Topic" name="prompt" bind:value={$form.prompt} items={ toSelectOptions(data.topics,'id','string') }/>
                     <!-- <Helper class="text-sm"> <i id="info-icon" class="bi bi-exclamation-circle-fill"></i> Hint </Helper> -->
                 </Label>
             {/if}

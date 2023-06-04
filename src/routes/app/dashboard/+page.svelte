@@ -1,4 +1,5 @@
 <script lang="ts">
+  console.time('dashboard+page');
   import type { PageData } from "./$types";
   import type { CustomUser } from "$lib/types";
   import { _ } from "svelte-i18n";
@@ -31,6 +32,8 @@
       return surpriseMe();
     }
   }
+
+  console.timeEnd('dashboard+page')
 </script>
 
 <div class="mt-12 flex flex-col justify-start mx-auto w-3/4 font-gloria">

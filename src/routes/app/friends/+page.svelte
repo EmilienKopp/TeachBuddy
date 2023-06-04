@@ -7,20 +7,32 @@
     export let data: PageData;
     let searchTerm: string | undefined;
     let filteredUsers: any;
+
+    console.log(data.friendships);
     
-    $: filteredUsers = data.profiles?.filter((profile) => {
+    $: filteredUsers = data.friendships?.filter((friendship) => {
         if (searchTerm === undefined || searchTerm.length < 3) {
             return false;
         }
-        return profile?.username?.toLowerCase().includes(searchTerm.toLowerCase()) 
-                || profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase())
-                || profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
+        return friendship?.profile?.username?.toLowerCase().includes(searchTerm.toLowerCase()) 
+                || friendship?.profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase())
+                || friendship?.profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
     });
 </script>
 
-<div class="mt-10 md:mt-2 px-2 md:px-12 md:mx-auto md:w-3/5">
+<div class="mt-10 md:mt-2 px-2 md:px-12 md:mx-auto md:w-6/7">
 <Tabs>
-    <TabItem title="{$C_('search')}" open inactiveClasses="p-4 text-gray-800 bg-white bg-opacity-50 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300">
+    <TabItem title="{$C_('list')}" open inactiveClasses="p-4 text-gray-800 bg-white bg-opacity-50 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300">
+        <p>{$C_('friends')}</p>
+        {#if data.friendships}
+            <div class="grid grid-cols-2">
+                {#each data.friendships.filter( f => f.approved) as friend}
+                    <UserCard user={friend.profile} isFriend={true} pageData={data}/>
+                {/each}
+            </div>
+        {/if}
+    </TabItem>
+    <TabItem title="{$C_('search')}"  inactiveClasses="p-4 text-gray-800 bg-white bg-opacity-50 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300">
     <div>
         <p class="text-xs">
             {$C_('friends_searchable_fields')}
@@ -37,18 +49,18 @@
         {#if filteredUsers}
             <div class="grid grid-cols-2">
                 {#each filteredUsers as user}
-                    <UserCard {user} pageData={data} />
+                    <UserCard user={user.profile} pageData={data} />
                 {/each}
             </div>
         {/if}
     </div>
     </TabItem>
-    <TabItem title="{$C_('list')}" inactiveClasses="p-4 text-gray-800 bg-white bg-opacity-50 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300">
-        <p>フレンド</p>
-        {#if data.friends}
+    <TabItem title="{$C_('friend_request_pending')}" inactiveClasses="p-4 text-gray-800 bg-white bg-opacity-50 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300">
+        <p>{$C_('friend_request_pending')}</p>
+        {#if data.friendships}
             <div class="grid grid-cols-2">
-                {#each data.friends as friend}
-                    <UserCard user={friend} isFriend={true} pageData={data}/>
+                {#each data.friendships.filter( f => !f.approved) as friend}
+                    <UserCard user={friend.profile} isFriend={true} pageData={data}/>
                 {/each}
             </div>
         {/if}
