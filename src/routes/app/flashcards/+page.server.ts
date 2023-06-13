@@ -1,7 +1,7 @@
-// @ts-nocheck
+import type { RequestEvent } from "@sveltejs/kit";
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({locals: { supabase, getSession}}) {
+export async function load({locals: { supabase, getSession}}: RequestEvent) {
 
     const { user } = await getSession();
 

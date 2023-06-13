@@ -20,7 +20,7 @@ export class Game {
 	 * Create a game object from the player's cookie, or initialise a new game
 	 * @param {string | undefined} serialized
 	 */
-	constructor(serialized = undefined) {
+	constructor(serialized = undefined, word = null) {
 		if (serialized) {
 			const [index, guesses, answers] = serialized.split('-');
 
@@ -34,6 +34,10 @@ export class Game {
 		}
 
 		this.answer = simplifiedWordList[this.index];
+	}
+
+	overrideAnswer(word) {
+		this.answer = word;
 	}
 
 	/**

@@ -7,12 +7,13 @@ import {
 import { locale, waitLocale } from 'svelte-i18n'
 
 import type { CustomUser } from '$lib/types';
-import type { Database } from '../DatabaseDefinitions';
+import type { Database } from '$lib/supabase';
 import type { LayoutLoad } from './$types';
+import type { RequestEvent } from '@sveltejs/kit';
 import { browser } from '$app/environment';
 import { createSupabaseLoadClient } from '@supabase/auth-helpers-sveltekit';
 
-export const load: LayoutLoad = async ({ fetch, data, depends }) => {
+export const load: LayoutLoad = async ({ fetch, data, depends }: RequestEvent | any) => {
     console.time('layout.ts_load')
     depends('supabase:auth');
 

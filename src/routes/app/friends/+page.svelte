@@ -7,10 +7,8 @@
     export let data: PageData;
     let searchTerm: string | undefined;
     let filteredUsers: any;
-
-    console.log(data.friendships);
     
-    $: filteredUsers = data.friendships?.filter((friendship) => {
+    $: filteredUsers = data.friends?.filter((friendship) => {
         if (searchTerm === undefined || searchTerm.length < 3) {
             return false;
         }
@@ -18,15 +16,17 @@
                 || friendship?.profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase())
                 || friendship?.profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
     });
+
+    console.log(data.friends);
 </script>
 
 <div class="mt-10 md:mt-2 px-2 md:px-12 md:mx-auto md:w-6/7">
 <Tabs>
     <TabItem title="{$C_('list')}" open inactiveClasses="p-4 text-gray-800 bg-white bg-opacity-50 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300">
         <p>{$C_('friends')}</p>
-        {#if data.friendships}
+        {#if data.friends}
             <div class="grid grid-cols-2">
-                {#each data.friendships.filter( f => f.approved) as friend}
+                {#each data.friends.filter( f => f.approved) as friend}
                     <UserCard user={friend.profile} isFriend={true} pageData={data}/>
                 {/each}
             </div>
@@ -57,9 +57,9 @@
     </TabItem>
     <TabItem title="{$C_('friend_request_pending')}" inactiveClasses="p-4 text-gray-800 bg-white bg-opacity-50 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300">
         <p>{$C_('friend_request_pending')}</p>
-        {#if data.friendships}
+        {#if data.friends}
             <div class="grid grid-cols-2">
-                {#each data.friendships.filter( f => !f.approved) as friend}
+                {#each data.friends.filter( f => !f.approved) as friend}
                     <UserCard user={friend.profile} isFriend={true} pageData={data}/>
                 {/each}
             </div>

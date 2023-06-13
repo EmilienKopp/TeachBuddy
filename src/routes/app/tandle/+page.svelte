@@ -146,6 +146,7 @@
 		};
 	}}
 >
+<input type="hidden" name="word" />
 <GradientButton type="button" color="pinkToOrange" on:click={() => modalOpen = true}>
 	How to play・遊び方
 </GradientButton>

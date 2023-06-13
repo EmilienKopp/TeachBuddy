@@ -18,12 +18,20 @@
     NavLi,
     NavUl,
     NavHamburger,
+    Dropdown,
+    DropdownItem,
+    Button,
+    GradientButton,
   } from "flowbite-svelte";
+    import ChallengeAlert from "$lib/components/organisms/ChallengeAlert.svelte";
+    import { slide } from "svelte/transition";
   
   export let data: PageData;  
 
   const user: CustomUser | undefined = $page.data.session?.user;
   $pointStore = user?.profile?.point_balance ?? 0;
+
+  let shownItems: {index: number, displayed: boolean}[];
 
   const logout = async () => {
     const { error } = await $page.data.supabase.auth.signOut();
@@ -38,6 +46,7 @@
 </script>
 
 <GenerationCompleteAlert {data}/>
+<ChallengeAlert {data}/>
 
 <div class="relative px-8">
   <Navbar
@@ -55,20 +64,55 @@
     </NavBrand>
     {#if $pointStore} <span>{formatMG($pointStore)}🪙</span> {/if}
 
-    {#if data.friendsRequests.length > 0}
+    {#if data?.friendsRequests?.length > 0}
       <NotificationDropdown data={data.friendsRequests} />
     {/if}
 
-    <NavHamburger on:click={toggle} />
-    <NavUl {hidden} on:click={toggle} class="py-0.5">
+    
+    <NavHamburger on:click={() => { toggle(); 
+                                    //@ts-ignore
+                                    Scaffolder.AppRail.Tiles.forEach( el => el.active = false )}} />
+    <NavUl {hidden} class="py-0.5">
       {#each Scaffolder.AppRail.Tiles as tile, index}
         {#if !tile.disabled}
-          <NavLi href={tile.href} class="text-center border-b md:border-0" >
+          {#if tile.children?.length > 0}
+            <NavLi class="text-center border-b md:border-0" id="navli{index}" on:click={ () => tile.active = !tile.active }>
               <i class="bi {`bi-${tile.icon}`} md:text-2xl"></i>
               <p class="text-xs lg:text-lg">
                   {$C_(tile.name)}
               </p>
+            </NavLi>
+            <Dropdown class="hidden md:block p-2 w-44 z-50">
+              {#each tile.children as child}
+                <DropdownItem href="{child.href}">
+                  <i class="bi {`bi-${child.icon}`} md:text-2xl"></i>
+                  <p class="text-xs lg:text-lg">
+                    {$C_(child.name)}
+                  </p>   
+                </DropdownItem>
+              {/each}
+            </Dropdown>   
+            {#if tile.active === true}
+            <div class="grid grid-cols-2 justify-center md:hidden" transition:slide>
+                {#each tile.children as child}
+                  <NavLi class="text-black text-center border border-slate-300 rounded" href="{child.href}" on:click={toggle}>
+                    <i class="bi {`bi-${child.icon}`} md:text-2xl"></i>
+                    <p class="text-xs lg:text-lg">
+                      {$C_(child.name)}
+                    </p>   
+                  </NavLi>
+                {/each} 
+            </div>
+            {/if}
+
+          {:else}
+          <NavLi href={tile.href} class="text-center border-b md:border-0" id="navli{index}" on:click={toggle}>
+            <i class="bi {`bi-${tile.icon}`} md:text-2xl"></i>
+            <p class="text-xs lg:text-lg">
+                {$C_(tile.name)}
+            </p>
           </NavLi>
+          {/if}
         {/if}
       {/each}
       <NavLi class="text-center" on:click={logout}>

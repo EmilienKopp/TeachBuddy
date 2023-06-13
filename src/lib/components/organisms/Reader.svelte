@@ -19,10 +19,12 @@
   import { removePunctuation, splitWords } from "$lib/helpers/Text";
   import { vertical, toSelectOptions } from "$lib/helpers/Arrays";
   import { searchWeblio } from "$lib/services/weblio";
+  import type { Passage } from "$lib/models/Passage";
+  import { Vocabulary } from "$lib/models/Vocabulary";
 
 
   export let pageData: any = null;
-  export let passage: any | null;
+  export let passage: Passage | null;
   export let themeColor: any;
   export let form: any = null;
 
@@ -33,12 +35,13 @@
   let clickedWord: string | any = "";
   let custom_translation: string | null = null;
   let selectedPOS: string = "";
-  let newTitle: string = "";
-  let splitPassage: Array<string> = splitWords(passage?.content);
+  let newTitle: string = passage?.title ?? '';
+  let splitPassage = passage?.split() ?? [];
   let innerWidth: number;
   let translationModal = false;
   let isCustomizedTranslation = false;
   let noTranslationFound = false;
+  let titleForm: HTMLFormElement;
 
   let averageRating: number = 0;
 
@@ -63,7 +66,7 @@
     word = removePunctuation(word);
     const translation = await fetch('/api/translate', {
         method: 'POST',
-        body: JSON.stringify({text: word, source: passage.language, target: userLanguage}),
+        body: JSON.stringify({text: word, source: passage?.language, target: userLanguage}),
     });
 
     const result = await translation.json();
@@ -191,19 +194,6 @@
     custom_translation = "";
   }
 
-  async function saveTitle() {
-    const { data: updatedData, error } = await supabase
-      .from("passages")
-      .update({ title: newTitle })
-      .eq("id", passage?.id)
-      .select();
-    if (error) {
-      console.log("Error updating title:", error);
-      return;
-    }
-    passage.title = newTitle;
-  }
-
   async function print() {
     window.print();
   }
@@ -212,38 +202,21 @@
     wordMatchesList?.filter((el: any) => el.ja_word).length === 0;
 
   $: if (passage) {
-    splitPassage = splitWords(passage?.content);
+    splitPassage = passage.split();
   } else {
     splitPassage = splitWords(form?.message);
   }
+
 </script>
 
 <svelte:window bind:innerWidth />
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- TODO: do something about a11y -->
 
-{#if splitPassage.length > 0}
-  <div
-    class="mt-4 md:mt-12 flex flex-row justify-around md:justify-normal gap-2"
-  >
-    <h2
-      class="w-full text-2xl md:text-4xl text-lime-500 font-pixel px-3 pb-2 bg-white bg-opacity-80 rounded md:bg-transparent;"
-    >
-      {passage?.title ?? "タイトルなし"}
-    </h2>
+{#if splitPassage?.length > 0}
+  
 
-    <GradientButton
-      pill={true}
-      type="button"
-      class="noprint hidden sm:block text-center"
-      color="red"
-      on:click={print}
-    >
-      <i class="bi bi-download text-3xl" />
-    </GradientButton>
-  </div>
-
-  {#if passage.rating}
+  {#if passage?.rating}
     <Badge>User Ratings: {passage.rating} / 5</Badge>
     <Badge color="red">{passage.nb_ratings} ratings</Badge>
     <Rating total={5} rating={passage.rating} />
@@ -307,7 +280,7 @@
               <li>error: {error.message}</li>
             {/await}
           </ol>
-          {#if passage.language == "en"}
+          {#if passage?.language == "en"}
             <div class="pt-2 flex justify-center">
               <button
                 type="button"
@@ -383,7 +356,9 @@
     {:else}
       <div class="flex flex-col gap-2">
         {#if wordMatchesList}
-          {#each wordMatchesList.filter((item) => item.ja_word) as vocab, key}
+          {#each wordMatchesList.filter(
+                    //@ts-ignore
+                    (item) => item.ja_word) as vocab, key}
             <Checkbox
               name="vocabulary_id"
               value={parseInt(vocab.id)}

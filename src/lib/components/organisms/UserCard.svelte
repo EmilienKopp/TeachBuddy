@@ -5,7 +5,7 @@
     export let pageData: any = null;
     export let user: any;
     export let isFriend: boolean = false;
-    export let isPending: boolean = pageData.friendships.some((friendship: any) => friendship.friend_id === user.id && friendship.approved === false);
+    export let isPending: boolean = pageData.friends.some((friendship: any) => friendship.friend_id === user.id && friendship.approved === false);
 
     let challengeModalOpen: boolean = false;
 

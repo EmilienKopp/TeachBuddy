@@ -1,15 +1,15 @@
-// @ts-nocheck
-
 import {
     PUBLIC_SUPABASE_ANON_KEY,
     PUBLIC_SUPABASE_URL
 } from '$env/static/public';
 
+import type { RequestEvent } from '../$types';
+import type { Word } from '$lib/types';
 import { createClient } from '@supabase/supabase-js';
 import { fail } from '@sveltejs/kit';
 import { mapHeaders } from '$lib/helpers/Arrays';
 import { superValidate } from 'sveltekit-superforms/server';
-import { vocabSettingsSchema } from '/src/config/schemas';
+import { vocabSettingsSchema } from '/src/config/schemas.ts';
 
 const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
 
@@ -24,7 +24,8 @@ export async function load() {
 }
 
 export const actions = {
-    default: async ({ request }) => {
+    default: async ({ request }: RequestEvent) => {
+        
         const formData = await request.formData();
         const form = await superValidate(formData, vocabSettingsSchema);
         let list, delimiter, fileData,  columnHeaders;
@@ -35,7 +36,10 @@ export const actions = {
         
         // transform listData into an array of objects that have the column headers as keys
         listData = mapHeaders(form.data.columnHeaders,listData);
-        listData = listData.filter((el) => /^[a-zA-Z0-9]*$/.test(el.en_word) );
+        listData = listData.filter((el: Word) => {
+            if(el.word)
+                /^[a-zA-Z0-9]*$/.test(el.word) 
+        });
 
         const {data, error} = await supabase.from('vocabulary').insert(listData);
 

@@ -32,7 +32,6 @@
       return surpriseMe();
     }
   }
-  $: console.log(data);
 
   console.timeEnd('dashboard+page')
 </script>
@@ -59,6 +58,15 @@
           <span class="font-bold">{data.words?.length}</span>
         </li>
       </ul>
+      <GradientButton color="teal" href="/app/library">
+        Read
+      </GradientButton>
+    </Card>
+    <Card>
+      <h5 class="mb-2 text-xl md:text-3xl font-bold text-gray-900 dark:text-white">Tandle</h5>
+      <GradientButton color="teal" href="/app/tandle">
+        Play
+      </GradientButton>
     </Card>
     
     <GradientButton

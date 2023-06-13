@@ -1,9 +1,8 @@
-// @ts-nocheck
-
 import { message, superValidate } from 'sveltekit-superforms/server';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({locals: { supabase, getSession}}) {
+//@ts-nocheck
+export async function load({locals: { supabase, getSession}}: any) {
 
     const { user } = await getSession();
 

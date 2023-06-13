@@ -1,24 +1,28 @@
-// src/hooks.server.ts
-
 import {
   PUBLIC_SUPABASE_ANON_KEY,
   PUBLIC_SUPABASE_URL
 } from '$env/static/public';
 
 import type { Handle } from '@sveltejs/kit';
+import { Model } from '$lib/models/Model';
+import type { Session } from '@supabase/supabase-js';
 import { createSupabaseServerClient } from '@supabase/auth-helpers-sveltekit';
 import { locale } from 'svelte-i18n'
 import { redirect } from '@sveltejs/kit';
 
+// src/hooks.server.ts
+
 export const handle: Handle = async ({ event, resolve }) => {
   const start = performance.now();
-
 
   event.locals.supabase = createSupabaseServerClient({
     supabaseUrl: PUBLIC_SUPABASE_URL,
     supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
     event
   });
+
+  Model.setConnection(event.locals.supabase);
+
 
   /**
    * a little helper that is written for convenience so that instead

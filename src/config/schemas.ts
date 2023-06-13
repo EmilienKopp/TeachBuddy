@@ -8,7 +8,8 @@ export const registerSchema = z.object({
     username: z.string().min(3).max(20),
     user_number: z.string().optional(),
     password: z.string().min(8).max(64),
-    native_language: z.string().optional(),
+    native_language: z.string(),
+    studying_languages: z.string().array(),
     email: z.string().email(),
 });
 
@@ -46,6 +47,10 @@ export const storeUserVocabSchema = z.object({
     vocabulary_id: z.number().int().array(),
     custom_translation: z.string().optional(),
     POS: z.string().optional(),
+});
+
+export const titleEditSchema = z.object({
+    title: z.string(),
 });
 
 /**

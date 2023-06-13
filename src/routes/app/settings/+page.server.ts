@@ -1,9 +1,6 @@
-// @ts-nocheck
-
 import { message, superValidate } from 'sveltekit-superforms/server';
 
 import { fail } from '@sveltejs/kit';
-import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -20,20 +17,14 @@ const schema = z.object({
 });
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({locals: { supabase, getSession}}) {
+export async function load({locals: { supabase, getSession}}: any) {
     
     const form = await superValidate(schema);
 
-    if (gradesError || langError) {
-        fail('Failed to load data');
-    }
 
     return { form };
 }
 
 export const actions = {
-    getPassage: async ({ request, locals: { supabase, getSession } }) => {
-        
-        return message(form,'SUCCESS!');     
-    }
+   
 }

@@ -25,6 +25,7 @@
 		"editorjs-table": "^1.4.10",
 		"openai": "^3.2.1",
 		"postcss": "^8.4.23",
+		"supabase": "^1.64.8",
 		"svelte": "^3.54.0",
 		"svelte-check": "^3.0.1",
 		"sveltekit-superforms": "^0.8.0",

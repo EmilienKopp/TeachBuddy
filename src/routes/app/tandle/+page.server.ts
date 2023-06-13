@@ -1,13 +1,24 @@
 import { Game, simplifiedWordList } from './game';
 
+import type { RequestEvent } from '../$types';
 import { fail } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageServerLoad} */
-export const load = async ({ cookies, locals: {supabase, getSession}}) => {
-	const game = new Game(cookies.get('sverdle'));
+//@ts-nocheck
+export const load = async ({ cookies, request, locals: {supabase, getSession}}: RequestEvent) => {
+
 	const { user } = await getSession();
+	const game = new Game(cookies.get('sverdle'));
+
+	const wordId = new URL(request.url).searchParams.get('word');
 
 
+	if(wordId) {
+		const {data:wordItem, error} = await supabase.from('vocabulary').
+												select('*')
+												.eq('id', new URL(request.url).searchParams.get('word')).single();
+		if(wordItem) game.overrideAnswer(wordItem.word);
+	}
 
 	return {
 		simplifiedWordList,
@@ -37,8 +48,11 @@ export const actions = {
 	 * Modify game state in reaction to a keypress. If client-side JavaScript
 	 * is available, this will happen in the browser instead of here
 	 */
-	update: async ({ request, cookies }) => {
+	update: async ({ request, cookies }: RequestEvent) => {
+		console.log('UPDATE');
+
 		const game = new Game(cookies.get('sverdle'));
+		console.log(cookies.get('sverdle'),game);
 
 		const data = await request.formData();
 		const key = data.get('key');
@@ -58,25 +72,29 @@ export const actions = {
 	 * Modify game state in reaction to a guessed word. This logic always runs on
 	 * the server, so that people can't cheat by peeking at the JavaScript
 	 */
-	enter: async ({ request, cookies }) => {
+	enter: async ({ request, cookies }: RequestEvent) => {
+
+		console.log('ENTER');
+
 		const game = new Game(cookies.get('sverdle'));
+		console.log(cookies.get('sverdle'), game);
 
 		const data = await request.formData();
 		const guess = /** @type {string[]} */ (data.getAll('guess'));
 
-		if (!game.enter(guess)) {
+		if (!game.enter(guess as string[])) {
 			return fail(400, { badGuess: true });
 		}
 
 		cookies.set('sverdle', game.toString());
 	},
 
-	restart: async ({ cookies }) => {
+	restart: async ({ cookies }: RequestEvent) => {
 		console.log('restartings');
 		cookies.delete('sverdle');
 	},
 
-	retry: async ({ cookies }) => {
+	retry: async ({ cookies }: RequestEvent) => {
 		console.log('restartings');
 		cookies.delete('sverdle');
 	}

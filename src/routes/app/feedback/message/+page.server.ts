@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+import type { RequestEvent } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
@@ -13,7 +12,7 @@ const messageSchema = z.object({
 
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({locals: { supabase, getSession}}) {
+export async function load({locals: { supabase, getSession}}: RequestEvent) {
 
     const { user } = await getSession();
 
@@ -23,7 +22,7 @@ export async function load({locals: { supabase, getSession}}) {
 }
 
 export const actions = {
-    default: async ({ request, locals: { supabase, getSession, refreshSession } }) => {
+    default: async ({ request, locals: { supabase, getSession, refreshSession } }: RequestEvent) => {
         const formData = await request.formData();
 
         const form = await superValidate(formData, messageSchema);

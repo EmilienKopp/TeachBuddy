@@ -21,7 +21,6 @@
     let FORM: HTMLFormElement;
     
     $: selectableLanguages = languages.filter(lang => lang.value !== $langForm.native_language);
-
 </script>
 
 <section class="mt-1">

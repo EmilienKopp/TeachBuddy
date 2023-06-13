@@ -1,11 +1,12 @@
 <script lang="ts">
     import { superForm } from "sveltekit-superforms/client";
     import type { PageData } from "./$types";
-    import {  ButtonGroup, GradientButton, Helper, InputAddon, Input, Label, Select, Spinner} from "flowbite-svelte";
+    import {  ButtonGroup, GradientButton, Helper, InputAddon, Input, Label, Select, Spinner, Button, Dropdown, Checkbox, Chevron} from "flowbite-svelte";
     import {FORMS} from "/src/config/forms";
     import { registerSchema } from "/src/config/schemas";
     import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
+    import { C_ } from "$lib/i18n/helpers";
 
     export let data: PageData;
 
@@ -29,7 +30,7 @@
     });
 
 </script>
-<div class="bg-inherit min-h-screen flex flex-col items-center justify-center font-pixel py-4 px-4 sm:px-6 lg:px-8">
+<div class="bg-inherit min-h-screen flex flex-col items-center justify-center font-pixel pt-4 pb-20 px-4 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 class="md:mt-6 text-center text-2xl font-bold tracking-tight text-slate-">
             Join the crew!
@@ -78,6 +79,19 @@
                     <Label>
                         <span class="italic">Native language・母国語</span>
                         <Select class="mt-2" name="native_language" items={data.languages} bind:value={$form.native_language}/>
+                    </Label>
+
+                    <Label>
+                        <p class="font-semibold italic"></p>
+                        <Button color="blue" class="w-full"><Chevron>{$C_('now_studying')}</Chevron></Button>
+                        <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
+                            {#each data?.selectableLanguages as lang, key}
+                            <li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                <Checkbox name="studying_languages" class="p-3" bind:group={$form.studying_languages} value={lang.value}
+                                    checked={$form.studying_languages.includes(lang.value)}>{lang.name}</Checkbox>
+                            </li>
+                            {/each}
+                        </Dropdown>
                     </Label>
 
                     <div class="mt-4 text-center">

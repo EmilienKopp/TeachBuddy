@@ -170,5 +170,5 @@
 
 <Modal bind:open={loading} autoclose>
     <p class="text-2xl">Generating...</p>
-    <GradientButton color="pinkToOrange" href="/app/sverdle">Play a game ? 😃</GradientButton>
+    <GradientButton color="pinkToOrange" href="/app/tandle">Play a game ? 😃</GradientButton>
 </Modal>

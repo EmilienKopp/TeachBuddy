@@ -1,15 +1,14 @@
-// @ts-nocheck
-
 import { Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai';
 import {
     ENV,
     OPENAI_API_KEY
 } from '$env/static/private';
+import type { Language, PassageLength, QualityLevel } from '$lib/types';
 import { getLastGeneratedDate, isAllowedToGenerate } from '$lib/logic/passages';
 import { message, superValidate } from 'sveltekit-superforms/server';
 
 import { costToGenerate } from '$lib/logic/points';
-import { fail } from '@sveltejs/kit';
+import { fail, type RequestEvent } from '@sveltejs/kit';
 import { pointStore } from '$lib/stores';
 import { storeUserVocabSchema } from '/src/config/schemas';
 import { toSelectOptions } from '$lib/helpers/Arrays';
@@ -66,12 +65,12 @@ const topics = [
 ]
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ locals: { supabase, getSession}}) {
+export async function load({ locals: { supabase, getSession}}: RequestEvent) {
     console.time('generator+server_load')
-    const user = (await getSession()).user;
+    const { user } = await getSession();
     const form = await superValidate(schema);
 
-    let qualityMultiplier;
+    let qualityMultiplier: number;
 
     const types = async() => {
         console.log('types', Date.now());
@@ -97,7 +96,7 @@ export async function load({ locals: { supabase, getSession}}) {
         console.log('lengths', Date.now());
         const { data, error} = await supabase.from('passage_lengths').select('label, word_count, available_for_trial');
         // For now, manually reformat the 'label' field to be more readable with the word count
-        data.map( elem => elem.label = `${elem.label} (~${elem.word_count} words)`);
+        data?.map( (elem: PassageLength | any) => elem.label = `${elem.label} (~${elem.word_count} words)`);
         if(error) {
             console.error(error);
             return [];
@@ -122,7 +121,7 @@ export async function load({ locals: { supabase, getSession}}) {
         console.error(error);
         return [];
     }
-    qualityMultiplier = qualityLevels.find( elem => elem.id == form.data.quality)?.multiplier;
+    qualityMultiplier = qualityLevels.find( (elem: QualityLevel | any) => elem.id == form.data.quality)?.multiplier;
         
      
     console.log('allowed', Date.now());
@@ -141,7 +140,7 @@ export async function load({ locals: { supabase, getSession}}) {
 }
 
 export const actions = {
-    getPassage: async ({ request, locals: { supabase, getSession } }) => {
+    getPassage: async ( { request, locals: { supabase, getSession } }: any) => {
         const form = await superValidate(request, schema);
         const { user } = await getSession();
         
@@ -188,8 +187,8 @@ export const actions = {
             console.error(langError);
             return fail(500, {langError});
         }
-        const targetLanguage = langData.find( elem => elem.lang_code == form.data.language);
-        const sourceLanguage = langData.find( elem => elem.lang_code == user.profile.native_language);
+        const targetLanguage = langData.find( (elem: any) => elem.lang_code == form.data.language);
+        const sourceLanguage = langData.find( (elem: Language) => elem.lang_code == user.profile.native_language);
         // Deal with the fact that some languages have composite names
         if(targetLanguage) {
             let split = targetLanguage.name_en.split(';');

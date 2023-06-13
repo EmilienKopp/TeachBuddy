@@ -11,12 +11,6 @@ export const Scaffolder = {
                 href: '/app/dashboard',
                 label: 'ホーム'
             },
-            // {
-            //     name: 'Flashcards',
-            //     icon: 'card-heading',
-            //     href: '/app/flashcards',
-            //     label: 'flashcards'
-            // },
             {
                 name: 'generator',
                 icon: 'robot',
@@ -26,8 +20,21 @@ export const Scaffolder = {
             {
                 name: 'study',
                 icon: 'book',
-                href: '/app/library',
                 label: '勉強',
+                children: [
+                    {
+                        name: 'library',
+                        icon: 'bookshelf',
+                        href: '/app/library',
+                        label: '図書室',
+                    },
+                    {
+                        name: 'Flashcards',
+                        icon: 'card-heading',
+                        href: '/app/flashcards',
+                        label: 'flashcards'
+                    },
+                ]
             },
             {
                 name: 'library',

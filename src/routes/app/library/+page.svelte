@@ -8,12 +8,14 @@
     import LibraryModal from './LibraryModal.svelte';
     import { strLimit, strLimitByWords } from '$lib/helpers/Text';
     import { C_ } from '$lib/i18n/helpers';
+    import { Passage } from '$lib/models/Passage';
+    import { Collection } from '$lib/models/Collection';
 
     export let data: PageData;
     const supabase = data.supabase;
 
     let searchTerm: string | undefined;
-    let filteredItems: any = data.passages;
+    let filteredItems: any = new Collection(data.passages, Passage) ?? [];
     let newTitle: string;
     let selectedItem: any;
     let selectedKey: number;
@@ -62,7 +64,7 @@
     }
 
     $: {
-        filteredItems = data.passages.filter(
+        filteredItems = filteredItems.filter(
             (item: any) => {
                 searchTermCondidtion = searchTerm ? (
                     item?.title?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
@@ -82,6 +84,8 @@
                     languageCondition
                 );
         });
+
+        
     }
 
 </script>
@@ -122,9 +126,14 @@
             <TableHeadCell class="text-xs md:text-lg px-2">概要<InfoBubble message="テーブルにクリック・タップして展開・編集・削除できます。"/></TableHeadCell>
         </TableHead>
         <TableBody>
+        {#if filteredItems?.length === 0}
+            <TableBodyRow>
+                <TableBodyCell class="text-md px-2 hidden md:block col-span-3">Nothing here (yet!) Go to the <a href="/app/generator">Generator</a></TableBodyCell>
+            </TableBodyRow> 
+        {:else}
             {#each filteredItems as item, key}
                 <TableBodyRow on:click={() => openModal(item,key)} class="cursor-pointer">
-                    <TableBodyCell class="text-md px-2 hidden md:block">{item.date}</TableBodyCell>
+                    <TableBodyCell class="text-md px-2 hidden md:block">{item.created_at}</TableBodyCell>
                     <TableBodyCell tdClass="px-3 py-3 font-medium" id={`vocab-${item.id}`}>
                         <div class="max-w-[40ch] md:w-full text-md text-lime-600 py-1 flex flex-col gap-1">
                             <div>
@@ -144,7 +153,7 @@
                                 {/if}
                             </div>
                         </div>
-                        <span class="inline xs:hidden text-xs text-gray-400"> ({item.date})</span>
+                        <span class="inline xs:hidden text-xs text-gray-400"> ({item.created_at})</span>
                     </TableBodyCell>
                     <TableBodyCell tdClass="px-3 py-3 font-medium" id={`vocab-${item.id}`}>
                         {#if item.content}
@@ -156,6 +165,7 @@
                 </TableBodyRow>
                 
             {/each}
+        {/if}
         </TableBody>
     </Table>
 </div>
@@ -175,7 +185,7 @@
                     </Indicator>
                 </div>
                 <div class="flex flex-col text-lime-400 text-xs">
-                    <span class="inline xs:hidden text-xs text-gray-400"> ({item.date})</span>
+                    <span class="inline xs:hidden text-xs text-gray-400"> ({item.created_at})</span>
                 </div>
                 {#if item.content}
                 <div class="max-w-[40ch] md:max-w-[150ch] italic py-1 text-xs lg:text-lg">
