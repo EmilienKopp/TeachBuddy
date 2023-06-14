@@ -138,7 +138,7 @@ export class Model {
 
     public connect () {
         this._connector = createClient(PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY);
-        return this._connector;
+        return this;
     }
 
     public getConnection () {
@@ -185,17 +185,17 @@ export class Model {
             this[key] = value;
         }
 
-        const result = await this.getConnection().from(current._table).update(data).eq(current._idColumn, this.id);
+        const result = await this._connector.from(this._table).update(data).eq(this._idColumn, this.id);
         console.log('UPDATE',result);
         return this;
     }
 
     public async persist(asNested?: string): Promise<any> {
         const current = this.constructor as typeof Model;
-
         const attributes = this.attributes();
-        const response = await current._connector.from(current._table).update(attributes)
-                                                 .eq(current._idColumn, this.id);
+        const {data,error,status} = await this._connector.from(this._table).update(attributes)
+                                                 .eq(this._idColumn, this.id);
+        console.log(data,error,status);
         return this;
     }
 
