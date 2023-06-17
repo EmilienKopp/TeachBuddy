@@ -9,12 +9,10 @@ export async function load({locals: { supabase, getSession}}: RequestEvent) {
 
     const { user } = await getSession() as App.Session;
     const userProfile = new Profile(user);
-    
+
     const dateFormatter = new Intl.DateTimeFormat('en-US',{ year: 'numeric', month: 'long', day: 'numeric' });
 
-
     const friendRequests = async () => (await userProfile.getFriendsRequests()).plain();
-
 
     const languages = async() => (await Language.but('name_native', null )).plain();
 
@@ -52,7 +50,6 @@ export async function load({locals: { supabase, getSession}}: RequestEvent) {
     //                                                                     .eq("user_id", user.id)
     //                                                                     .eq("approved", true);
     const friends = async () => (await userProfile.getFriends()).plain();
-    console.log('FRIENDS',await userProfile.getFriends());
     
     // const { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
     const POS = async () => {

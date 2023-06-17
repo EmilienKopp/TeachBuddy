@@ -7,8 +7,11 @@ export async function load({locals: { supabase, getSession}}: RequestEvent) {
     
     const { user } = await getSession();
         
+    const passages = async () => await Passage.where('owner_id', 'eq', user.id);
+
     return { 
         user,
+        passages: passages(),
      };
 }
 

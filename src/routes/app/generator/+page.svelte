@@ -12,7 +12,10 @@
     import {pointStore} from '$lib/stores';
     import { C_ } from '$lib/i18n/helpers';
     import { _ } from 'svelte-i18n';
+    import { Collection } from '$lib/models/Collection';
     import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
+    import type { Snapshot } from './$types';
+    import { Profile } from '$lib/models/Profile';
 
     export let data: PageData;
     const supabase = data.supabase;
@@ -24,6 +27,11 @@
         onUpdated: ({ form }) => { console.log('Loading:',loading); },
     });
 
+    export const snapshot = {
+        capture: () => $form.language,
+        restore: (value: Snapshot) => { console.log('Snapshot', value); $form.language = value},
+    }
+
     let loading: boolean = false;
     const getRandomColor = () => { return random(["green","blue","red","yellow","purple","pink"]) };
     let innerWidth: number;
@@ -32,10 +40,20 @@
     let timer: any;
     let elapsedTime: string;
     let multiplier: number | undefined = 1;
-    let allowed: GenerationPermission = data.allowed;
-    let allowedLengths = data.lengths;
+    let allowed: GenerationPermission | undefined = data.allowed;
+    let allowedLengths = new Collection(data.lengths);
     let averageDuration = data.passages.map( (el: any) => el.generation_duration).reduce((a: any, b: any) => a+b, 0) / data.passages.length;
-    
+    let topicPicker = false;
+
+    const profile = new Profile(data.session.user.profile);
+    const languages = new Collection(data.languages);
+    const qualityLevels = new Collection(data.qualityLevels);
+    const topics = new Collection(data.topics);
+    const myRecentPassageHistory = new Collection(data.myRecentPassageHistory);
+
+    console.log(profile);
+
+    $form.language = myRecentPassageHistory[0]?.language ?? profile.studying_languages?.at(0) ?? 'en';
 
     function handleSubmit(e: any) {
         loading = true;
@@ -67,7 +85,7 @@
 
     $: multiplier = (data.qualityLevels as any).find((q: any) => q.id == $form.quality)?.multiplier;
     $: allowedLengths = $form.quality == '3' ? (data?.lengths as any).filter((length: any) => length.allowedForTrial ) : data.lengths;
-    $: console.log($form.length)
+    
 </script>
 <svelte:window bind:innerWidth={innerWidth} />
 
@@ -91,16 +109,18 @@
 
             <Label>
                 <span class="text-xs md:text-lg"> {$C_('language')} </span>
-                <Select label="Language" name="language" bind:value={$form.language} items={ toSelectOptions(data.languages,'lang_code','name_native') } on:change={assessAllowed}/>
+                <Select label="Language" name="language" bind:value={$form.language} 
+                        items={ languages.toSelectOptions('lang_code','name_native') } 
+                        on:change={assessAllowed}/>
             </Label>
             <Label>
                 <span class="text-xs md:text-lg"> {$C_('passage_length')} </span>
-                <Select label="length" name="length" bind:value={$form.length} items={ toSelectOptions(allowedLengths, 'word_count', 'label') } on:change={assessAllowed}/>
+                <Select label="length" name="length" bind:value={$form.length} items={ toSelectOptions(allowedLengths,'word_count', 'label') } on:change={assessAllowed}/>
             </Label>
             <div class="col-span-2 md:col-span-1">
                 <Label>
                     <span class="text-xs md:text-lg"> {$C_('passage_quality')} </span>
-                    <Select label="length" name="length" bind:value={$form.quality} items={ toSelectOptions(data.qualityLevels,'id','label', $C_, 'multiplier','x') } on:change={assessAllowed}/>
+                    <Select label="length" name="length" bind:value={$form.quality} items={ qualityLevels.toSelectOptions('id','label', $C_, 'multiplier','x') } on:change={assessAllowed}/>
                 </Label>
             </div>
 
@@ -120,12 +140,16 @@
                 </Label>
             {/if}
             </div>
-            <Toggle color={getRandomColor()} name="freeInput" bind:checked={$form.freeInput} class="col-span-2 text-xs md:text-lg"> {$C_('free_input')} </Toggle>
-            {#if data.ENV == "dev"}
-                <Toggle color={getRandomColor()} name="testMode" bind:checked={$form.testMode} class="text-xs md:text-lg col-span-3 md:col-span-2"> {$form.testMode ? "Test Mode" : "Dev Mode"} </Toggle>
-            {/if}
+            <!-- <Toggle color={getRandomColor()} name="freeInput" bind:checked={$form.freeInput} class="col-span-2 text-xs md:text-lg"> {$C_('free_input')} </Toggle> -->
+            <GradientButton type="button" shadow color="pink" class="w-full col-span-3" on:click={() => topicPicker = !topicPicker}>
+                {$C_('choose_existing')}
+            </GradientButton>
 
-            {#if allowed.ok}
+            <div id="separator" class="w-full col-span-3 my-4">
+                <hr/>
+            </div>
+
+            {#if allowed?.ok}
             <GradientButton type="submit" shadow color="tealToLime" class="col-span-3 md:col-span-2 text-xl md:text-4xl pb-4 md:mt-2" on:click={handleSubmit}> 
                 {#if loading}
                     <Spinner size="5" color={getRandomColor()} />
@@ -138,9 +162,11 @@
             </GradientButton>
             {:else}
             <GradientButton type="submit" shadow color="pinkToOrange" class="col-span-3 md:col-span-2 text-xl md:text-2xl pb-4 md:mt-2" disabled> 
-                {#each allowed?.messages as message}
-                    {message} <br/>
-                {/each}
+                {#if allowed?.messages?.length && allowed?.messages?.length > 0}
+                    {#each allowed?.messages as message}
+                        {message} <br/>
+                    {/each}
+                {/if}
             </GradientButton>
             {/if}
         </div>
@@ -168,7 +194,20 @@
     {/if}
 </div>
 
-<Modal bind:open={loading} autoclose>
+<Modal open={loading} autoclose>
     <p class="text-2xl">Generating...</p>
     <GradientButton color="pinkToOrange" href="/app/tandle">Play a game ? 😃</GradientButton>
+</Modal>
+
+<Modal bind:open={topicPicker} autoclose class="w-5/6">
+    <p>{$C_('choose_existing')}</p>
+    <Label>
+        {$C_('browse_topics')}
+        <Select label="Topic" name="prompt" bind:value={$form.customPrompt} items={ topics.toSelectOptions('prompt','prompt') } on:change={ () => console.log($form.customPrompt)}/>
+    </Label>
+    <Label>
+        {$C_('from_my_topics')}
+        <Select label="Topic" name="prompt" bind:value={$form.customPrompt} items={ myRecentPassageHistory.toSelectOptions('prompt','prompt') } on:change={ () => console.log($form.customPrompt)}/>
+    </Label>    
+    <GradientButton color="blue" class="w-full">OK</GradientButton>
 </Modal>

@@ -108,6 +108,10 @@
 
     "trial": "trial",
     "fast": "faster",
-    "high": "higher quality"
+    "high": "higher quality",
 
+    "choose_existing": "Choose from existing topics",
+    "from_my_topics": "From my topics",
+    "browse_topics": "Browse topics from other users",
+    "target_languages": "Target languages"
 }

@@ -1,4 +1,4 @@
-import { Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai';
+import { Configuration, OpenAIApi } from 'openai';
 import {
     ENV,
     OPENAI_API_KEY
@@ -13,6 +13,7 @@ import { pointStore } from '$lib/stores';
 import { storeUserVocabSchema } from '/src/config/schemas';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
+import { SkormServer } from '$lib/services/Skorm';
 
 const schema = z.object({
     prompt: z.number().default(1),
@@ -23,7 +24,7 @@ const schema = z.object({
     custom_translation: z.string().optional(),
     POS: z.string().optional(),
     language: z.string().optional().default('en'),
-    freeInput: z.boolean().default(false),
+    freeInput: z.boolean().default(true),
     customPrompt: z.string().optional(),
     length: z.number().int().default(300),
     quality: z.string().default('3.5'),
@@ -41,28 +42,6 @@ const config = new Configuration({
 });
 
 const openAI = new OpenAIApi(config);
-
-let qualityLevels = [
-    { value: '3', name: 'Trial・お試し', multiplier: 0 },
-    { value: '3.5', name: 'Fast・速い', multiplier: 1 },
-    { value: '4', name: 'High・高品質', multiplier: 1.5 },
-];
-
-const topics = [
-    { value: 1, name: 'Friendship' },
-    { value: 2, name: 'Family' },
-    { value: 3, name: 'School' },
-    { value: 4, name: 'Hobbies' },
-    { value: 5, name: 'Sports' },
-    { value: 6, name: 'Food' },
-    { value: 7, name: 'Animals' },
-    { value: 8, name: "Tom's summer vacation" },
-    { value: 9, name: 'The best day of my life' },
-    { value: 10, name: 'My favorite place' },
-    { value: 11, name: 'My favorite food' },
-    { value: 12, name: 'Why do we study English?' },
-    { value: 13, name: 'Introducing Japan to my foreign friends' },
-]
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals: { supabase, getSession}}: RequestEvent) {
@@ -84,7 +63,7 @@ export async function load({ locals: { supabase, getSession}}: RequestEvent) {
 
     const languages = async() => {
         console.log('languages', Date.now());
-        const { data, error} = await supabase.from('languages').select('lang_code, name_native').in('lang_code',user.profile.studying_languages);
+        const { data, error} = await supabase.from('languages').select('lang_code, name_native').in('lang_code',user.studying_languages ?? []);
         if(error) {
             console.error(error);
             return [];
@@ -106,7 +85,7 @@ export async function load({ locals: { supabase, getSession}}: RequestEvent) {
 
     const topics = async() => {
         console.log('topics', Date.now());
-        const { data, error} = await supabase.from('topics').select('id, prompt').in('target_language',user.profile.studying_languages);
+        const { data, error} = await supabase.from('topics').select('id, prompt');
         if(error) {
             console.error(error);
             return [];
@@ -114,6 +93,16 @@ export async function load({ locals: { supabase, getSession}}: RequestEvent) {
         return data;
     }
 
+    const myRecentPassageHistory = async() => {
+        console.log('myRecentPassageHistory', Date.now());
+        const { data, error} = await supabase.from('passages').select(`id,prompt,language`)
+                                              .eq('owner_id',user.id).order('created_at', {ascending: false}).limit(10);
+        if(error) {
+            console.error(error);
+            return [];
+        }
+        return data;
+    }
 
     console.log('qualityLevels', Date.now());
     const { data:qualityLevels, error} = await supabase.from('quality_levels').select('*').order('id');
@@ -136,6 +125,7 @@ export async function load({ locals: { supabase, getSession}}: RequestEvent) {
         languages: languages(),
         lengths: lengths(), 
         allowed: allowed(),
+        myRecentPassageHistory: myRecentPassageHistory(),
     };
 }
 
@@ -144,6 +134,9 @@ export const actions = {
         const form = await superValidate(request, schema);
         const { user } = await getSession();
         
+        console.log(form);
+
+        return fail(401, {form});
         // Validation
         if(!form.valid) {
             return fail(401, {form});

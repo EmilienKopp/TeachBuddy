@@ -108,5 +108,10 @@
 
     "trial": "お試",
     "fast": "速い",
-    "high": "高品質"
+    "high": "高品質",
+
+    "choose_existing": "既存のテーマを選ぶ",
+    "from_my_topics": "自分の履歴から選ぶ",
+    "browse_topics": "閲覧する",
+    "target_languages": "勉強中の言葉"
 }

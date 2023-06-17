@@ -41,8 +41,6 @@
     await goto("/auth/login");
   };
 
-  $: console.log('POINTS:', $pointStore);
-
 </script>
 
 <GenerationCompleteAlert {data}/>
@@ -50,7 +48,7 @@
 
 <div class="relative px-8">
   <Navbar
-    navClass="noprint bg-[#EBA487] bg-opacity-80 font-pixel tracking-wide text-darkish px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
+    navClass="noprint bg-opacity-80 font-pixel tracking-wide text-darkish px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
     let:hidden
     let:toggle>
 

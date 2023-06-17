@@ -28,9 +28,10 @@
 
     async function deletePassage() {
         if(!confirm('完全に削除されます😨 \n本当にやってしまいますか？')) return;
+        
         await supabase.from('passages').delete().match({ id: selectedItem?.id });
-        if(data.passages)
-            data.passages = data.passages.filter((item: any) => selectedItem.id !== item.id);
+        if(filteredItems)
+            filteredItems = [...filteredItems.remove(selectedItem)];
         modalOpen = false;
     }
 
@@ -43,6 +44,7 @@
             console.log(error);
         }
         invalidateAll();
+        filteredItems[selectedKey].title = selectedItem.title;
         modalOpen = false;
     }
 
@@ -85,7 +87,6 @@
                 );
         });
 
-        
     }
 
 </script>

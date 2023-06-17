@@ -1,6 +1,7 @@
 <script lang="ts">
     import { Button, Checkbox, Chevron, Dropdown, Label, Select, Spinner } from 'flowbite-svelte';
-    import { toSelectOptions, type SelectOptionType } from '$lib/helpers/Arrays';
+    import { toSelectOptions } from '$lib/helpers/Arrays';
+    import type { SelectOptionType } from 'flowbite-svelte/dist/types';
     import SaveButton from '$lib/components/atoms/SaveButton.svelte';
     import { superForm } from 'sveltekit-superforms/client';
     import { _ } from 'svelte-i18n';
@@ -24,13 +25,16 @@
 </script>
 
 <section class="mt-1">
+    
 <form bind:this={FORM} class="flex flex-col gap-5 pb-12" method="POST" use:langFormEnhance action="?/saveLanguageInfo">
+    
     <Label>
         <span class="italic">{$C_('my_native_language_is')}</span>
         <Select class="mt-2" name="native_language" items={languages} bind:value={$langForm.native_language} change={() => FORM.submit()}/>
     </Label>
     <Label>
-        <p class="font-semibold italic">Languages you're studying ・ 勉強中の言葉:</p>
+        <p class="font-semibold italic"> {$C_('target_languages')} </p>
+        <!-- <MultiSelect items={selectableLanguages} bind:value={$langForm.studying_languages} highlighted /> -->
         <Button color="blue" class="w-full"><Chevron>{$C_('now_studying')}</Chevron></Button>
         <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
             {#each selectableLanguages as lang, key}
@@ -41,6 +45,7 @@
             </li>
             {/each}
         </Dropdown>
+        
     </Label>
     {#if $langForm.native_language && $langForm.studying_languages.length > 0}
     <p class="text-sm md:text-md">

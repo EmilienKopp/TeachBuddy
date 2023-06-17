@@ -27,7 +27,7 @@ export async function getLastGeneratedDate(supabase: SupabaseClient, user: Custo
 export async function isAllowedToGenerate(supabase: SupabaseClient, user: CustomUser | undefined, length: number, multiplier: number, quality: number | string): Promise<GenerationPermission> {
     const lastGeneratedDate = await getLastGeneratedDate(supabase, user, quality);
     let error : "not_enough_points" | "too_soon" | "trial_expired" | "unknown" | undefined = undefined;
-    let messages: string[] | undefined = undefined;
+    let messages: string[] = [];
     let minutesLeft = 0;
     let enoughTimePassed = true;
 
