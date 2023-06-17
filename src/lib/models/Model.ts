@@ -1,8 +1,8 @@
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
+import { SupabaseClient, createClient } from '@supabase/supabase-js';
 
 import { Collection } from './Collection';
 import type { ZodAny } from 'zod';
-import { createClient } from '@supabase/supabase-js';
 import { vertical } from '$lib/helpers/Arrays';
 
 enum SerializationType {
@@ -28,6 +28,7 @@ export type Relationship = {
     relation: string,
     type: 'one-to-one' | 'one-to-many' | 'many-to-one' | 'many-to-many',
     foreign_column?: string,
+    distant_column?: string,
     local_column?: string,
 }
 
@@ -45,7 +46,7 @@ export class Model {
 
     protected static _connector: any;
     protected static _table: string;
-    protected static _idColumn: string;
+    protected static _idColumn: string = 'id';
     protected static _casts: CastEntry<any>[];
 
     // protected _serializable: PostgresSerializable = {
@@ -67,7 +68,7 @@ export class Model {
     // };
 
 
-    constructor(rowData: any, metadata?: any) {
+    constructor(rowData: any, metadata?: any, client?: SupabaseClient) {
         this._table = (this.constructor as typeof Model)._table ?? '';
         this._idColumn = (this.constructor as typeof Model)._idColumn ?? 'id';
         const _casts = Object.getPrototypeOf(this).constructor._casts;
@@ -99,7 +100,7 @@ export class Model {
                 this._metadata = metadata;
             }
         }
-        
+
     }
 
     public attributes () {
@@ -116,6 +117,8 @@ export class Model {
         return object;
     }
 
+
+
     public define() {
         const _relations = Object.getPrototypeOf(this).constructor._relations;
         const _table = Object.getPrototypeOf(this).constructor._table;
@@ -131,21 +134,21 @@ export class Model {
 
     public static getInstance(): Model {
         if(!this._instance) {
-            this._instance = new this({});
+            this._instance = new Model({});
         }
         return this._instance;
     }
 
-    public connect () {
-        this._connector = createClient(PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY);
+    public connect (client?: any) {
+        if(!this._connector) this._connector = client ?? createClient(PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY);
         return this;
     }
 
     public getConnection () {
-        return this._connector;
+        return (this.constructor as typeof Model)._connector;
     }
     public static getConnection () {
-        return this._connector;
+        return Model._connector;
     }
 
     public static setConnection (client: any): void {
@@ -179,23 +182,33 @@ export class Model {
     }
 
     public async update( data: any ): Promise<any> {
-        const current = this.constructor as typeof Model;
-
+        console.log('BEFORE:', this.attributes());
         for(const [key, value] of Object.entries(data)) {
             this[key] = value;
         }
-
-        const result = await this._connector.from(this._table).update(data).eq(this._idColumn, this.id);
-        console.log('UPDATE',result);
-        return this;
+        console.log('AFTER:', this.attributes());
+        this.persist();
     }
 
-    public async persist(asNested?: string): Promise<any> {
+    public async persist(options?: {withRelations?: boolean}): Promise<any> {
         const current = this.constructor as typeof Model;
         const attributes = this.attributes();
-        const {data,error,status} = await this._connector.from(this._table).update(attributes)
-                                                 .eq(this._idColumn, this.id);
-        console.log(data,error,status);
+        if(options?.withRelations) {
+            throw new Error('Not implemented yet');
+        } else {
+            // Remove from the attributes object the relations
+            Object.keys(attributes).forEach( (key: string) => {
+                if(this._relations?.some( (el: any) => el.relation == key)) {
+                    delete attributes[key];
+                }
+            });
+        }
+        console.log('ATTRIBUTES', attributes);
+        // const {data,error,status} = await this._connector.from(this._table).update(attributes)
+        //                                          .eq(this._idColumn, this.id).select();
+        const {data,error,status} = await this._connector.from(this._table).update({point_balance: 12345}).eq(this._idColumn, this.id);
+        console.log(this._idColumn, this.id, data, error,status);
+
         return this;
     }
 
@@ -205,31 +218,31 @@ export class Model {
         
         data = data?.map( (item: any) => ({
             [distantId]: item, 
-            [foreignIdColumn]: this[current._idColumn]}) 
+            [foreignIdColumn]: this[this._idColumn]}) 
         );
-        console.log('ResetHasMany with: ',data);
-        
+
         let response;
         if(options?.rpc) {
-            response = await current._connector.rpc(options.rpc, {data});
+            response = await this._connector.rpc(options.rpc, {data});
             console.log('RESPONSE using RPC', response);
         } else {
             // Upsert the data
-            response = await current._connector.from(relation).upsert(data).select();
+            response = await this.getConnection().from('profiles').select('*');
+            console.log('RESPONSE',response);
         }
-        console.log('RESPONSE on standard upsert', response);
+        console.log('RESPONSE on standard upsert', response.data);
         
         // Delete the data that is not in the new data
-        if(response?.data?.length && response?.data?.length > 0) {
+        if(response?.data?.length) {
             console.log('deleting non updated ids');
             const insertedDistantIds = vertical(response.data, distantId, {serialize_postgres: true});
 
-            const existing = await current._connector.from(relation).select(distantId).eq(foreignIdColumn, this[current._idColumn]);
+            const existing = await this._connector.from(relation).select(distantId).eq(foreignIdColumn, this[this._idColumn]);
 
             // Traverse existing data and delete if not in insertedDistantIds
             const toDelete = existing?.data?.filter( (item: any) => !insertedDistantIds.includes(item[distantId]) );
             if(toDelete && (toDelete.length ?? 0 > 0)) {
-                const deleted = await current._connector.from(relation).delete().in(distantId, toDelete.map( (item: any) => item[distantId] ));
+                const deleted = await this._connector.from(relation).delete().in(distantId, toDelete.map( (item: any) => item[distantId] ));
                 console.log('deleted', deleted);
             }
         }
@@ -247,8 +260,11 @@ export class Model {
         return new this(response);
     }
 
-    public static async find (id: string | number, raw: boolean = false): Promise<any> {
-        return new this(await (this.getConnection()).from(this._table).select().eq(this._idColumn, id).single());
+    public static async find (idOrColumn: string | number, value: any = null): Promise<any> {
+        if(value)   
+            return new this(await (this.getConnection()).from(this._table).select().eq(idOrColumn, value).single());
+        else
+            return new this(await (this.getConnection()).from(this._table).select().eq(this._idColumn, idOrColumn).single());
     }
 
     public static async all (raw: boolean = false): Promise<any> {
@@ -258,24 +274,17 @@ export class Model {
 
     
     public static async but(column: string, value: any) {
-        const client = createClient(PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY);
-        console.log(
-            (this.constructor as typeof Model)._connector,
-            Object.getPrototypeOf(this).constructor._connector,
-        )
-        const {count,error,status,data} = await client.from(this._table).select().neq(column, value);
+        const {count,error,status,data} = await this._connector.from(this._table).select().neq(column, value);
         return new Collection(data);
     }
 
     public static async where (column: string, postgresOperator: string, value: any): Promise<Collection<any>> {
         const {count,error,status,data} = await this._connector.from(this._table).select('*').filter(column, postgresOperator, value);
-        console.log('where', error);
         return new Collection(data);
     }
 
     public static async only (column: string, value: any): Promise<Collection<any>> {
         const {count,error,status,data} = await this.getConnection().from(this._table).select('*').eq(column, value);
-        
         return new Collection(data);
     }
 
@@ -300,12 +309,20 @@ export class Model {
 
     public async getRelated(intermediate: typeof Model, column:string, operator: string, value: any): Promise<any> {
         const current = this.constructor as typeof Model;
-        const relationship = this._relations.find( (item: any) => item.relation === intermediate._table);
+        const relationship = current._relations.find( (item: any) => item.relation === intermediate._table);
         const currentModelName = current.name.toLowerCase();
-        const { data, count, error, status } = await this._connector.from(intermediate._table)
+        const { data, count, error, status } = await this.getConnection().from(intermediate._table)
                                      .select(`*, ${currentModelName}: ${current._table} ( * )`)
                                      .eq([currentModelName + '_id'], this.id)
                                      .filter(column, operator, value);
+        const modeledData = data ? data?.map( (item: any) => new current(item, {count,error,status})) : [] ;
+        return new Collection(modeledData);
+    }
+
+    public async getManyToMany(relationshipName: string): Promise<any> {
+        const current = this.constructor as typeof Model;
+        const relationship = current._relations.find( (item: any) => item.relation === relationshipName);
+        const { data, count, error, status } = await this.getConnection().from(relationship.name).select(relationship.distant_column).eq(relationship.foreign_column, this[this._idColumn]);
         const modeledData = data ? data?.map( (item: any) => new current(item, {count,error,status})) : [] ;
         return new Collection(modeledData);
     }

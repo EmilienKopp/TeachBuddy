@@ -1,3 +1,4 @@
+import { SkormServer } from './lib/services/Svorm';
 import { SupabaseClient, Session } from '@supabase/supabase-js';
 import { Database } from './DatabaseDefinitions';
 import type { Translate } from '@google-cloud/translate/build/src/v2';
@@ -5,6 +6,7 @@ import type { Database } from "$lib/supabase";
 
 
 declare global {
+
   namespace App {
     interface Locals {
       supabase: SupabaseClient<Database>;
@@ -13,6 +15,7 @@ declare global {
       GT: Translate;
       user: User | CustomUser;
       session: any;
+      skorm: SkormServer;
     }
     interface PageData {
       session: Session | null;
@@ -38,7 +41,7 @@ declare global {
 
     type GenerationPermission = {
       ok: boolean;
-      error?: GenerationPermissionError;
+      error?: GenerationPermissionError | "not_enough_points" | "too_soon" | "trial_expired" | "unknown" | undefined;
       messages?: string[];
     }
 
