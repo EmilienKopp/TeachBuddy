@@ -8,20 +8,20 @@ export class Profile extends Model {
     
     protected static _table = 'profiles';
 
-    protected static _relations = [
+    protected _relations = [
         {
             relation: 'studying_languages',
             type: 'many-to-many',
             foreign_column: 'user_id',
-            distant_column: 'lang_code',
         } as Relationship,
         {
             relation: 'friendships',
             type: 'many-to-many',
             foreign_column: 'profile_id',
-            distant_column: 'friend_id',
         } as Relationship,
     ];
+
+    private _connector = (this.constructor as typeof Profile)._connector;
 
     constructor (rowData: any, metadata?: any) {
         super(rowData, metadata);
@@ -31,7 +31,7 @@ export class Profile extends Model {
      * Relationships with Friends / Friendships
      */
     public async getFriendsRequests (): Promise<Collection<Friendship>> {
-        const {data} = await this.getConnection().from('friendships')
+        const {data} = await this._connector.from('friendships')
                                           .select('*')
                                           .eq('friend_id', this.id)
                                           .eq('accepted', false);
@@ -48,16 +48,16 @@ export class Profile extends Model {
      * Relationships with Languages
      */
     public async nativeLanguage (): Promise<Language> {
-        const row = await this.getConnection().from('languages').select('*').eq('lang_code', this.native_language).single();
+        const row = await this._connector.from('languages').select('*').eq('lang_code', this.native_language).single();
         return row ? new Language(row) : {} as Language;
     }
 
-    public async studyingLanguages (): Promise<Collection<Language>> {
-        //TODO: Implement through relationships
-        // const data = await this.getManyToMany('studying_languages');
-        const {data,error} = this.getConnection().from('studying_languages').select('lang_code').eq('user_id', this.id);
-        console.log(data, error);
-        return data;
+    public async studyingLanguages (): Promise<Language[]> {
+        const rows = await this._connector.from('languages').select('*').in('lang_code', this.studying_languages);
+        if(rows && rows.data)
+            return rows.data.map((row: any) => new Language(row));
+        else
+            return [];
     }
 
     public async setNativeLanguage(language: string | Language): Promise<Profile> {

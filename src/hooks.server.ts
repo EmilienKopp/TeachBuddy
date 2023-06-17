@@ -5,9 +5,7 @@ import {
 
 import type { Handle } from '@sveltejs/kit';
 import { Model } from '$lib/models/Model';
-import { Profile } from '$lib/models/Profile';
 import type { Session } from '@supabase/supabase-js';
-import { SkormServer } from '$lib/services/Skorm';
 import { createSupabaseServerClient } from '@supabase/auth-helpers-sveltekit';
 import { locale } from 'svelte-i18n'
 import { redirect } from '@sveltejs/kit';
@@ -23,18 +21,28 @@ export const handle: Handle = async ({ event, resolve }) => {
     event
   });
 
-  SkormServer.initialize(event)
-  const profileData = await SkormServer.getAuthProfile();
-  
+  Model.setConnection(event.locals.supabase);
+
 
   /**
    * a little helper that is written for convenience so that instead
    * of calling `const { data: { session } } = await supabase.auth.getSession()`
    * you just call this `await getSession()`
-   * ! Now you can call SkormServer.getSession() from anywhere in server side code
    */
   event.locals.getSession = async () => {
-    return await SkormServer.getSession();
+    const {
+      data: { session }
+    } = await event.locals.supabase.auth.getSession();
+    if (session && session.user) {
+      const { data: profileData, error } = await event.locals.supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      const { data: studyingLanguages, error: studyingLangError } = await event.locals.supabase.from('studying_languages').select('lang_code').eq('user_id', session.user.id);
+
+      if (studyingLanguages && profileData) {
+        profileData.studying_languages = studyingLanguages.map(el => el.lang_code);
+        (session.user as any).profile = profileData;
+      }
+    }
+    return session;
   };
 
   event.locals.refreshSession = async () => {
@@ -55,7 +63,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   if (event.url.pathname == '/') {
     console.log('Calling getSession from hooks.server.ts');
-    const session = await SkormServer.getConnection().auth.getSession();
+    const session = await event.locals.getSession();
     if (!session && !['/auth/reset', '/auth/forgot-password'].includes(event.url.pathname)) {
       // the user is not signed in
       throw redirect(303, '/auth/login');
@@ -67,7 +75,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   // protect requests to all routes that start with /protected-routes
   if (event.url.pathname.startsWith('/app')) {
     console.log('Calling getSession from hooks.server.ts /app');
-    const session = await SkormServer.getConnection().auth.getSession();
+    const session = await event.locals.getSession();
     if (!session) {
       // the user is not signed in
       throw redirect(303, '/');

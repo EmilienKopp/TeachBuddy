@@ -9,7 +9,6 @@ import { locale, waitLocale } from 'svelte-i18n'
 import type { CustomUser } from '$lib/types';
 import type { Database } from '$lib/supabase';
 import type { LayoutLoad } from './$types';
-import { Profile } from '$lib/models/Profile';
 import type { RequestEvent } from '@sveltejs/kit';
 import { browser } from '$app/environment';
 import { createSupabaseLoadClient } from '@supabase/auth-helpers-sveltekit';
@@ -30,13 +29,11 @@ export const load: LayoutLoad = async ({ fetch, data, depends }: RequestEvent | 
     if(session) {
         
         if (browser && !(session.user as CustomUser).profile?.native_language) {
-            console.log('Setting locale to navigator', window.navigator.language);
+            console.log('Setting locale to', window.navigator.language);
             locale.set(window.navigator.language)
         } else {
-            const profile = new Profile(session.user);
-            const lang = (await profile.nativeLanguage())?.lang_code;
-            console.log('Setting locale to user defined', lang );
-            locale.set(lang)
+            console.log('Setting locale to', (session.user as CustomUser).profile?.native_language);
+            locale.set((session.user as CustomUser).profile?.native_language)
         }
     }
 
