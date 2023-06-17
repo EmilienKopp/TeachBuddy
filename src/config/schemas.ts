@@ -8,8 +8,8 @@ export const registerSchema = z.object({
     username: z.string().min(3).max(20),
     user_number: z.string().optional(),
     password: z.string().min(8).max(64),
-    native_language: z.string(),
-    studying_languages: z.string().array(),
+    native_language: z.string().refine( value => value != '', { message: 'Please choose a language!' } ),
+    studying_languages: z.string().array().nonempty('Please choose at least one!'),
     email: z.string().email(),
 });
 

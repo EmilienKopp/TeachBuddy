@@ -7,6 +7,7 @@
     import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
     import { C_ } from "$lib/i18n/helpers";
+    import Underlay from "$lib/components/atoms/Underlay.svelte";
 
     export let data: PageData;
 
@@ -29,6 +30,7 @@
         onUpdated: ({ form }) => { loading = false; console.log('Loading:',loading) },
     });
 
+    console.log($errors.studying_languages);
 </script>
 <div class="bg-inherit min-h-screen flex flex-col items-center justify-center font-pixel pt-4 pb-20 px-4 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
@@ -47,7 +49,11 @@
                     <Input type="text" name="username" placeholder="Your username" bind:value={$form.username} {...$constraints.username} size="sm">
                         <span slot="left">👋</span>
                     </Input>
-                    {#if $errors.username}<Helper class="mt-2" color="red">{$errors.username}</Helper>{/if}
+                    {#if $errors.username}
+                    <Underlay extraClasses="mt-2 pb-3 tracking-wide">
+                        <Helper color="red">{$errors.username}</Helper>
+                    </Underlay>
+                    {/if}
                     </Label>                   
 
                     <!-- メールアドレス -->
@@ -56,7 +62,11 @@
                         <Input type="email" name="email" placeholder="Your email" bind:value={$form.email} bind:errorMessage={emailError} {...$constraints.email}>
                             <span slot="left">📨</span>
                         </Input>
-                        {#if $errors.email}<Helper class="mt-2" color="red">{$errors.email}</Helper>{/if}
+                        {#if $errors.email}
+                        <Underlay extraClasses="mt-2 pb-3 tracking-wide">
+                            <Helper color="red">{$errors.email}</Helper>
+                        </Underlay>
+                        {/if}
                     </Label>
 
                     <!-- パスワード -->
@@ -73,25 +83,40 @@
                         </InputAddon>
                         <Input id="show-password1" bind:value={$form.password} type={showPassword ? 'text' : 'password'} name="password" placeholder="Your password here" {...$constraints.password}/>
                     </ButtonGroup>
-                        {#if $errors.password}<Helper class="mt-2" color="red">{$errors.password}</Helper>{/if}
+                        {#if $errors.password}
+                        <Underlay extraClasses="mt-2 pb-3 tracking-wide">
+                            <Helper color="red">{$errors.password}</Helper>
+                        </Underlay>
+                        {/if}
                     </Label>
 
                     <Label>
                         <span class="italic">Native language・母国語</span>
                         <Select class="mt-2" name="native_language" items={data.languages} bind:value={$form.native_language}/>
+                        {#if $errors.native_language}
+                        <Underlay extraClasses="mt-2 pb-3 tracking-wide">
+                            <Helper color="red">{$errors.native_language}</Helper>
+                        </Underlay>
+                        {/if}
                     </Label>
 
                     <Label>
-                        <p class="font-semibold italic"></p>
-                        <Button color="blue" class="w-full"><Chevron>{$C_('now_studying')}</Chevron></Button>
+                        <p class="font-semibold italic mb-2">Languages you're studying ・ 勉強中の言葉:</p>
+                        <Button color="alternative" class="w-full"><Chevron>{$C_('now_studying')}</Chevron></Button>
                         <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
                             {#each data?.selectableLanguages as lang, key}
                             <li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
                                 <Checkbox name="studying_languages" class="p-3" bind:group={$form.studying_languages} value={lang.value}
-                                    checked={$form.studying_languages.includes(lang.value)}>{lang.name}</Checkbox>
+                                    checked={$form.studying_languages.includes(lang.value)}
+                                    {...$constraints.studying_languages}>{lang.name}</Checkbox>
                             </li>
                             {/each}
                         </Dropdown>
+                        {#if $errors.studying_languages && Object.values($errors.studying_languages).some( e => e != undefined) }
+                        <Underlay extraClasses="mt-2 pb-3 tracking-wide">
+                            <Helper color="red">{$errors.studying_languages[0]}</Helper>
+                        </Underlay>  
+                        {/if}
                     </Label>
 
                     <div class="mt-4 text-center">
