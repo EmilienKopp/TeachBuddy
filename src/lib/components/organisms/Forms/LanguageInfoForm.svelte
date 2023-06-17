@@ -30,7 +30,7 @@
         <Select class="mt-2" name="native_language" items={languages} bind:value={$langForm.native_language} change={() => FORM.submit()}/>
     </Label>
     <Label>
-        <p class="font-semibold italic"></p>
+        <p class="font-semibold italic">Languages you're studying ・ 勉強中の言葉:</p>
         <Button color="blue" class="w-full"><Chevron>{$C_('now_studying')}</Chevron></Button>
         <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
             {#each selectableLanguages as lang, key}
