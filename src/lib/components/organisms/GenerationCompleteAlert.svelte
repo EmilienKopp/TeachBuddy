@@ -9,9 +9,9 @@
     let generatorFinishedAlert: boolean = false;
 
     onMount( () => {
-        console.log('Listening to changes...');
+        console.log('Listening to changes for user: ', data.session.user.id, '...');
         data.supabase.channel('any')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'passages' }, (payload: any) => {
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'passages', filter: 'owner_id=eq.'+data.session.user.id }, (payload: any) => {
                 console.log('Change received!', payload);
                 incomingPassage = payload.new;
                 generatorFinishedAlert = true;
