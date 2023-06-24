@@ -1,6 +1,6 @@
 import { PUBLIC_ENV } from '$env/static/public';
 
-export const ROOT_URL = (PUBLIC_ENV == 'dev' ? 'http://localhost:5173' : 'https://teach-buddy.vercel.app');
+export const ROOT_URL = (PUBLIC_ENV == 'local' ? 'http://localhost:5173' : 'https://teach-buddy.vercel.app');
 
 export const DUMMY_PASSAGE =  
  `        Having friends is really important. Friends are people who are nice to us and make us feel happy. They like to play with us, share things with us, and help us when we need it. 
