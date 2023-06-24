@@ -117,6 +117,29 @@ export class Model {
                 this._metadata = metadata;
             }
         }
+
+        for(const [key,value] of Object.entries(this)) {
+            if(typeof value != 'function' && !key.startsWith('_') && key != 'id') {
+                this['$' + key] = async (arg: any): Promise<any | void> => { 
+                    if(arg) {
+                        this[key] = arg;
+                        await this.update( { [key]: arg} );
+                    } else {
+                        await this.refresh();
+                        return this[key];
+                    }
+                }
+                this['$$' + key] = (arg: any): any | void => {
+                    if(arg) {
+                        this[key] = arg;
+                        this.update( { [key] : arg });
+                    } else {
+                        this.refresh();
+                        return this[key];
+                    }
+                }
+            }
+        }
     }
 
     public attributes() {
@@ -144,6 +167,10 @@ export class Model {
         console.log('idColumn', this._idColumn);
         console.log('casts', _casts);
         console.log('connector', this.getConnection());
+    }
+
+    public async refresh() {
+        return await this.getConnection().from(this._table).select().eq(this._idColumn, this[this._idColumn]);
     }
 
     public async relate() {
@@ -312,11 +339,15 @@ export class Model {
         return new Collection(data);
     }
 
-    public static async edit(id: string | number, data: ZodAny): Promise<any> {
+    public static async edit(id: string | number, data: any): Promise<any> {
         const response = await this._connector.from(this._table).update(data).eq(this._idColumn, id);
         return new this(response);
     }
 
+    public static async first(column: string, whereColumn: string, whereValue: any): Promise<any> {
+        const record = await this.getConnection().from(this._table).select(column).eq(whereColumn,whereValue).limit(1).single();
+        return record.data[column];
+    }
 
     /**
      * Relationships
