@@ -105,7 +105,7 @@
 	}
 
 	async function givePoints(amount: number) {
-		const balance = await profile.$point_balane();
+		const balance = await profile.$point_balance();
 		await profile.$point_balance(balance + amount);
 	}
 
