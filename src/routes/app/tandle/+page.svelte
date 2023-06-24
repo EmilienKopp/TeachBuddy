@@ -1,29 +1,28 @@
-<script>
-// @ts-nocheck
-
+<script lang="ts">
 	import { confetti } from '@neoconfetti/svelte';
 	import { enhance } from '$app/forms';
-	import { onMount } from 'svelte';
 	import { reduced_motion } from './reduced-motion';
-    import { goto } from '$app/navigation';
 	import { pointStore } from '$lib/stores';
-	import { GradientButton, Modal } from 'flowbite-svelte';
+	import { Button, GradientButton, Modal } from 'flowbite-svelte';
+	import { C_ } from '$lib/i18n/helpers';
+    import { Profile } from '$lib/models/Profile';
+    import { PointsMaster } from '$lib/models/PointsMaster';
+	import { Action } from '$lib/models/Action'
+    import type { PageData } from './$types';
 
-	/** @type {import('./$types').PageData} */
-	export let data;
+	export let data: PageData;
 
-	/** @type {import('./$types').ActionData} */
 	export let form;
 
 	let incomingPassage;
-	let suggestions = [];
+	let suggestions: string[] = [];
 	let modalOpen = false;
 	let generatorFinishedAlert = false;
 	let suggestionModalOpen = false;
-	let gaveUp = false;
+	let suggestionsControl: any = { force: false, exactLetters: 0};
 	let gains = 0;
-
-	
+	const profile = new Profile(data.user.profile);	
+	const getHintCost = async () => await PointsMaster.first('amount','action_id', await Action.first('id','verb','get_hint'));
 
 	/** Whether or not the user has won */
 	$: won = (data.answers.at(-1) === 'xxxxx');
@@ -41,20 +40,19 @@
 	/**
 	 * A map of classnames for all letters that have been guessed,
 	 * used for styling the keyboard
-	 * @type {Record<string, 'exact' | 'close' | 'missing'>}
 	 */
-	let classnames;
+	let classnames: Record<string, 'exact' | 'close' | 'missing'>;
 
 	/**
 	 * A map of descriptions for all letters that have been guessed,
 	 * used for adding text for assistive technology (e.g. screen readers)
-	 * @type {Record<string, string>}
 	 */
-	let description;
+	let description: Record<string, string>;
 
 	$: {
 		classnames = {};
 		description = {};
+		suggestionsControl.force = false;
 
 		data.answers.forEach((answer, i) => {
 			const guess = data.guesses[i];
@@ -78,7 +76,7 @@
 	 * if client-side JavaScript is enabled
 	 * @param {MouseEvent} event
 	 */
-	async function update(event) {
+	async function update(event: any) {
 		const guess = data.guesses[i];
 		const key = /** @type {HTMLButtonElement} */ (event.target).getAttribute('data-key');
 
@@ -98,7 +96,7 @@
 	 * desktop users can use the keyboard to play the game
 	 * @param {KeyboardEvent} event
 	 */
-	function keydown(event) {
+	function keydown(event: any) {
 		if (event.metaKey) return;
 
 		document
@@ -106,23 +104,31 @@
 			?.dispatchEvent(new MouseEvent('click', { cancelable: true }));
 	}
 
-	async function givePoints() {
-		const {data: updateData,error} = await data.supabase.from('profiles').update({
-			point_balance: $pointStore,
-		}).eq('id', data.user.id).select();
-		console.log(updateData,error);
+	async function givePoints(amount: number) {
+		const balance = await profile.$point_balane();
+		await profile.$point_balance(balance + amount);
 	}
 
 	async function showHints() {
 		suggestionModalOpen = true;
+		const exactOrClose = Object.entries(classnames).filter( ([key,value]) => value == "close" || value == "exact" )
+		const presentLetters = exactOrClose.map( ([key,value]) => key);			 
+		
+		suggestionsControl.exactLetters = exactOrClose.filter( ([key,value]) => value == "exact").length;
+
 		// Get 3 Random five letter words from simplifiedWordList
-		suggestions = data.simplifiedWordList.sort(() => 0.5 - Math.random()).slice(0, 3);
-		$pointStore -= 5;
+		suggestions = data.simplifiedWordList
+						.filter( word => presentLetters.every( (letter) => word.includes(letter)) )
+						.sort(() => 0.5 - Math.random()).slice(0, 3);
+		if(suggestions.length >= 3 || suggestionsControl.exactLetters < 3) {
+			$pointStore -= await getHintCost();
+			await profile.$point_balance($pointStore);
+		}
 	}
 
-	$: if(won) {
+	$: if(won && !suggestionsControl.force) {
 		$pointStore += gains;
-		givePoints();
+		givePoints(gains);
 	}
 </script>
 
@@ -188,7 +194,7 @@
 				<p>the answer was "{data.answer}"</p>
 			{/if}
 			<button data-key="enter" class="restart selected" formaction="?/restart">
-				{won ? 'you won ' + gains + '🪙!' : `game over :(`} play again?
+				{won ? 'you won ' + (suggestionsControl.force ? '0' : gains) + '🪙!' : `game over :(`} play again?
 			</button>
 		{:else}
 			<div class="keyboard">
@@ -225,13 +231,15 @@
 			</div>
 		{/if}
 		<button type="button" data-key="enter" class="mt-2 text-xs rounded w-fit h-6 bg-blue-500 p-1" on:click={showHints}>
-			5🪙 Show Hints・ヒントを見る
+			{#await getHintCost() then cost}
+				{cost}🪙 Show Hints・ヒントを見る
+			{/await}
 		</button>
 	</div>
 	
 </form>
 
-{#if !gaveUp && won}
+{#if !suggestionsControl.force && won}
 	<div
 		style="position: absolute; left: 50%; top: 30%"
 		use:confetti={{
@@ -300,15 +308,20 @@
 </Modal>
 
 <!-- SUGGESTIONS MODAL -->
-<Modal bind:open={suggestionModalOpen} autoclose size="sm">
+<Modal bind:open={suggestionModalOpen} size="sm">
 	<h1 class="text-lg font-bold mt-4 text-center">Hints</h1>
-
-	<ul class="block w-32 text-center">
-		{#each suggestions as suggestion}
-			<li>{suggestion}</li>
-		{/each}
-	</ul>
-
+	{#if (suggestions.length < 3 || suggestionsControl.exactLetters >= 3) && !suggestionsControl.force}
+		{$C_('not_enough_hints')}
+		<GradientButton color="pink" type="button" on:click={ () => suggestionsControl.force = true}>
+			{$C_('see_hints_anyway')}
+		</GradientButton>
+	{:else}
+		<ul class="block w-32 text-left">
+			{#each suggestions as suggestion}
+				<li>{suggestion}</li>
+			{/each}
+		</ul>
+	{/if}
 </Modal>
 
 
