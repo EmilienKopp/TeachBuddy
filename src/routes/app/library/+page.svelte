@@ -27,7 +27,7 @@
     
 
     async function deletePassage() {
-        if(!confirm('完全に削除されます😨 \n本当にやってしまいますか？')) return;
+        if(!confirm($C_('delete_passage_confirm'))) return;
         
         await Passage.delete(selectedItem.id);
         if(filteredItems)

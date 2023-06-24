@@ -113,5 +113,8 @@
     "choose_existing": "既存のテーマを選ぶ",
     "from_my_topics": "自分の履歴から選ぶ",
     "browse_topics": "閲覧する",
-    "target_languages": "勉強中の言葉"
+    "target_languages": "勉強中の言葉",
+    "delete_passage_confirm": "完全に削除されます😨 \n本当にやってしまいますか？",
+    "not_enough_hints": "候補が2つ以下です！頑張って考えましょう。",
+    "see_hints_anyway": "それでも見る（取得コインが0になります）"
 }

@@ -113,5 +113,8 @@
     "choose_existing": "Choose from existing topics",
     "from_my_topics": "From my topics",
     "browse_topics": "Browse topics from other users",
-    "target_languages": "Target languages"
+    "target_languages": "Target languages",
+    "delete_passage_confirm": "This will disappear forever.😨 \nAre you sure you want to delete？",
+    "not_enough_hints": "There are fewer than 3 possible words. Don't give up!",
+    "see_hints_anyway": "See anyway (you won't win any coins)."
 }
