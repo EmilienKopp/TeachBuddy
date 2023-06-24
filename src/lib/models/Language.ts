@@ -4,8 +4,6 @@ import { Profile } from '$lib/models/Profile';
 
 export class Language extends Model {
     
-    private _connector = (this.constructor as typeof Language)._connector;
-    
     protected static _table = 'languages';
     protected static _idColumn = 'lang_code';
     

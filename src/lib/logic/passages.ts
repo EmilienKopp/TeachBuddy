@@ -2,14 +2,15 @@
 
 import type { CustomUser, GenerationPermission } from "$lib/types";
 
+import type { Profile } from "$lib/models/Profile";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { costToGenerate } from "./points";
 import { message } from "sveltekit-superforms/server";
 
-export async function getLastGeneratedDate(supabase: SupabaseClient, user: CustomUser | undefined, quality: number | string): Promise<Date | null> {
+export async function getLastGeneratedDate(supabase: SupabaseClient, profile: Profile, quality: number | string): Promise<Date | null> {
     const { data, error } = await supabase.from("passages")
                                           .select("created_at")
-                                          .eq("owner_id", user?.id)
+                                          .eq("owner_id", profile?.id)
                                           .eq("quality", quality)
                                           .order("created_at", { ascending: false })
                                           .limit(1);
@@ -24,8 +25,8 @@ export async function getLastGeneratedDate(supabase: SupabaseClient, user: Custo
     }
 }
 
-export async function isAllowedToGenerate(supabase: SupabaseClient, user: CustomUser | undefined, length: number, multiplier: number, quality: number | string): Promise<GenerationPermission> {
-    const lastGeneratedDate = await getLastGeneratedDate(supabase, user, quality);
+export async function isAllowedToGenerate(supabase: SupabaseClient, profile: Profile, length: number, multiplier: number, quality: number | string): Promise<GenerationPermission> {
+    const lastGeneratedDate = await getLastGeneratedDate(supabase, profile, quality);
     let error : "not_enough_points" | "too_soon" | "trial_expired" | "unknown" | undefined = undefined;
     let messages: string[] = [];
     let minutesLeft = 0;
@@ -39,7 +40,7 @@ export async function isAllowedToGenerate(supabase: SupabaseClient, user: Custom
         enoughTimePassed =  (diffHours > 1);
     }
 
-    const userPoints = user?.profile?.point_balance ?? 0;
+    const userPoints = profile?.point_balance ?? 0;
     const cost = costToGenerate(length, multiplier);
     const hasEnoughPoints = userPoints > 0 && cost <= userPoints;
     const isTrial = (quality == '3');
@@ -57,6 +58,6 @@ export async function isAllowedToGenerate(supabase: SupabaseClient, user: Custom
         error: error,
         messages: messages
     };
-
+    
     return permission;
 }

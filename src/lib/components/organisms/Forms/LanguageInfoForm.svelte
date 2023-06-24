@@ -35,8 +35,7 @@
     <Label>
         <p class="font-semibold italic"> {$C_('target_languages')} </p>
         <!-- <MultiSelect items={selectableLanguages} bind:value={$langForm.studying_languages} highlighted /> -->
-        <Button color="blue" class="w-full"><Chevron>{$C_('now_studying')}</Chevron></Button>
-        <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
+        <ul class="grid grid-cols-2 items-center rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-600 divide-gray-200 dark:divide-gray-600">
             {#each selectableLanguages as lang, key}
             <li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
                 <Checkbox name="studying_languages" class="p-3" bind:group={$langForm.studying_languages} value={lang.value}
@@ -44,8 +43,7 @@
                     checked={$langForm.studying_languages.includes(lang.value)}>{lang.name}</Checkbox>
             </li>
             {/each}
-        </Dropdown>
-        
+        </ul>
     </Label>
     {#if $langForm.native_language && $langForm.studying_languages.length > 0}
     <p class="text-sm md:text-md">

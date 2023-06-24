@@ -29,7 +29,7 @@
     async function deletePassage() {
         if(!confirm('完全に削除されます😨 \n本当にやってしまいますか？')) return;
         
-        await supabase.from('passages').delete().match({ id: selectedItem?.id });
+        await Passage.delete(selectedItem.id);
         if(filteredItems)
             filteredItems = [...filteredItems.remove(selectedItem)];
         modalOpen = false;
@@ -86,7 +86,7 @@
                     languageCondition
                 );
         });
-
+        filteredItems = new Collection(filteredItems, Passage);
     }
 
 </script>

@@ -34,8 +34,8 @@ export const actions = {
     saveLanguageInfo: async ({ request, locals: { supabase, getSession, refreshSession } }: RequestEvent) => {
         const form = await superValidate(request, languagesSettingsSchema);
         const { user } = await getSession();
-        const userProfile = new Profile(user.profile);
-
+        const userProfile = await Profile.from(user.profile);
+        
         // Validation
         if(!form.valid) {
             return fail(401, {form});

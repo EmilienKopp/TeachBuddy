@@ -28,6 +28,13 @@ describe('authenticated user', () => {
         expect(error).toBeFalsy();
     });
 
+
+    it('Can use the parent class connection', async () => {
+        Model.setConnection(supabase);
+        const profile = new Profile({username: 'emiliberte'});
+        expect(profile.getConnection()).toBeTruthy();
+    });
+
     it('can use Profile.where to find one user', async () => {
         const userData = await Profile.where('username', 'eq','emiliberte');
         expect(userData).toBeTruthy();

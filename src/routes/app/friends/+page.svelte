@@ -17,7 +17,6 @@
                 || friendship?.profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
-    console.log(data.friends);
 </script>
 
 <div class="mt-10 md:mt-2 px-2 md:px-12 md:mx-auto md:w-6/7">

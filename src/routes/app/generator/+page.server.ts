@@ -1,19 +1,23 @@
-import { Configuration, OpenAIApi } from 'openai';
+import { Topic } from '$lib/models/Topic';
+import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { Configuration, OpenAIApi } from 'openai-edge';
 import {
     ENV,
     OPENAI_API_KEY
 } from '$env/static/private';
-import type { Language, PassageLength, QualityLevel } from '$lib/types';
+import type { Language, QualityLevel } from '$lib/types';
 import { getLastGeneratedDate, isAllowedToGenerate } from '$lib/logic/passages';
 import { message, superValidate } from 'sveltekit-superforms/server';
-
 import { costToGenerate } from '$lib/logic/points';
 import { fail, type RequestEvent } from '@sveltejs/kit';
 import { pointStore } from '$lib/stores';
 import { storeUserVocabSchema } from '/src/config/schemas';
 import { toSelectOptions } from '$lib/helpers/Arrays';
 import { z } from 'zod';
-import { SkormServer } from '$lib/services/Skorm';
+import { Profile } from '$lib/models/Profile';
+import { PassageLength } from '$lib/models/PassageLength';
+import { Passage } from '$lib/models/Passage';
+
 
 const schema = z.object({
     prompt: z.number().default(1),
@@ -43,10 +47,13 @@ const config = new Configuration({
 
 const openAI = new OpenAIApi(config);
 
+
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals: { supabase, getSession}}: RequestEvent) {
     console.time('generator+server_load')
     const { user } = await getSession();
+    const userProfile = await Profile.from(user.profile);
+
     const form = await superValidate(schema);
 
     let qualityMultiplier: number;
@@ -62,46 +69,20 @@ export async function load({ locals: { supabase, getSession}}: RequestEvent) {
     }
 
     const languages = async() => {
-        console.log('languages', Date.now());
-        const { data, error} = await supabase.from('languages').select('lang_code, name_native').in('lang_code',user.studying_languages ?? []);
-        if(error) {
-            console.error(error);
-            return [];
-        }
-        return data;
+        return (await userProfile.studyingLanguages()).plain();
     }
 
     const lengths = async() => {
-        console.log('lengths', Date.now());
-        const { data, error} = await supabase.from('passage_lengths').select('label, word_count, available_for_trial');
-        // For now, manually reformat the 'label' field to be more readable with the word count
-        data?.map( (elem: PassageLength | any) => elem.label = `${elem.label} (~${elem.word_count} words)`);
-        if(error) {
-            console.error(error);
-            return [];
-        }
-        return data;
+        return await PassageLength.all( {asPlainObject: true} );
     }
 
     const topics = async() => {
-        console.log('topics', Date.now());
-        const { data, error} = await supabase.from('topics').select('id, prompt');
-        if(error) {
-            console.error(error);
-            return [];
-        }
-        return data;
+        return await Topic.all( {asPlainObject: true} );
     }
 
     const myRecentPassageHistory = async() => {
-        console.log('myRecentPassageHistory', Date.now());
-        const { data, error} = await supabase.from('passages').select(`id,prompt,language`)
-                                              .eq('owner_id',user.id).order('created_at', {ascending: false}).limit(10);
-        if(error) {
-            console.error(error);
-            return [];
-        }
-        return data;
+        const passages = await Passage.where('owner_id', 'eq', user.id, { asPlainObject: true, orderBy: 'created_at', direction: 'desc', limit: 10});
+        return passages;
     }
 
     console.log('qualityLevels', Date.now());
@@ -136,7 +117,7 @@ export const actions = {
         
         console.log(form);
 
-        return fail(401, {form});
+
         // Validation
         if(!form.valid) {
             return fail(401, {form});

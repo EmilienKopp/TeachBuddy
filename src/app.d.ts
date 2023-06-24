@@ -10,6 +10,7 @@ declare global {
       supabase: SupabaseClient<Database>;
       getSession(): Promise<Session | AppSession | null>;
       refreshSession(): Promise<Session | AppSession | null>;
+      getProfile(): Promise<Profile | Model | null>;
       GT: Translate;
       user: User | CustomUser;
       session: any;

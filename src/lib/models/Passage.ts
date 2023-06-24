@@ -3,8 +3,6 @@ import { splitWords } from '$lib/helpers/Text';
 
 
 export class Passage extends Model {
-
-    private _connector = (this.constructor as typeof Passage)._connector;
     
     protected static _table = 'passages';
     protected static _relations: Relationship[] = [
