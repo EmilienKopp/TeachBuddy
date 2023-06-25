@@ -113,13 +113,16 @@
 		suggestionModalOpen = true;
 		const exactOrClose = Object.entries(classnames).filter( ([key,value]) => value == "close" || value == "exact" )
 		const presentLetters = exactOrClose.map( ([key,value]) => key);			 
-		
+		const missingLetters = Object.entries(classnames).filter( ([key,value]) => value == "missing")
+														 .map( ([key,value]) => key);
 		suggestionsControl.exactLetters = exactOrClose.filter( ([key,value]) => value == "exact").length;
 
 		// Get 3 Random five letter words from simplifiedWordList
 		suggestions = data.simplifiedWordList
 						.filter( word => presentLetters.every( (letter) => word.includes(letter)) )
+						.filter( word => missingLetters.every( (letter) => !word.includes(letter)) )
 						.sort(() => 0.5 - Math.random()).slice(0, 3);
+
 		if(suggestions.length >= 3 || suggestionsControl.exactLetters < 3) {
 			$pointStore -= await getHintCost();
 			await profile.$point_balance($pointStore);
@@ -130,6 +133,8 @@
 		$pointStore += gains;
 		givePoints(gains);
 	}
+
+	$: console.log('Suggestion is ' + suggestionsControl.force ? 'forced' : 'not forced')
 </script>
 
 <svelte:window on:keydown={keydown} />
@@ -142,7 +147,7 @@
 <h1 class="visually-hidden">Sverdle</h1>
 
 <form
-	class="mt-12 md:mt-1"
+	class="mt-12 md:mt-7"
 	method="POST"
 	action="?/enter"
 	use:enhance={() => {
