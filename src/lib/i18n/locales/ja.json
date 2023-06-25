@@ -77,7 +77,6 @@
     "no_title": "タイトルなし",
     "input_title": "タイトルを入力",
     "preview": "プレビュー",
-    "surprise_me": "サプライズ!",
 
     "my_native_language_is": "私の母国語は...",
     "now_studying": "勉強中なのは...",
@@ -116,5 +115,7 @@
     "target_languages": "勉強中の言葉",
     "delete_passage_confirm": "完全に削除されます😨 \n本当にやってしまいますか？",
     "not_enough_hints": "候補が2つ以下です！頑張って考えましょう。",
-    "see_hints_anyway": "それでも見る（取得コインが0になります）"
+    "see_hints_anyway": "それでも見る（取得コインが0になります）",
+    "random_passage_surprise_me": "自分の「勉強中」の言葉でランダムな文章を1つ読む。",
+    "surprise_me": "サープライズ!"
 }

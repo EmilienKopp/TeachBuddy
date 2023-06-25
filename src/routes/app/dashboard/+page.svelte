@@ -68,14 +68,16 @@
         Play
       </GradientButton>
     </Card>
-    
-    <GradientButton
-      shadow
-      class="col-span-1 md:col-span-2"
-      color="redToYellow"
-      on:click={surpriseMe}
-    >
-      Surprise Me!
-    </GradientButton>
+    <Card>
+      {$C_('random_passage_surprise_me')}
+      <GradientButton
+        shadow
+        class="col-span-1 md:col-span-2"
+        color="redToYellow"
+        on:click={surpriseMe}
+      >
+      {$C_('surprise_me')}
+      </GradientButton>
+    </Card>
   </div>
 </div>
