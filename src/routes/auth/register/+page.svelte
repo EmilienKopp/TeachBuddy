@@ -81,7 +81,7 @@
                             {/if}
                         </button>
                         </InputAddon>
-                        <Input id="show-password1" bind:value={$form.password} type={showPassword ? 'text' : 'password'} name="password" placeholder="Your password here" {...$constraints.password}/>
+                        <Input id="show-password1" class="font-mono" bind:value={$form.password} type={showPassword ? 'text' : 'password'} name="password" placeholder="Your password here" {...$constraints.password}/>
                     </ButtonGroup>
                         {#if $errors.password}
                         <Underlay extraClasses="mt-2 pb-3 tracking-wide">
