@@ -14,6 +14,7 @@ declare global {
       GT: Translate;
       user: User | CustomUser;
       session: any;
+      profile: Profile | null;
     }
     interface PageData {
       session: Session | null;
@@ -23,15 +24,15 @@ declare global {
       user: User | CustomUser | null;
     }
 
-    interface Profile {
-      id: string | undefined | null;
-      username?: string | undefined | null;
-      native_language?: string | undefined | null;
-      avatar_url?: string | undefined | null;
-      user_number?: string | undefined | null;
-      studying_languages?: string[] | undefined | null;
-      point_balance?: number | undefined | null;
-    }
+    // interface Profile {
+    //   id: string | undefined | null;
+    //   username?: string | undefined | null;
+    //   native_language?: string | undefined | null;
+    //   avatar_url?: string | undefined | null;
+    //   user_number?: string | undefined | null;
+    //   studying_languages?: string[] | undefined | null;
+    //   point_balance?: number | undefined | null;
+    // }
 
     interface CustomUser extends User {
       profile?: Profile;
