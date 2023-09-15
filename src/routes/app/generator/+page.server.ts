@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { Profile } from '$lib/models/Profile';
 import { PassageLength } from '$lib/models/PassageLength';
 import { Passage } from '$lib/models/Passage';
+import { GrammarStructure } from '$lib/models/GrammarStructure';
 
 
 const schema = z.object({
@@ -32,6 +33,7 @@ const schema = z.object({
     customPrompt: z.string().optional(),
     length: z.number().int().default(300),
     quality: z.string().default('3.5'),
+    grammar_points: z.string().array(),
 });
 
 
@@ -49,7 +51,7 @@ const openAI = new OpenAIApi(config);
 
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ locals: { supabase, getSession}}: RequestEvent) {
+export async function load({ locals: { supabase, getSession, profile}}: RequestEvent) {
     console.time('generator+server_load')
     const { user } = await getSession();
     const userProfile = await Profile.from(user.profile);
@@ -80,6 +82,10 @@ export async function load({ locals: { supabase, getSession}}: RequestEvent) {
         return await Topic.all( {asPlainObject: true} );
     }
 
+    const grammarPoints = async() => {
+        return await GrammarStructure.all({asPlainObject: true});
+    }
+
     const myRecentPassageHistory = async() => {
         const passages = await Passage.where('owner_id', 'eq', user.id, { asPlainObject: true, orderBy: 'created_at', direction: 'desc', limit: 10});
         return passages;
@@ -107,6 +113,7 @@ export async function load({ locals: { supabase, getSession}}: RequestEvent) {
         lengths: lengths(), 
         allowed: allowed(),
         myRecentPassageHistory: myRecentPassageHistory(),
+        grammarPoints: grammarPoints(),
     };
 }
 
