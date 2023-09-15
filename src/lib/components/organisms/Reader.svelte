@@ -21,6 +21,8 @@
   import { searchWeblio } from "$lib/services/weblio";
   import type { Passage } from "$lib/models/Passage";
   import { Vocabulary } from "$lib/models/Vocabulary";
+  import { page } from "$app/stores";
+    import { vocabularyStore } from "$lib/stores";
 
 
   export let pageData: any = null;
@@ -139,7 +141,8 @@
   }
 
   async function launchSaveProcess(word: string | any) {
-    pageData.form.data.vocabulary_id = [];
+    console.log($page.data);
+    $vocabularyStore = [];
     translationModal = true;
     isCustomizedTranslation = noTranslationFound
       ? true
@@ -159,6 +162,8 @@
     }
   }
 
+  console.log($page.data);
+
   async function handleTranslationSubmit(vocabulary: any) {
     if (isCustomizedTranslation) {
       const { data, error } = await supabase
@@ -175,12 +180,12 @@
         .eq("id", vocabulary.id)
         .select();
     } else {
-      pageData.form.data.vocabulary_id.forEach(async (id: any) => {
+      $vocabularyStore.forEach(async (id: any) => {
         const { data: insertData, error } = await supabase
           .from("user_vocabulary")
           .insert({
             custom_translation,
-            user_id: pageData?.session?.user.id,
+            user_id: $page.data.profile.id,
             vocabulary_id: id,
           })
           .select();
@@ -363,7 +368,7 @@
               name="vocabulary_id"
               value={parseInt(vocab.id)}
               class="w-full p-2"
-              bind:group={pageData.form.data.vocabulary_id}
+              bind:group={$vocabularyStore}
             >
               【{displayPOS(vocab)}】
               {`${vocab.word} ➡ ${vocab.ja_word}`}
@@ -377,7 +382,7 @@
       type="button"
       color="tealToLime"
       class="m-4"
-      disabled={!pageData.form.data.vocabulary_id && !custom_translation}
+      disabled={!$vocabularyStore && !custom_translation}
       on:click={() => {
         handleTranslationSubmit(selectedVocab);
       }}
