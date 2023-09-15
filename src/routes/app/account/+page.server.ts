@@ -40,9 +40,9 @@ export const actions = {
         if(!form.valid) {
             return fail(401, {form});
         }
-
+        console.log(form);
         userProfile.updateTargetLanguages( form.data.studying_languages);
-        userProfile.setNativeLanguage( form.data.native_language );
+        await userProfile.$native_language( form.data.native_language );
         
         return { form };
     },

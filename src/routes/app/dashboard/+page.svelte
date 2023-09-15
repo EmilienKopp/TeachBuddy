@@ -7,9 +7,10 @@
   import { Card, GradientButton } from "flowbite-svelte";
   import { random } from "$lib/helpers/Arrays";
   import { goto } from "$app/navigation";
+    import type { Profile } from "$lib/models/Profile";
 
   export let data: PageData;
-  const user: CustomUser | undefined = data.session?.user;
+  const user: Profile = data.profile
 
   async function surpriseMe(): Promise<void> {
     try {
@@ -33,12 +34,14 @@
     }
   }
 
+
+
   console.timeEnd('dashboard+page')
 </script>
 
 <div class="mt-12 flex flex-col justify-start mx-auto w-3/4 font-gloria">
   <h2 class="text-lg md:text-2xl mb-6 font-pixel">
-    Welcome, {user?.profile?.username ?? user?.email}!
+    Welcome, {user?.username ?? user?.email}!
   </h2>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 font-pixel">

@@ -6,6 +6,7 @@
     import InfoBubble from '$lib/components/atoms/InfoBubble.svelte';
     import { superForm } from 'sveltekit-superforms/client';
     import { Passage } from "$lib/models/Passage";
+    import { vocabularyStore } from '$lib/stores';
 
     export let data: PageData;
 
@@ -32,13 +33,17 @@
         invalidateAll: true,
     });
 
+    function print() {
+        window.print();
+    }
+
 </script>
 
 <div class="pt-10">
     <GradientButton class="noprint fixed bottom-6 right-6 md:text-xl md:p-3" type="button" pill color="pinkToOrange" on:click={() => { history.back() }}>
         <i class="bi bi-reply-fill"></i>
     </GradientButton>
-    <GradientButton class="noprint fixed bottom-6 right-24 md:text-3xl md:p-5 sm:hidden" type="button" pill color="pinkToOrange" on:click={() => { window.print() }}>
+    <GradientButton class="noprint fixed bottom-6 right-24 md:text-3xl md:p-5 sm:hidden" type="button" pill color="pinkToOrange" on:click={print}>
         <i class="bi bi-download"></i> 
     </GradientButton>
     <div class="mt-4 px-2 pb-16 md:px-16">
@@ -49,7 +54,7 @@
                 >
                 {passage?.title ?? "タイトルなし"}
                 </h2>
-                <button formaction="?/updatePassageTitle" class="bg-transparent">
+                <button formaction="?/updatePassageTitle" class="bg-transparent" title="Save Title">
                     {#if $delayed}
                     <Spinner size="8" />
                     {:else}

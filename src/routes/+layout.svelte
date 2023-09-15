@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { locale } from 'svelte-i18n';
+    import GenerationCompleteAlert from '$lib/components/organisms/GenerationCompleteAlert.svelte';
 
 	export let data: LayoutData;
 
@@ -23,6 +24,8 @@
 
 
 </script>
+<GenerationCompleteAlert {data}/>
+
 
 <div class="h-full w-full dark:text-white text-black font-raleway overflow-scroll">
 	<slot />

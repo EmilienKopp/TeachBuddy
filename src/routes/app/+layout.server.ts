@@ -5,14 +5,13 @@ import type { RequestEvent } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageServerLoad} */
 //@ts-nocheck
-export async function load({locals: { supabase, getSession}}: RequestEvent) {
+export async function load({locals: { supabase, getSession, profile}}: RequestEvent) {
 
-    const { user } = await getSession() as App.Session;
-    const userProfile = new Profile(user);
+    profile = await Profile.from(profile);
 
     const dateFormatter = new Intl.DateTimeFormat('en-US',{ year: 'numeric', month: 'long', day: 'numeric' });
 
-    const friendRequests = async () => (await userProfile.getFriendsRequests()).plain();
+    const friendRequests = async () => (await profile.getFriendsRequests()).plain();
 
     const languages = async() => (await Language.but('name_native', null )).plain();
 
@@ -40,7 +39,7 @@ export async function load({locals: { supabase, getSession}}: RequestEvent) {
 
     // const {data: words, error: wordsError } = await supabase.from("user_vocabulary").select('*').eq("user_id", user.id);
     const words = async () => {
-        const { data } = await supabase.from("user_vocabulary").select('*').eq("user_id", user.id);
+        const { data } = await supabase.from("user_vocabulary").select('*').eq("user_id", profile.id);
         return data ?? [];
     }
 
@@ -49,7 +48,7 @@ export async function load({locals: { supabase, getSession}}: RequestEvent) {
     //                                                                     .select("*")
     //                                                                     .eq("user_id", user.id)
     //                                                                     .eq("approved", true);
-    const friends = async () => (await userProfile.getFriends()).plain();
+    const friends = async () => (await profile.getFriends()).plain();
     
     // const { data: POS, error: PosError } = await supabase.from('parts_of_speech').select('*');
     const POS = async () => {
@@ -58,7 +57,7 @@ export async function load({locals: { supabase, getSession}}: RequestEvent) {
     }
 
     const passages = async () => {
-        const data = (await Passage.only('owner_id',  user.id)).plain();
+        const data = (await Passage.only('owner_id',  profile.id)).plain();
         return data ?? [];
     }
 
@@ -71,5 +70,6 @@ export async function load({locals: { supabase, getSession}}: RequestEvent) {
         POS: POS(), 
         tags: tags(),
         passages: passages(),
+        profile: profile.plain(),
      };
 }

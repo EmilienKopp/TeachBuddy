@@ -1,5 +1,6 @@
 <script>
     import { goto } from '$app/navigation';
+    import DownloadTest from '$lib/components/DownloadTest.svelte';
     import { Button } from 'flowbite-svelte';
 </script>
 
@@ -15,6 +16,7 @@
         <Button color="blue" on:click={() => goto('/auth/register')}>アカウント作成</Button>
         <Button outline color="blue" on:click={() => goto('/auth/login')}>ログイン</Button>
     </div>
+    
 </div>
 
 <style>
