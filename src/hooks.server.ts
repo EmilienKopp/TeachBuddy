@@ -24,9 +24,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   Model.setConnection(event.locals.supabase);
 
-
-
-  
   /**
    * a little helper that is written for convenience so that instead
    * of calling `const { data: { session } } = await supabase.auth.getSession()`
@@ -37,14 +34,13 @@ export const handle: Handle = async ({ event, resolve }) => {
       data: { session }
     } = await event.locals.supabase.auth.getSession();
     if (session && session.user) {
-
       (session.user as any).profile = (await Profile.find(session.user.id)).plain();
     }
     return session;
   };
 
   event.locals.getProfile = async (): Promise<Model | Profile | null> => {
-      return await Profile.from( (await event.locals.getSession())?.user?.profile)
+      return  (await event.locals.getSession())?.user?.profile;
   };
 
   event.locals.refreshSession = async () => {
@@ -63,6 +59,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     return session;
   }
 
+  event.locals.profile = await event.locals.getProfile();
+
   if (event.url.pathname == '/') {
     console.log('Calling getSession from hooks.server.ts');
     const session = await event.locals.getSession();
@@ -74,7 +72,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
   }
 
-  // protect requests to all routes that start with /protected-routes
+  // protect requests to all routes that start with /app
   if (event.url.pathname.startsWith('/app')) {
     console.log('Calling getSession from hooks.server.ts /app');
     const session = await event.locals.getSession();
@@ -102,19 +100,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const end = performance.now();
   console.log('TOTAL REQUEST TIME:', Math.round(end - start) + 'ms');
-  await event.locals.supabase.from('server_logs').insert(
-    [
-      {
-        method: event.request.method,
-        status: response.status,
-        pathname: (new URL(event.request.url)).pathname,
-        href: event.request.url,
-        origin: event.request.headers.get('origin'),
-        referer: event.request.headers.get('referer'),
-        user_agent: event.request.headers.get('user-agent'),
-        user_id: (await event.locals?.getSession())?.user?.id,
-        response_time: end - start,
-      }]);
-
   return response;
 };
