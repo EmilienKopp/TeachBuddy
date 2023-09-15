@@ -1,6 +1,5 @@
 <script>
     import { goto } from '$app/navigation';
-    import DownloadTest from '$lib/components/DownloadTest.svelte';
     import { Button } from 'flowbite-svelte';
 </script>
 
