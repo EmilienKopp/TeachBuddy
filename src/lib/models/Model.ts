@@ -89,7 +89,7 @@ export class Model {
         this._idColumn = (this.constructor as typeof Model)._idColumn ?? 'id';
         const _casts = Object.getPrototypeOf(this).constructor._casts;
         // Build from rowData 
-        if (rowData.data) {
+        if (rowData?.data) {
             console.log('Building from rowData', rowData)
             for (const [key, value] of Object.entries(rowData.data)) {
                 const castEntry = _casts?.find(([propName]: any) => propName === key);
@@ -301,8 +301,8 @@ export class Model {
     }
 
     public static async find(id: string | number, raw: boolean = false): Promise<any> {
-        const { data: profileData, error } = await this.getConnection().from(this._table).select('*').eq(this._idColumn, id).single();
-        return this.make(profileData);
+        const { data, error } = await this.getConnection().from(this._table).select('*').eq(this._idColumn, id).single();
+        return this.make(data);
     }
 
     public static async all(options?: DataFetchOptions): Promise<Collection<any>> {
@@ -337,6 +337,12 @@ export class Model {
         const { count, error, status, data } = await this.getConnection().from(this._table).select('*').eq(column, value);
 
         return new Collection(data);
+    }
+
+    public static async select(column:string) {
+        const { data, error } = await this.getConnection().from(this._table).select(column);
+
+        return (new Collection(data)).map( (el: any) => el[column]);
     }
 
     public static async edit(id: string | number, data: any): Promise<any> {

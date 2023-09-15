@@ -37,10 +37,10 @@ export class Collection<T> extends Array {
         return new Collection(mapped);
     }
 
-    filter<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): Collection<U> {
-        const filtered = super.filter(callbackfn, thisArg);
-        return new Collection(filtered);
-    }
+    // filter<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): Collection<U> {
+    //     const filtered = super.filter(callbackfn, thisArg);
+    //     return new Collection(filtered);
+    // }
 
     // Overriding the default behavior of methods like `map` by returning the built-in Array class as the constructor.
     static get [Symbol.species]() { return Array; }
