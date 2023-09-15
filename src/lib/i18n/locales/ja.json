@@ -109,7 +109,7 @@
     "fast": "速い",
     "high": "高品質",
 
-    "choose_existing": "既存のテーマを選ぶ",
+    "choose_existing": "既存のテーマから選ぶ",
     "from_my_topics": "自分の履歴から選ぶ",
     "browse_topics": "閲覧する",
     "target_languages": "勉強中の言葉",
@@ -117,5 +117,18 @@
     "not_enough_hints": "候補が2つ以下です！頑張って考えましょう。",
     "see_hints_anyway": "それでも見る（取得コインが0になります）",
     "random_passage_surprise_me": "自分の「勉強中」の言葉でランダムな文章を1つ読む。",
-    "surprise_me": "サープライズ!"
+    "surprise_me": "サープライズ!",
+
+    "choose_grammar_points": "入れたい文法事項を選択",
+    "past_tense": "過去形",
+    "future": "未来",
+    "conditional": "仮定法",
+    "passive": "受動態",
+    "present_continuous": "現在進行形",
+    "present_perfect": "現在完了形",
+    "auxillary_verbs": "助動詞",
+    "gerunds": "動名詞",
+    "comparatives_and_superlatives": "比較級と最上級",
+    "relative_pronouns": "関係代名詞",
+    "infinitives": "不定詞"
 }

@@ -4,6 +4,9 @@
   import { superForm } from "sveltekit-superforms/client";
   import {
     Badge,
+    Checkbox,
+    Chevron,
+    Textarea,
     GradientButton,
     Input,
     Label,
@@ -12,6 +15,7 @@
     TextPlaceholder,
     Spinner,
     Toggle,
+    Button,
   } from "flowbite-svelte";
   import { random, toSelectOptions } from "$lib/helpers/Arrays";
   import Reader from "$lib/components/organisms/Reader.svelte";
@@ -29,6 +33,8 @@
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
   import { Passage } from "$lib/models/Passage";
+    import { slide } from "svelte/transition";
+    import TextArea from "$lib/components/atoms/TextArea.svelte";
 
   export let data: PageData;
   const supabase = data.supabase;
@@ -80,13 +86,15 @@
       .map((el: any) => el.generation_duration)
       .reduce((a: any, b: any) => a + b, 0) / data.passages.length;
   let topicPicker = false;
+  let grammarPointPickerOpen = false;
 
   const completion = writable(new Passage({content: ""}));
-  const profile = new Profile(data.session.user.profile);
+  const profile = new Profile(data.profile);
   const languages = new Collection(data.languages);
   const qualityLevels = new Collection(data.qualityLevels);
   const topics = new Collection(data.topics);
   const myRecentPassageHistory = new Collection(data.myRecentPassageHistory);
+  const grammarPoints = new Collection(data.grammarPoints);
 
   const { input, messages } = useChat({
     api: "/app/generator",
@@ -163,6 +171,7 @@
   $: multiplier = (data.qualityLevels as any).find(
     (q: any) => q.id == $form.quality
   )?.multiplier;
+
   $: {
     allowedLengths =
       $form.quality == "3"
@@ -170,6 +179,7 @@
         : data.lengths;
     allowedLengths = new Collection(allowedLengths);
   }
+
 </script>
 
 <svelte:window bind:innerWidth />
@@ -251,7 +261,8 @@
         {#if $form.freeInput}
           <Label for="prompt">
             <span class="text-xs md:text-lg"> {$C_("passage_prompt")} </span>
-            <Input
+            <Textarea
+              class="h-20"
               type="text"
               name="prompt"
               label="テーマ"
@@ -273,6 +284,17 @@
           </Label>
         {/if}
       </div>
+        <GradientButton type="button" shadow color="pink" class="col-span-3" on:click={() => grammarPointPickerOpen = !grammarPointPickerOpen}>
+          {$C_("choose_grammar_points")}
+        </GradientButton>
+        {#if grammarPointPickerOpen}
+        <div transition:slide class="col-span-3 grid grid-cols-2 tracking-wide">
+          {#each grammarPoints as point, key}
+                <Checkbox name="grammar_points" class="p-3" bind:group={$form.grammar_points} value={point.name}
+                    checked={$form.grammar_points.includes(point.name)}>{point.name}</Checkbox>
+          {/each}
+        </div>
+        {/if}
       <!-- <Toggle color={getRandomColor()} name="freeInput" bind:checked={$form.freeInput} class="col-span-2 text-xs md:text-lg"> {$C_('free_input')} </Toggle> -->
       <GradientButton
         type="button"
@@ -293,7 +315,7 @@
           type="submit"
           shadow
           color="tealToLime"
-          class="col-span-3 md:col-span-2 text-xl md:text-4xl pb-4 md:mt-2"
+          class="col-span-3 md:col-span-2 text-xl md:text-4xl pb-4 md:mt-2 place-self-center"
           on:click={handleSubmit}
         >
           {#if loading}
