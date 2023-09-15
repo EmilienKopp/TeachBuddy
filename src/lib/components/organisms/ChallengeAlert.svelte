@@ -12,7 +12,7 @@
     onMount( () => {
         console.log('Listening to changes...', data);
         data.supabase.channel('any')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'challenges', filter: "challengee_id=eq."+ data.session.user.id }, (payload: any) => {
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'challenges', filter: "challengee_id=eq."+ data.profile.id }, (payload: any) => {
                 console.log('Change received!', payload);
                 challengeContent = payload.new.passage_id ?? payload.new.sverdle_word;
                 challengedAlert = true;
